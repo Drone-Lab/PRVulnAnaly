@@ -1,0 +1,210 @@
+{
+  "title": "Pre-emptive geofence triggering",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/16400",
+  "number": 16400,
+  "created_at": "2020-12-16T13:11:56Z",
+  "merged": true,
+  "merged_at": "2021-01-13T09:26:11Z",
+  "state": "closed",
+  "conversation": {
+    "author": "jkflying",
+    "body": "**Describe problem solved by this pull request**\r\nCurrently, a geofence breach is triggered only after the vehicle is already in violation. This can lead to legal issues if the vehicle ends up outside of the expected area, safety issues if an obstacle is hit that the geofence was meant to avoid, and the vehicle can also be 'stuck' if the breach is continually triggered, overriding attempted user actions.\r\n\r\n**Describe your solution**\r\nPredict the motion of the vehicle and trigger the breach if it is determined that the current trajectory would result in a breach happening before the vehicle can make evasive maneuvers, if it delayed any longer. The vehicle is then re-routed to a safe hold position (stop for multirotor, loiter for fixed wing).\r\n\r\n**Describe possible alternatives**\r\nThere was also the idea of 'shrinking' the allowed flight area, however this would not be robust to different vehicle configurations or tuning.\r\n\r\n**Test data / coverage**\r\nExtensive testing both in SITL and on real vehicles (fixed wing, VTOL and multirotor) inside of Auterion. I haven't tested it yet since upstreaming, and additional testing from anyone else would be appreciated.\r\n\r\n\r\n\r\n**Additional context**\r\n![Screenshot_20201216_141033](https://user-images.githubusercontent.com/1746276/102352838-901ff080-3fa8-11eb-9a96-eb69d8b3d266.png)\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "jkflying",
+        "created_at": "2021-01-12T13:23:12Z",
+        "body": "All comments addressed",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2021-01-13T07:55:04Z",
+        "body": "@jkflying The geofencebreach test is failing in the PR.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "jkflying",
+        "created_at": "2021-01-13T09:25:50Z",
+        "body": "> @jkflying The geofencebreach test is failing in the PR.\r\n\r\nYep it seems `clang` is more strict with the implicit conversions from float -> double than GCC - it even complains about constants, not just variables. I've done a workaround here, and made a fix in Matrix that will prevent this for the future.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "garfieldG",
+        "created_at": "2021-01-28T11:37:59Z",
+        "body": "https://github.com/PX4/PX4-Autopilot/issues/16679",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2020-12-16T23:33:25Z",
+        "body": "Copyright header",
+        "path": "src/modules/navigator/GeofenceBreachAvoidance/fake_geofence.hpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2020-12-16T23:34:56Z",
+        "body": "```suggestion\r\n\t~GeofenceBreachAvoidance() = default;\r\n```",
+        "path": "src/modules/navigator/GeofenceBreachAvoidance/geofence_breach_avoidance.h",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2020-12-16T23:37:06Z",
+        "body": "Also require `_local_pos.v_xy_valid` here?",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2020-12-18T09:22:54Z",
+        "body": "Can you move this block into a separate method?",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2020-12-18T09:28:56Z",
+        "body": "Instead, pass `this` to `GeofenceBreachAvoidance`: `GeofenceBreachAvoidance(ModuleParams* parent) : ModuleParams(parent) {}`\r\n```suggestion\r\n```",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2020-12-18T09:30:38Z",
+        "body": "```suggestion\r\n\tbool isInsidePolygonOrCircle(double lat, double lon, float altitude) override\r\n```",
+        "path": "src/modules/navigator/GeofenceBreachAvoidance/fake_geofence.hpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2020-12-18T09:31:16Z",
+        "body": "```suggestion\r\n\tenum class ProbeFunction {\r\n```",
+        "path": "src/modules/navigator/GeofenceBreachAvoidance/fake_geofence.hpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2020-12-18T09:32:20Z",
+        "body": "Can you avoid the static and use the correct type?",
+        "path": "src/modules/navigator/GeofenceBreachAvoidance/fake_geofence.hpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2020-12-18T09:39:25Z",
+        "body": "Might be a detail, but this only does what I'd expect from the method name if yaw=0.",
+        "path": "src/modules/navigator/GeofenceBreachAvoidance/fake_geofence.hpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2020-12-18T09:40:57Z",
+        "body": "Can you include the header for these?",
+        "path": "src/modules/navigator/GeofenceBreachAvoidance/fake_geofence.hpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2020-12-18T09:43:08Z",
+        "body": "```suggestion\r\nvoid GeofenceBreachAvoidance::updateParams() override\r\n{\r\n    ModuleParams::updateParams();\r\n```",
+        "path": "src/modules/navigator/GeofenceBreachAvoidance/geofence_breach_avoidance.cpp",
+        "position": 55,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2020-12-18T09:46:56Z",
+        "body": "This is the same in both cases -> you can move it out of the if and simplify:\r\n```suggestion\r\n\t\t\t\tcurrent_distance = (current_max + current_min) * 0.5f;\r\n```",
+        "path": "src/modules/navigator/GeofenceBreachAvoidance/geofence_breach_avoidance.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2020-12-18T09:50:41Z",
+        "body": "Can you use `GEOFENCE_CHECK_INTERVAL`?",
+        "path": "src/modules/navigator/GeofenceBreachAvoidance/geofence_breach_avoidance.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2020-12-18T09:51:58Z",
+        "body": "Same here",
+        "path": "src/modules/navigator/GeofenceBreachAvoidance/geofence_breach_avoidance.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "jkflying",
+        "created_at": "2021-01-11T10:19:10Z",
+        "body": "This already checks for the GPS being valid via `have_geofence_position_data` , do you think it needs more?",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "jkflying",
+        "created_at": "2021-01-12T12:55:49Z",
+        "body": "Moved these to a `dataman_mocks.hpp` as well",
+        "path": "src/modules/navigator/GeofenceBreachAvoidance/fake_geofence.hpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "jkflying",
+        "created_at": "2021-01-12T13:01:42Z",
+        "body": "When you're worried about overflow or floats that implementation can actually be more accurate, but in this case I agree it is overkill.",
+        "path": "src/modules/navigator/GeofenceBreachAvoidance/geofence_breach_avoidance.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "jkflying",
+        "created_at": "2021-01-12T13:15:38Z",
+        "body": "renamed to `XXX_north`",
+        "path": "src/modules/navigator/GeofenceBreachAvoidance/fake_geofence.hpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2021-01-13T08:03:08Z",
+        "body": "Depending on `GF_SOURCE` (GPS vs global position).",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "MikeCharikov",
+        "created_at": "2022-11-29T13:47:52Z",
+        "body": "@dagar \r\n\r\nLooks like GF_SOURCE logic is broken here. \r\n\r\nhttps://github.com/PX4/PX4-Autopilot/issues/20677",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "bkueng",
+        "created_at": "",
+        "body": "",
+        "state": "DISMISSED",
+        "type": "review"
+      }
+    ]
+  }
+}

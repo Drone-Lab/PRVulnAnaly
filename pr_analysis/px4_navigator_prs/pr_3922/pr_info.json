@@ -1,0 +1,65 @@
+{
+  "title": "FW navigator accept TAKEOFF waypoint like MC (alt only)",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/3922",
+  "number": 3922,
+  "created_at": "2016-03-04T20:36:10Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "I think this makes the most sense for fixed wing behaviour. You're still flying towards the takeoff waypoint, but once you actually hit the altitude (within NAV_ACC_RAD) you're ready to proceed with the mission. \n",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2016-03-04T21:24:06Z",
+        "body": "I was also thinking about updating MissionFeasibilityChecker. What would be appropriate?\n\n-require altitude greater than: At least home + climbout_diff + nav_acc_rad or MIS_TAKEOFF_ALT?\n-minimum distance >= FW_AIRSPEED_TRIM \\* FW_T_CLMB_MAX meters from home.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-03-05T10:35:21Z",
+        "body": "Both options are not ideal. Caring for horizontal position might make it turn too soon, caring for altitude might make it spiral where you don't want it. At least with the way it is now you know what it will do (because you have the next waypoint in mind). The spiral might be completely unexpected. But other than that I can't really argue for one or the other.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-03-05T14:19:03Z",
+        "body": "I'm more concerned with the current situation making it accept too soon when you should still be climbing with roll constrained and TECS in climbout mode. With the roll limited to [-15, 15] during altitude_error > _parameters.climbout_diff the potential spiral is pretty limited depending on your FW_CLMBOUT_DIFF and NAV_ACC_RAD.\n\nA fairly common situation is hand launching into wind where the plane climbs quickly and easily hits the takeoff altitude early. Why fly to a fairly low waypoint instead of continuing the mission?\n\nThink of the takeoff waypoint as more of a cmd to launch + climb with its location not necessarily important.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-03-05T14:48:38Z",
+        "body": "You can't just assume that the takeoff position is not important to the user.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-03-05T14:50:09Z",
+        "body": "What your thinking off is not flying a mission but just flying manually where only the climbout diff is relevant.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-03-05T16:16:53Z",
+        "body": "It's not necessarily assuming the takeoff position isn't important to the user (it would still be mostly respected if climbout diff > accept radius), but rather I'm trying to tweak what we already have to get the behaviour I want. Maybe that's the wrong approach.\n\nSo let's take a step back and have the proper discussion. I want to hand launch in AUTO, sometimes with launch detect, sometimes without and have that launch do nothing but safely climb in the direction I throw until a certain altitude, and then continue/start the mission. How could we accomplish this while still having the option of respecting a takeoff waypoint position?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-03-05T17:17:20Z",
+        "body": "Ok. Wasn't it your plan to reuse the runway takeoff code for hand launch too? I believe it would give you exactly what you want. In \"heading mode\" it will takeoff to climbout alt in the direction you threw it, and then navigate towards takeoff wp. In \"wp mode\" will directly try to navigate towards the takeoff waypoint (which is the default behaviour at the moment I guess?).\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-03-05T18:04:24Z",
+        "body": "You're right that will probably be exactly what I want in most cases if I just treat the takeoff waypoint like my first regular waypoint. My only concern then is the possibility that the waypoint could be accepted before RunwayTakeoffState::FLY. What would be the best way to prevent that?\n\nAdditionally check climbout diff to accept NAV_CMD_TAKEOFF or actually publish takeoff state?\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

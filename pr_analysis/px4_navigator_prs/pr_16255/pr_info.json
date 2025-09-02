@@ -1,0 +1,35 @@
+{
+  "title": "Modify the method of follow_target.cpp to calculate the expected speed",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/16255",
+  "number": 16255,
+  "created_at": "2020-11-22T14:29:07Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "fanchuannangang1503",
+    "body": "If the frequency of sending follow_target orb messages is very high, the dt_ms variable will be a short time, and dt_ms/INTERPOLATION_PNTS will be less than the execution cycle of the FollowTarget::on_active() function, so the actual acceleration will be very slow.\r\n",
+    "issue_comments": [
+      {
+        "author": "mrpollo",
+        "created_at": "2021-02-15T18:35:56Z",
+        "body": "Hey @fanchuannangang1503 thanks for your suggestion, it looks like you have problems with code formatting, please see my suggestion below on how to fix this. Additionally please rebase this PR since it might be falling behind our main branch.\r\n\r\ncan you please fix the code formatting issues?  Try the following helper and push your changes again. This will clean up your code using `astyle`, and will make the first CI test happy!\r\n\r\n```\r\nmake format\r\n```\r\n\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "fanchuannangang1503",
+        "created_at": "2021-02-18T12:51:52Z",
+        "body": "OK",
+        "type": "issue_comment"
+      },
+      {
+        "author": "stale[bot]",
+        "created_at": "2021-06-26T03:10:44Z",
+        "body": "This issue has been automatically marked as stale because it has not had recent activity. Thank you for your contributions.\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

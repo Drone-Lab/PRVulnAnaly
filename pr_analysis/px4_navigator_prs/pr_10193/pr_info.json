@@ -1,0 +1,16 @@
+{
+  "title": "Smooth auto desired vel",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10193",
+  "number": 10193,
+  "created_at": "2018-08-08T12:02:53Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "Stifael",
+    "body": "Please use [PX4 Discuss](http://discuss.px4.io/) or [Slack](http://slack.px4.io/) to align on pull requests if necessary.\r\n\r\n**Test data / coverage**\r\nLogs uploaded to http://logs.px4.io or screenshots.\r\n\r\n**Describe problem solved by the proposed pull request**\r\nA clear and concise description of the problem, if any, this feature will solve. E.g. I'm always frustrated when ...\r\n\r\n**Describe your preferred solution**\r\nA clear and concise description of what you have implemented.\r\n\r\n**Describe possible alternatives**\r\nA clear and concise description of alternative solutions or features you've considered.\r\n\r\n**Additional context**\r\nAdd any other context or screenshots for the feature request here.\r\n",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": []
+  }
+}

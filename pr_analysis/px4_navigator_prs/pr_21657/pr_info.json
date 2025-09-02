@@ -1,0 +1,81 @@
+{
+  "title": "[1.14 Backport] Geofence: Disable pre-emptive geofence predictor by default",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21657",
+  "number": 21657,
+  "created_at": "2023-05-30T16:19:33Z",
+  "merged": true,
+  "merged_at": "2023-06-06T15:22:48Z",
+  "state": "closed",
+  "conversation": {
+    "author": "junwoo091400",
+    "body": "## About\r\nAs discussed in\r\nhttps://discuss.px4.io/t/px4-maintainers-call-may-30-2023/32372#v114-new-beta-release-5, Geofence predictor feature was not well tested / maintained, hence was agreed upon to be disabled for the 1.14 release\r\n\r\nThis is a backport because 1.14 has been branched out, but not going to `main` branch yet, since we haven't discussed what to do for the next release.",
+    "issue_comments": [
+      {
+        "author": "DronecodeBot",
+        "created_at": "2023-05-30T16:20:22Z",
+        "body": "This pull request has been mentioned on **Discussion Forum for PX4, Pixhawk, QGroundControl, MAVSDK, MAVLink**. There might be relevant details there:\n\nhttps://discuss.px4.io/t/px4-maintainers-call-may-30-2023/32372/1\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "DronecodeBot",
+        "created_at": "2023-06-06T15:36:05Z",
+        "body": "This pull request has been mentioned on **Discussion Forum for PX4, Pixhawk, QGroundControl, MAVSDK, MAVLink**. There might be relevant details there:\n\nhttps://discuss.px4.io/t/px4-maintainers-call-june-06-2023/32473/1\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "hamishwillee",
+        "created_at": "2023-07-20T00:03:30Z",
+        "body": "Should this also be disabled by default in main?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "junwoo091400",
+        "created_at": "2023-07-23T20:54:07Z",
+        "body": "> Should this also be disabled by default in main?\r\n\r\nThanks for the reminder, it should! Hence I created a branch against the `main`. Thanks!",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "junwoo091400",
+        "created_at": "2023-05-31T15:59:44Z",
+        "body": "I've added the note, what do you think? @bresch @dagar ",
+        "path": "src/modules/navigator/geofence_params.c",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "hamishwillee",
+        "created_at": "2023-05-31T23:18:57Z",
+        "body": "Certainly better than nothing. It is unfortunate that the parameter tables are rendered as HTML tables so we can't use markdown formatting.\r\n\r\nPerhaps something for 1.15 (as per [the discussion on feature support here](https://discuss.px4.io/t/px4-maintainers-call-may-30-2023/32372#fire-v115-next-release-improvement-discussion-8)) but perhaps we could add an `@experimental` tag in the parameter names to make it clear that the feature is experimental? (probably not, since a whole feature is experimental, not a particular parameter).\r\n\r\n```suggestion\r\n * [EXPERIMENTAL] Use Pre-emptive geofence triggering\r\n *\r\n * WARNING: This experimental feature may cause flyaways. Use at your own risk.\r\n```",
+        "path": "src/modules/navigator/geofence_params.c",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "junwoo091400",
+        "created_at": "2023-06-06T12:24:52Z",
+        "body": "> Perhaps something for 1.15 (as per [the discussion on feature support here](https://discuss.px4.io/t/px4-maintainers-call-may-30-2023/32372#fire-v115-next-release-improvement-discussion-8)) but perhaps we could add an `@experimental` tag in the parameter names to make it clear that the feature is experimental?\r\n\r\nI think that could be nice, if we have mechanism in QGC to prompt \"WARNING! This feature is experimental!\" to make sure user gets notified the fact that it's experimental properly.\r\n\r\nOtherwise, I think you are probably thinking of documentation aspect of it as well, for displaying parameters with those tags with special colors perhaps?\r\n\r\nBtw, displaying markdown formatting in HTML is possible, for example like this: https://www.makeuseof.com/md-block-render-markdown-web-page/",
+        "path": "src/modules/navigator/geofence_params.c",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "bresch",
+        "created_at": "",
+        "body": "Should we add a note in the param that this is an experimental feature?\r\nOr what's the point of letting someone enabling it if we know that it can lead to a fly-away?",
+        "state": "COMMENTED",
+        "type": "review"
+      },
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

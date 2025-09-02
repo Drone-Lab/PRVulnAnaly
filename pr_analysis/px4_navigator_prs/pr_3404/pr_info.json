@@ -1,0 +1,104 @@
+{
+  "title": "Use RTL when offboard is lost",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/3404",
+  "number": 3404,
+  "created_at": "2015-12-30T23:42:13Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "AndreasAntener",
+    "body": "This contains 2 updates:\n- option to go to RTL when offboard is lost. Parameter allows to set a timeout to wait in LOITER before entering RTL\n- jump to the proper RTL phase when engaged inside acceptance radius of home (instead of climbing up first)\n",
+    "issue_comments": [
+      {
+        "author": "AndreasAntener",
+        "created_at": "2015-12-31T11:14:57Z",
+        "body": "Updated and SITL tested\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-03-05T13:36:32Z",
+        "body": "@julianoes thanks, updated\nSITL tested. I think an outdoor test to verify RTL would be good. The offboard timeout to RTL is extensively simulation tested.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mhkabir",
+        "created_at": "2016-03-05T14:03:09Z",
+        "body": "@AndreasAntener, can we have an option to just land if offboard is lost? I think it would be fairly easy to add it to this PR. \n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-03-05T14:11:10Z",
+        "body": "@mhkabir that's the default if you have no RC connected. It will only RTL if you set this new param\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mhkabir",
+        "created_at": "2016-03-05T14:12:40Z",
+        "body": "What if RC is connected? I think it drops back into the previous mode then? \n\nI just wanted it to land instead of that. \n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-03-05T14:14:06Z",
+        "body": "In that case it goes to POSCTL: https://github.com/PX4/Firmware/pull/3404/files#diff-20f2c9d76df9330422532b87ab964f86R812\nDo you want to make a PR against this with a param to choose between the two?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-05-12T06:37:04Z",
+        "body": "@AndreasAntener Because of the inherent dangers I'd prefer if this would support switching between HOLD (loiter), LAND and RTL.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-05-12T13:04:44Z",
+        "body": "Ok, I can do that. Same style as for DL and RC loss I guess.\nActually we're currently also using a 4th option: MANUAL. Especially useful for testing takeoff/landing stuff where you want to it to stop controlling 10cm above ground.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-05-27T13:25:12Z",
+        "body": "New one incoming, split RTL and offboard lost functionality\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "julianoes",
+        "created_at": "2016-02-15T13:03:55Z",
+        "body": "Personally, I'd prefer a param name like `COM_OFFB_RTL` but up to you.\n",
+        "path": "src/modules/commander/commander_params.c",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-02-15T13:05:18Z",
+        "body": "nitpick: You could just use `1e6f` instead of `(float)1e6`, right?\n",
+        "path": "src/modules/commander/commander.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-02-15T13:10:37Z",
+        "body": "These changes lake correct, I'm only a little confused that they are part of this PR.\n",
+        "path": "src/modules/navigator/rtl.cpp",
+        "position": 24,
+        "type": "review_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-02-15T13:12:21Z",
+        "body": "Scary change but it seems right from what I see.\n",
+        "path": "src/modules/navigator/rtl.cpp",
+        "position": 38,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": []
+  }
+}

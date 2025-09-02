@@ -1,0 +1,29 @@
+{
+  "title": "fixes cherry-picked to stable",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10726",
+  "number": 10726,
+  "created_at": "2018-10-19T14:21:59Z",
+  "merged": true,
+  "merged_at": "2018-10-20T00:11:15Z",
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "https://github.com/PX4/Firmware/issues/10064\n\n@PX4/testflights please test this pull request, it will become the v1.8.1 release.",
+    "issue_comments": [
+      {
+        "author": "Avysuarez",
+        "created_at": "2018-10-19T18:45:08Z",
+        "body": "**> Some flights with pixhawk 4 mini (v5)** \r\n\r\nGood flight, but in altitude mode their was a delay in the throttle to rise.\r\nhttps://review.px4.io/plot_app?log=d511ed58-1d33-4177-bfe1-76acb8686c44\r\nhttps://review.px4.io/plot_app?log=8902f3b5-a550-46ce-89a2-77d4d082a12b\r\nhttps://review.px4.io/plot_app?log=61bfd603-50d1-4e8e-af2b-3c42d9116e21\r\n\r\n**> Some flights with pixhawk 4 (v5)**\r\n\r\nGood flight, no issues.\r\nhttps://review.px4.io/plot_app?log=49b0015c-92f3-4998-b606-b3acd1f7c277\r\nhttps://review.px4.io/plot_app?log=ae2fa213-b0ad-4ff8-acd6-a2c040fb187e\r\nhttps://review.px4.io/plot_app?log=05643504-de97-47ae-86ac-42f148358866\r\n\r\n### **Some flights with pixhawk 2.1 (v3)**\r\nGood flight, no issues\r\nhttps://review.px4.io/plot_app?log=7c160989-2153-44ea-a333-e168a1fbe9eb\r\nhttps://review.px4.io/plot_app?log=2d2d2700-104f-46e4-9591-1891b83fd5e7\r\n\r\n**Some flights with Pixracer (v4)**\r\nGood flight, no issues.\r\nhttps://review.px4.io/plot_app?log=0325ff4e-4176-4a2e-a536-f1a5d7a8f5bc\r\nhttps://review.px4.io/plot_app?log=0ad44079-a441-40be-bce5-76b473bb248b\r\nhttps://review.px4.io/plot_app?log=961df6e1-7354-423b-8a88-f5af71c6c4d0",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-10-20T00:11:05Z",
+        "body": "Thanks for the summary @Avysuarez. These look consistent with v1.8.0 stable, which still needs a few more commits for full pixhawk 4 mini support.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "title": "Navigator: Resume mission with last flight speed",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21714",
+  "number": 21714,
+  "created_at": "2023-06-12T16:34:18Z",
+  "merged": true,
+  "merged_at": "2023-08-08T11:22:05Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "Based on https://github.com/PX4/PX4-Autopilot/pull/21710\r\n\r\n### Solved Problem\r\nOn resuming a mission, the flight speed was reset to the vehicle default. Especially for surveys this is not acceptable. \r\n\r\n### Solution\r\nFurther extend the ideas from https://github.com/PX4/PX4-Autopilot/pull/21710: some mission items contain not momentary setpoints (like go to point A), but instead contain settings that are then relevant for the whole mission (or until over-turned by a negating command). \r\nDO_CHANGE_SPEED items belong to the same category as eg camera settings: you want to re-apply them when resuming a mission. \r\n\r\nI've further removed the separated mc/fw stored flight speeds, as it's only ever needed to store the speed of the current mode we're in, and we reset it during VTOL transitions. \r\n\r\n### Changelog Entry\r\n\r\n```\r\nFeature: Resume mission with flight speed from previous mission items\r\nDocumentation: Need to clarify page ...\r\n```\r\n\r\n### Alternatives\r\n\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "DronecodeBot",
+        "created_at": "2023-06-14T09:43:32Z",
+        "body": "This pull request has been mentioned on **Discussion Forum for PX4, Pixhawk, QGroundControl, MAVSDK, MAVLink**. There might be relevant details there:\n\nhttps://discuss.px4.io/t/set-mission-speed-being-ignored-upon-starting-auto-flight/32705/2\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "tstastny",
+        "created_at": "2023-06-23T12:20:00Z",
+        "body": "will likely need this in before the beaglebone is passing https://github.com/PX4/PX4-Autopilot/pull/21749",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-07-17T13:57:40Z",
+        "body": "[Removed some speed handling logic from Navigator,](https://github.com/PX4/PX4-Autopilot/pull/21714/commits/0b18bd59a46268574460aa9b60f0e13cea5aa36e) and then rebased and force pushed. @tstastny would be good if you could make yourself a picture here and comment if you agree with the general direction of it (removing speed logic from Navigator). ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "hamishwillee",
+        "created_at": "2023-08-09T04:56:52Z",
+        "body": "I think it is an excellent feature to start from the previous setpoint. Can you update the docs @sfuhrer ? \r\n\r\nI was thinking perhaps a very short section on pausing and resuming the mission in https://docs.px4.io/main/en/flight_modes/mission.html#mission-mode. Make it clear this applies to all frames.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "tstastny",
+        "created_at": "2023-06-23T12:09:34Z",
+        "body": "if this is just about speed commands, shouldnt we just look here for the exact NAV_CMD corresponding to a DO_CHANGE_SPEED?\r\n\r\nAlso - why are we sending the command again instead of just applying the properties? (sorry im a bit out of the loop on all this)",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "tstastny",
+        "created_at": "2023-06-23T12:10:23Z",
+        "body": "i dont really care either way - but what's the reason for keeping these lines at all if they are commented out?",
+        "path": "src/modules/navigator/navigator.h",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "tstastny",
+        "created_at": "2023-06-23T12:18:45Z",
+        "body": "so this one\r\n1. updates to the latest potential speed change ONLY by the mission item iteration\r\n2. and then sends the vehicle command such that\r\n3. `cruising_speed_sp_update()` picks up that command when it checks for do set speed commands? (where it would also pick up any operator freeform do set speed commands?)\r\n",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 14,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-06-23T14:48:54Z",
+        "body": "No reason, those are left overs from debugging, will remove!",
+        "path": "src/modules/navigator/navigator.h",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-06-23T14:58:44Z",
+        "body": "> if this is just about speed commands, shouldnt we just look here for the exact NAV_CMD corresponding to a DO_CHANGE_SPEED?\r\n\r\ngood point, changed it to do so.",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-06-23T15:22:42Z",
+        "body": ">ONLY by the mission item iteration\r\nCan you expand what you mean?\r\n\r\nBut yes otherwise that's what happens. Note that also the fixed-wing position controller and the multicopter flight mode manager listen to VEHICLE_CMD_DO_CHANGE_SPEED and execute it independently of `cruising_speed_sp_update()` (which is only run in Mission, but not in eg Loiter). \r\n",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 14,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-06-23T15:26:28Z",
+        "body": "Maybe we could even remove `cruising_speed_sp_update()`? It's a fundamental question if the speed setpoint should be part of the position setpoint or if it's rather an independent system setting.",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 14,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-07-17T13:52:17Z",
+        "body": "Removed it in https://github.com/PX4/PX4-Autopilot/pull/21714/commits/0b18bd59a46268574460aa9b60f0e13cea5aa36e. I feel like we should rather de-couple path handling (through the position setpoints) and speed setpoints (independent of the path) for now.",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 14,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-07-17T13:54:29Z",
+        "body": ">Also - why are we sending the command again instead of just applying the properties? (sorry im a bit out of the loop on all this)\r\n\r\nBecause the speed setpoint is handled by the Navigator but by the Position controllers (FW Pos and MPC). See https://github.com/PX4/PX4-Autopilot/pull/19407. So Navigator has to re-publish the command, and the position controllers can take it up and execute the change.\r\n",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "tstastny",
+        "created_at": "",
+        "body": "I left some questions, just because navigator is quite nebulous to me. But otherwise great that we are reducing complexity where possible.",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "",
+        "body": "Addressed two of your comments with new commits @tstastny ",
+        "state": "COMMENTED",
+        "type": "review"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      },
+      {
+        "author": "tstastny",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "title": "[WIP] DO_CHANGE_SPEED work across LOITER, MISSION, RTL",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10912",
+  "number": 10912,
+  "created_at": "2018-11-25T19:04:26Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "Opening for further discussion and testing, please do not merge.\n\nTODO:\n - review behaviour wrt VTOL transitions\n - define mission behaviour\n   - debatably, the speed should be set as a property of the current mission\n   - example: setting mission speed, temporarily leaving leaving mission mode, then resuming",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2018-11-25T19:08:19Z",
+        "body": "@sanderux do you have any input here? This might be a good time to review and document your requirements (current and desired).",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-11-25T19:16:08Z",
+        "body": "@superware",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-11-25T22:50:26Z",
+        "body": "A quick pass looks good to me.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2018-11-26T16:44:12Z",
+        "body": "does this work for setting cruise throttle? (disabled airspeed sensors)",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2018-11-26T16:47:33Z",
+        "body": "our use case for changing speed would be \r\n- from an onboard computer monitoring vehicle behavior and detecting a requirement for more speed\r\n- custom behavior: change flight setting from efficient to performance and back\r\n- custom behavior: Quick RTL / Bird strike avoidance\r\n\r\nSo for us it is not so much a mission setting but a way for external systems (or perhaps in the future through QGC) of defining the vehicles speed.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "stale[bot]",
+        "created_at": "2019-07-10T17:37:03Z",
+        "body": "This issue has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs. Thank you for your contributions.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "stale[bot]",
+        "created_at": "2019-10-23T09:12:29Z",
+        "body": "This issue has been automatically marked as stale because it has not had recent activity. Thank you for your contributions.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "superware",
+        "created_at": "2019-10-23T10:44:16Z",
+        "body": "Hi @julianoes, can you please reopen?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2019-10-25T11:57:22Z",
+        "body": "> Hi @julianoes, can you please reopen?\r\n\r\nIt's still open.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "stale[bot]",
+        "created_at": "2020-01-24T03:36:30Z",
+        "body": "This issue has been automatically marked as stale because it has not had recent activity. Thank you for your contributions.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2021-01-10T17:49:45Z",
+        "body": "Closing as stale.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "title": "update UUV and rover controllers to use trajectory_setpoint and cleanup unused position_setpoint fields",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/17061",
+  "number": 17061,
+  "created_at": "2021-03-09T02:52:11Z",
+  "merged": true,
+  "merged_at": "2021-03-09T15:36:35Z",
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "",
+    "issue_comments": [],
+    "review_comments": [
+      {
+        "author": "Jaeyoung-Lim",
+        "created_at": "2021-03-09T10:03:56Z",
+        "body": "Why are the frame specific for the rover pos control?",
+        "path": "src/modules/rover_pos_control/RoverPositionControl.hpp",
+        "position": 31,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2021-03-09T14:16:27Z",
+        "body": "It's not handled yet, but I'm assuming we're going to add it. Right now ORB_ID(trajectory_setpoint) is always NED, with things like body frame velocity setpoints being converted by the mavlink receiver. I'd like to push all of that into the controllers and keep mavlink as a dumb passthrough.",
+        "path": "src/modules/rover_pos_control/RoverPositionControl.hpp",
+        "position": 31,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2021-03-09T14:17:05Z",
+        "body": "```suggestion\r\n\t\tif (_velocity_frame == VelocityFrame::NED) {\r\n```",
+        "path": "src/modules/rover_pos_control/RoverPositionControl.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "bresch",
+        "created_at": "",
+        "body": "",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "Jaeyoung-Lim",
+        "created_at": "",
+        "body": "Thanks! looks good for me!\r\n\r\nJust one minor comment on the velocity frame in rover pos control",
+        "state": "COMMENTED",
+        "type": "review"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "",
+        "body": "Assuming `trajectory_setpoint` is set like the few fields of the triplet before it looks good to me 👍 ",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

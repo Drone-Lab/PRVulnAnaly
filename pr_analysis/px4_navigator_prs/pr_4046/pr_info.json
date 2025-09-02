@@ -1,0 +1,50 @@
+{
+  "title": "MissionFeasibilityChecker geofence ignore NAV_CMD_DO_*",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/4046",
+  "number": 4046,
+  "created_at": "2016-03-21T03:39:11Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "-closes #4040\n",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2016-03-21T14:59:29Z",
+        "body": "Thanks @AndreasAntener \nIs there a better place a helper like item_contains_position() could live in navigator? At the moment I made it public and static within MissionBlock so it was accessible from MissionFeasibilityChecker.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-03-21T19:24:30Z",
+        "body": "Only idea I'd have would be to add a helper class, but it's a bit overkill atm for one method. Maybe add a comment about it.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-03-22T00:21:41Z",
+        "body": "Added todo\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-03-22T05:56:18Z",
+        "body": "Thanks, applied\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-03-21T13:10:07Z",
+        "body": "We could use https://github.com/PX4/Firmware/blob/master/src/modules/navigator/mission_block.cpp#L318 and also add NAV_CMD_DO_JUMP to the list there (it's currently not because it's handled separately in missions but adding it won't have any other effect)\n",
+        "path": "src/modules/navigator/mission_feasibility_checker.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": []
+  }
+}

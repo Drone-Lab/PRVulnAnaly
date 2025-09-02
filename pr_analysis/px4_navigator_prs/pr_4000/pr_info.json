@@ -1,0 +1,47 @@
+{
+  "title": "Param unit cleanup",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/4000",
+  "number": 4000,
+  "created_at": "2016-03-13T18:28:53Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2016-03-13T20:46:47Z",
+        "body": "@LorenzMeier @DonLakeFlyer ready for review please\n\nCurrent @unit usage\n\n```\n  4  * @unit 1/s\n  1  * @unit A\n  1  * @unit bit/s\n 44  * @unit boolean\n 40  * @unit deg\n  4  * @unit deg * 1e7\n 19  * @unit deg/s\n 54  * @unit enum\n  1  * @unit Gauss\n  1  * @unit Gauss/s\n  1  * @unit hPa\n  5  * @unit Hz\n  1  * @unit kg\n  3  * @unit kg*m^2\n 47  * @unit m\n  1  * @unit m^2\n  1  * @unit mA\n  1  * @unit min\n  1  * @unit m/m\n 12  * @unit ms\n  1  * @unit m-s\n 35  * @unit m/s\n  2  * @unit (m/s)-s\n 10  * @unit m/s/s\n  1  * @unit (m/s/s)-s\n  1  * @unit rad\n  8  * @unit rad/s\n 26  * @unit s\n  7  * @unit SD\n 66  * @unit us\n  3  * @unit V\n  1  * @unit W\n```\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "DonLakeFlyer",
+        "created_at": "2016-03-13T20:54:19Z",
+        "body": "I'd probably change the seconds ones to secs, msecs, usecs. A little more clear. What is SD?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-03-13T20:59:14Z",
+        "body": "It's in ekf2 so I left it alone. Standard deviation?\nhttps://github.com/PX4/Firmware/blob/cecec86081566f243a0dec33b9dedc3dd1624f58/src/modules/ekf2/ekf2_params.c#L316\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-03-13T21:22:40Z",
+        "body": "I used s, ms, us to stick to SI, but if you want the abbreviation I'll change them.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-14T08:13:14Z",
+        "body": "Rebased and applied.\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

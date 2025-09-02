@@ -1,0 +1,129 @@
+{
+  "title": "Navigator Mission: Improve mission resume",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21710",
+  "number": 21710,
+  "created_at": "2023-06-09T15:07:09Z",
+  "merged": true,
+  "merged_at": "2023-06-20T12:38:04Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "Replaces https://github.com/PX4/PX4-Autopilot/pull/21643. I've tried to clean up the logic a bit and make it less entangled.\r\n\r\n### Solved Problem\r\nSurvey mission contain, beside the position items, contain items for gimbal config, camera mode config, and camera trigger. When the execution of a mission is stopped, we want also to stop the camera from taking pictures and move the gimbal back to neutral. Upon resuming the mission though, we have to re-configure gimbal and camera and start the triggering once back on the mission path.\r\n\r\n### Solution\r\nStore (cache) all gimbal/camera/trigger mission items and replay them on resuming the mission. In detail:\r\n- `on_inactivation() `store the currently active index as `_inactivation_index`\r\n- `on_activation()`, store all gimbal/camera/trigger items up to the currently active index and reset the mission to the previous. Also set flag (`_align_heading_necessary`) that a yaw alignment is required upon reaching this waypoint (we want to only start triggering once yaw is correctly aligned with next WP).\r\n- `on_active()`\r\n  - if `_align_heading_necessary` is set and mission item is reached, update current item with yaw field and force it to accept that one before starting the trigger.\r\n  - read the gimbal and camera mode command items from cache, thus making the gimbal move to the right orientation and setting the right camera mode\r\n  - read the trigger commands once the previous waypoint incl. yaw alignment is accepted\r\n\r\nFurther:\r\n- reset cached items if mission is updated\r\n- reset mission on disarmed only if we reached the last mission item, otherwise keep\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nFeature: Improve mission resume (e.g. replay gimbal and camera commands of a survey)\r\nDocumentation: Need to clarify page\r\n```\r\n\r\n### Alternatives\r\nIt would be nice to not resume the mission from the previous mission item but from the actual lat/lon position where the mission was interrupted. \r\n\r\n### Test coverage\r\nSITL tested.\r\n\r\n\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "RomanBapst",
+        "created_at": "2023-06-16T06:35:14Z",
+        "body": "@sfuhrer LGTM. I hard a hard time understanding how the mission item is set when resuming the survey without calling `set_mission_items` but then I realized that `set_current_mission_index` does it under the hood :-p",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2023-06-18T16:46:37Z",
+        "body": "@sfuhrer Flash overflow :-(",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-06-19T09:11:53Z",
+        "body": "> @sfuhrer Flash overflow :-(\r\n\r\nv4_test indeed is at 100.00%..in an effort to bring it slightly down I've removed some rather unnecessary params and made some other param descriptions more compact, let's see if that's enough. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-06-19T10:05:39Z",
+        "body": "> > @sfuhrer Flash overflow :-(\r\n> \r\n> v4_test indeed is at 100.00%..in an effort to bring it slightly down I've removed some rather unnecessary params and made some other param descriptions more compact, let's see if that's enough.\r\n\r\nThat wasn't enough. I've proposed to remove the gyro FFT instead: https://github.com/PX4/PX4-Autopilot/pull/20811",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "RomanBapst",
+        "created_at": "2023-06-16T06:22:23Z",
+        "body": "```suggestion\r\n\t\t// add yaw alignment requirement on the current mission item\r\n```",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2023-06-16T06:29:45Z",
+        "body": "@sfuhrer Can you make a comment why this is necessary here?",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2023-06-16T06:31:17Z",
+        "body": "@sfuhrer Can these functions be made const?",
+        "path": "src/modules/navigator/mission.h",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2023-06-16T06:32:02Z",
+        "body": "```suggestion\r\n\tint _inactivation_index{-1}; // index of mission item at which the mission was paused. Used to resume survey missions at previous waypoint to not lose images.\r\n```",
+        "path": "src/modules/navigator/mission.h",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2023-06-16T06:41:08Z",
+        "body": "@sfuhrer I am trying to think about a stupid corner case. What if the user sets the current mission index to the resume index manually while the vehicle is paused. Then he engages RTL and cancels RTL. Then he resumes the mission.\r\nThe `_mission_item` would have been overriden by RTL (shared item) and `_current_mission_index` would be equal to `resume_index`in which case `set_current_mission_index` does an early return. Is that a potential corner case where the mission would fly to the RTL item?",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 50,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-06-16T09:43:34Z",
+        "body": "Well I was actually wanting to ask you the exact same question :sweat_smile: . I actually don't see where it comes from. Reverse mission is only something that's supported in RTL, no? And there we don't care about mission resume camera logic..\r\nRemove it?",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-06-16T09:57:26Z",
+        "body": "certainly, done",
+        "path": "src/modules/navigator/mission.h",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-06-16T10:05:12Z",
+        "body": "removed it.",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-06-16T10:20:19Z",
+        "body": "Yes you're right, but it seems that this behavior is already like that without this PR.",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 50,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "Added comments in the code",
+        "state": "CHANGES_REQUESTED",
+        "type": "review"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

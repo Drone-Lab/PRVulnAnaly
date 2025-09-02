@@ -1,0 +1,137 @@
+{
+  "title": "Refactoring dataman to remove locking mechanisms and to use uORB",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21594",
+  "number": 21594,
+  "created_at": "2023-05-15T14:58:49Z",
+  "merged": true,
+  "merged_at": "2023-07-24T11:10:32Z",
+  "state": "closed",
+  "conversation": {
+    "author": "Igor-Misic",
+    "body": "Changes brought by this PR:\r\n\r\n-  Refactored the initialization process of the Dataman file.\r\n-  Removed the thread-locking mechanism from the Dataman thread.\r\n-  Added two new classes, DatamanClient and DatmanCache, which facilitate communication with Dataman using uORB messages.\r\n- Removed the locking mechanism for Dataman itself\r\n\r\n**Refactored Initialization of the Dataman File**\r\nThis fix addresses the issue outlined in the following link: https://github.com/PX4/PX4-Autopilot/issues/21278.\r\nNow, if the file doesn't exist or contains an incorrect compact key, it will be cleared, and default values will be set.\r\n\r\n**DatamanClient**\r\nIntroduces a new method of communicating with the Dataman thread. Previously, direct access to the Dataman module was used, where requests were inserted into the queue with a semaphore. This approach has now been replaced with the uORB messaging system.\r\n\r\nDatamanClient introduces both **synchronous** and **asynchronous** modes of communication with Dataman.\r\n\r\n**DatamanCache**\r\nThis class serves as a cache storage for a defined amount of Dataman items. Currently, the cache does not employ any advanced caching algorithms.\r\n\r\n**Integration within mission**\r\nThe mission now incorporates a simple caching mechanism that attempts to cache the next N items whenever the \"current item\" is modified. \r\nIn order to eliminate the need for a locking mechanism within the mission, logic has been implemented to check if the set of mission items has been updated in the Dataman. The write operation to DM_KEY_MISSION_STATE has been removed from the mavlink thread, and instead, the existing uORB (mission.msg) message is utilized.\r\n\r\n **Integration geofence and safe points**\r\nAs the information on new geofence and safe points is updated at the end, it is safe to utilize it without the need for a lock. Integration has been implemented to store all geofence and safe point items within the cache and update them whenever changes occur.\r\n\r\n**Overview of the new architecture**\r\n![image](https://github.com/PX4/PX4-Autopilot/assets/10188706/8fdcda1c-c64f-4e28-b03b-c52f6330c162)\r\n\r\n**Stack is increased as it was needed**\r\n![image](https://github.com/PX4/PX4-Autopilot/assets/10188706/65dd9daf-7440-4f1d-ac18-cdf2e7e1bc5e)\r\n",
+    "issue_comments": [
+      {
+        "author": "julianoes",
+        "created_at": "2023-05-30T05:14:29Z",
+        "body": "Nice, this looks amazing @Igor-Misic!",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2023-06-16T15:01:19Z",
+        "body": "There's a failure on the test rack that looks real. http://px4-jenkins.dagar.ca:8080/blue/organizations/jenkins/PX4-Autopilot/detail/pr-dataman_refactoring/21/pipeline/125\r\n\r\n![Screenshot from 2023-06-16 11-00-08](https://github.com/PX4/PX4-Autopilot/assets/84712/9de49fed-20e3-4cd7-9283-eb26d61045d4)\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2023-06-19T09:59:22Z",
+        "body": "> There's a failure on the test rack that looks real. http://px4-jenkins.dagar.ca:8080/blue/organizations/jenkins/PX4-Autopilot/detail/pr-dataman_refactoring/21/pipeline/125\r\n\r\nI didn't reproduce locally, but I think I fixed it in the last commit.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "tstastny",
+        "created_at": "2023-06-19T12:01:53Z",
+        "body": "looks like only remaining build failure is 0.01% flash on diatone mamba",
+        "type": "issue_comment"
+      },
+      {
+        "author": "tstastny",
+        "created_at": "2023-06-21T11:57:18Z",
+        "body": "@dagar - what do you think? gtg?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2023-06-21T17:51:35Z",
+        "body": " - DM_KEY_MISSION_STATE is obsolete and can be purged, we don't need to save the progress to the SD card\r\n - publishing ORB_ID(mission) is used to signal navigation mission to update and rerun mission feasibility, but now it's also updating with any geofence or safe point changes \r\n - DatamanClient is using the old uORB API where a subscription is a file descriptor, we need to check that the extra FD usage doesn't trigger the warning (or change to uORB::SubscriptionBlocking, etc)",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2023-06-22T06:13:35Z",
+        "body": "> DM_KEY_MISSION_STATE is obsolete and can be purged, we don't need to save the progress to the SD card\r\n\r\nResuming a mission on battery change isn't a thing? Either way is fine with me but it's a functional change we can do as a separate PR.\r\n\r\n> publishing ORB_ID(mission) is used to signal navigation mission to update and rerun mission feasibility, but now it's also updating with any geofence or safe point changes\r\n\r\nI didn't think this is a problem. If you're concerned I can make it more granular.\r\n\r\n> DatamanClient is using the old uORB API where a subscription is a file descriptor, we need to check that the extra FD usage doesn't trigger the warning (or change to uORB::SubscriptionBlocking, etc)\r\n\r\nI did not see any.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2023-06-22T11:33:36Z",
+        "body": ">  publishing ORB_ID(mission) is used to signal navigation mission to update and rerun mission feasibility, but now it's also updating with any geofence or safe point changes\r\n\r\nI didn't consider the reporting happening multiple times. I fixed it.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2023-07-03T09:07:52Z",
+        "body": "@dagar good to go?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "tstastny",
+        "created_at": "2023-07-20T06:03:14Z",
+        "body": "@bkueng looks like it needs one more rebase.\r\n\r\n@dagar any last words? this one has been blocking some things for quite a while now",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2023-07-24T11:10:22Z",
+        "body": "@dagar I'm getting this in as a few things are blocking on this. I'll do a follow-up, if there's anything else needed.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "DronecodeBot",
+        "created_at": "2023-09-15T11:33:28Z",
+        "body": "This pull request has been mentioned on **Discussion Forum for PX4, Pixhawk, QGroundControl, MAVSDK, MAVLink**. There might be relevant details there:\n\nhttps://discuss.px4.io/t/how-to-start-developing/34131/4\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2023-06-16T14:16:47Z",
+        "body": "Why?",
+        "path": ".ci/Jenkinsfile-hardware",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2023-06-19T10:00:06Z",
+        "body": "Igor explained it in the commit: https://github.com/PX4/PX4-Autopilot/pull/21594/commits/50f23de177e338623b0e473a6c9add9a6113e89e.\r\n\r\nI made it a bit more explicit in https://github.com/PX4/PX4-Autopilot/pull/21594/commits/b0c918fc42a4a10043dd14fe280e6a96dcbfb32c",
+        "path": ".ci/Jenkinsfile-hardware",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2023-06-21T17:43:24Z",
+        "body": "Why? \r\nDM_KEY_MISSION_STATE and ORB_ID(mission) are the same thing, mavlink_mission would have published `mission` and written DM_KEY_MISSION_STATE back to back. I think it's time to kill DM_KEY_MISSION_STATE and remove some of the confusion.",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 128,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2023-06-21T21:01:27Z",
+        "body": "Let's try to keep this one.\r\n\r\n```suggestion\r\n```",
+        "path": "boards/px4/fmu-v4/test.px4board",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "bkueng",
+        "created_at": "",
+        "body": "Nice work @Igor-Misic! I went through it, tested quite a bit, and fixed some things.\r\n\r\nRAM usage increases a bit (depending on geofence/safe point usage ~2KB).\r\n\r\nNavigator does not block anymore during a mission execution (unless DO_JUMP is used). This is in sih with geofence and safe points:\r\n```\r\nPR:\r\nnavigator: 2337 events, 121802us elapsed, 52.12us avg, min 21us max 803us 650.441us rms\r\nmain:\r\nnavigator: 2539 events, 919572us elapsed, 362.18us avg, min 19us max 26094us 3136.414us rms\r\n```",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "tstastny",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

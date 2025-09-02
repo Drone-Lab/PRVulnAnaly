@@ -1,0 +1,24 @@
+{
+  "title": "Handle takeoff waypoints for rover",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/16297",
+  "number": 16297,
+  "created_at": "2020-11-28T15:45:06Z",
+  "merged": true,
+  "merged_at": "2020-11-28T23:08:54Z",
+  "state": "closed",
+  "conversation": {
+    "author": "Jaeyoung-Lim",
+    "body": "**Describe problem solved by this pull request**\r\nPreviously, rover vehicles were not able to handle Takeoff waypoints. The behavior when a takeoff waypoint was passed to a rover vehicle was:\r\n- The vehicle would not move since the waypoint was too close\r\n- The takeoff waypoint would not get accepted since rovers are not able to climb and reach the altitude\r\n\r\nI think it might be obvious that one \"should not\" pass takeoff waypoints to a vehicle. However, QGroundControl only lets you plan a mission that starts with a takeoff waypoint. While this should also be an improvement on the QGC side, I think it is still useful to handle this case on the vehicle side so that the vehicle can still progress with the mission even with a takeoff waypoint\r\n\r\n**Describe your solution**\r\nThis adds a special case when handling takeoff waypoints for rover vehicles. The acceptance radius is set to only consider horizontal distance to the waypoint, if the vehicle type is rover.\r\n\r\n**Test data / coverage**\r\n- This was tested in SITL gazebo, with the rover model.\r\n```\r\nmake px4_sitl gazebo_rover\r\n```\r\nThis log shows a full mission successfully finished starting with a Takeoff waypoint and finished with a RTL: https://review.px4.io/plot_app?log=25fe983b-44d0-4a11-a7c2-2ab9662c35d4\r\n",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "I see value in this as I expect that the notion of \"known good initial starting position\" does matter for a rover as well. E.g. I could see that in real applications you don't want a rover to drive with its cruise speed from the parking position to the starting position (== too fast if it's moving near people).",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

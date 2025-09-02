@@ -1,0 +1,88 @@
+{
+  "title": "FixedWingPosControl: Handle waypoint type LAND for VTOL",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21985",
+  "number": 21985,
+  "created_at": "2023-08-21T11:33:32Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "RomanBapst",
+    "body": "### Solved Problem\r\nUntil now the navigator was hiding LAND type setpoints from the fixed wing position controller for VTOL_LAND items.\r\nIt published the wayoint as a normal position waypoint which made the position controller unaware of an impending transition. Furthermore, navigator internally set the altitude acceptance radius for a VTOL_LAND item to infinity (don't care about altitude) while the position controller was still using the default fixed wing altitude acceptance radius. In the worst case this causes the position controller to initiate a loiter during the approach to the land waypoint when the altitude error exceeded the threshold defined by the acceptance value.\r\n\r\n\r\nFixes #{Github issue ID}\r\n\r\n### Solution\r\nIt makes more sense to make the position controller aware of the setpoint type. This allows the position controller to take actions depending on the setpoint type (e.g. never loiter to recover altitude during the approach to a land waypoint.)\r\n\r\n### Changelog Entry\r\n```\r\nBugfix: Fixed issues where fixed wing position controller could instantiate a loiter when approaching a VTOL_LAND waypoint.\r\n```\r\n\r\n### Alternatives\r\n\r\n\r\n### Test coverage\r\n- Unit/integration test: ...\r\n- Simulation/hardware testing logs: https://review.px4.io/\r\n\r\n### Context\r\nRelated links, screenshot before/after, video\r\n",
+    "issue_comments": [
+      {
+        "author": "RomanBapst",
+        "created_at": "2024-01-16T10:19:56Z",
+        "body": "Addressed by  #22642",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "RomanBapst",
+        "created_at": "2023-08-21T13:59:49Z",
+        "body": "```suggestion\r\n\t\tint32_t val = 0;\r\n```",
+        "path": "src/modules/fw_pos_control/FixedwingPositionControl.cpp",
+        "position": 13,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-08-21T16:50:02Z",
+        "body": "Couldn't this removal of the default cmd to type WAYPOINT cause problems? Why is it necessary in the context of this PR?",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 4,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-08-21T16:57:23Z",
+        "body": "What about a normal LAND command? Eg together with a backtransition waypoint?",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2023-08-24T05:48:36Z",
+        "body": "@sfuhrer Because if you scroll a few lines up you will see that we are in the context of NAV_CMD_VTOL_LAND and we should not need to tamper with the nav command just to achieve an expected behavior. Now, the position controller understands position setpoint type land so we can let it handle it. That's much cleaner IMO.",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 4,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2023-08-24T05:50:57Z",
+        "body": "@sfuhrer That is handled by `vtol_back_transition` flag.\r\nBut it's good that you bring it up. I actually tested it and I find this worflow highly confusing. I did not even understand from the way it's planned in QGC where the actual backtransition is going to happen. Also the mavlink specs don't actually give any helpful information how to use this command. In the end, that's the reason why VTOL_LAND was invented but we still should increase clarity for this option.",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-08-24T10:46:51Z",
+        "body": "right, I was not at the right location, all good!",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 4,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-08-24T10:49:06Z",
+        "body": "okay, if the behavior isn't changed for the separate transition and land items workflow it's all good for now. ",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "sfuhrer",
+        "created_at": "",
+        "body": "Makes sense to me, though even nicer would it be if we had a \"follow line\" interface to the position controller (instead of having it customized for the landing only). ",
+        "state": "COMMENTED",
+        "type": "review"
+      }
+    ]
+  }
+}

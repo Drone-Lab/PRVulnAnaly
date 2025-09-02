@@ -1,0 +1,292 @@
+{
+  "title": "VTOL rate control improvements",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10819",
+  "number": 10819,
+  "created_at": "2018-11-08T09:59:50Z",
+  "merged": true,
+  "merged_at": "2018-11-22T01:32:41Z",
+  "state": "closed",
+  "conversation": {
+    "author": "RomanBapst",
+    "body": "Replaces #9190",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-11-08T10:06:17Z",
+        "body": "Not merging just yet!",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2018-11-08T10:43:46Z",
+        "body": "@LorenzMeier yes, please don't! It breaks Flight Review :)",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2018-11-08T13:50:23Z",
+        "body": "Once this is good to go I'll squash the commits.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2018-11-08T14:09:09Z",
+        "body": "@PX4/testflights Any chance you can test fly this. It touches multirotor, vtol and fixed wing.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-11-14T16:34:49Z",
+        "body": "@PX4/testflights please try this on all VTOLs, as well as regression testing on MC and FW platforms.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Avysuarez",
+        "created_at": "2018-11-15T20:06:50Z",
+        "body": "I tested this PR on convergence Vtol, it took off well in the mission but did not do the transition, when I aborted the mission the VTOL it fell and crashed. And did not save the log.\r\n\r\n![vtol1](https://user-images.githubusercontent.com/12182176/48578779-6f6ba500-e8cf-11e8-9cfb-3eb29464a8e2.jpg)\r\n![vtol4](https://user-images.githubusercontent.com/12182176/48578781-6f6ba500-e8cf-11e8-8957-ba55a8bcb41b.jpg)\r\n\r\n\r\n\r\n\r\n\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dannyfpv",
+        "created_at": "2018-11-15T20:17:36Z",
+        "body": "test on pixhawk 1 and crash on stabilize mode\r\nhttps://review.px4.io/plot_app?log=8f5cbf75-cb1f-4fd3-88ed-d18d425c7cfb\r\n\r\non pixhawk v4 pro crash on stabilize mode\r\nhttps://review.px4.io/plot_app?log=014173eb-4156-4828-a97d-492c417f3577",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2018-11-15T20:30:14Z",
+        "body": "@dannyfpv Hi! Thanks for testing and sorry for the crash. I checked the log and I already found the bug. Unfortunately, there was sign error in throttle in stabilized mode that was introduced during the lasted rebase on master. SITL did not catch that bug because it does not use test stabilized mode.\r\nHowever, in future I suggest to bench test PRs which introduce massive changes like this one does before actually flying the vehicle. In this case you would have had no throttle in stabilized mode.\r\nAnyway, I hope the convergence is not broken too badly...",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mrpollo",
+        "created_at": "2018-11-15T20:40:09Z",
+        "body": "Thanks for the feedback @RomanBapst, don't worry about the convergence it fulfilled its duty! Now let's make sure we have tests for stabilized mode, should I open an issue for tracking @dagar or is this covered somewhere already?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2018-11-15T20:42:53Z",
+        "body": "@mrpollo I was already thinking about this. I think it would not be too hard to use the dronecode SDK in the CI and actually 'simulate' a human flying with a radio controller. That would just be a sluggish controller outputting RC commands. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dannyfpv",
+        "created_at": "2018-11-21T22:19:01Z",
+        "body": "tested on pixhawk v4 pro, good flights no noticeable issues.\r\nhttps://review.px4.io/plot_app?log=482daec6-d8b5-416f-bb3c-e57782fec3bd\r\nhttps://review.px4.io/plot_app?log=4fc131d3-e215-4188-895c-d59a7161747d",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-11-22T01:30:28Z",
+        "body": "I took another pass and this looks good. Let's merge and keep going.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mrpollo",
+        "created_at": "2018-11-22T16:33:50Z",
+        "body": "Great team work everyone 🎉 ",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "bkueng",
+        "created_at": "2018-11-08T12:22:06Z",
+        "body": "```suggestion\r\n\t\tif (orb_copy(ORB_ID(vehicle_attitude_setpoint), _att_sp_sub, &_att_sp) == 0) {\r\n```",
+        "path": "src/modules/fw_att_control/FixedwingAttitudeControl.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2018-11-08T12:25:57Z",
+        "body": "```suggestion\r\n\treturn _parameters.airspeed_trim / math::max(airspeed,  _parameters.airspeed_min);\r\n```",
+        "path": "src/modules/fw_att_control/FixedwingAttitudeControl.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2018-11-08T12:32:28Z",
+        "body": "Why is this removed?",
+        "path": "src/modules/mc_att_control/mc_att_control_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2018-11-08T12:37:38Z",
+        "body": "Can you add a `using namespace matrix` on top? Should become more readable w/o `matrix::` everywhere.",
+        "path": "src/modules/vtol_att_control/tailsitter.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2018-11-08T12:43:06Z",
+        "body": "Is x here correct? Further down it's using z.",
+        "path": "src/modules/mavlink/mavlink_receiver.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2018-11-08T12:46:12Z",
+        "body": "Note to myself: change to _thrust_sp",
+        "path": "src/modules/mc_att_control/mc_att_control_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2018-11-08T13:08:58Z",
+        "body": "@bkueng Mistake during rebase",
+        "path": "src/modules/mc_att_control/mc_att_control_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2018-11-08T13:10:25Z",
+        "body": "@bkueng Sure, good idea as it's not a header file.",
+        "path": "src/modules/vtol_att_control/tailsitter.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2018-11-08T13:44:51Z",
+        "body": "Fixed",
+        "path": "src/modules/mc_att_control/mc_att_control_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2018-11-08T13:44:59Z",
+        "body": "Done",
+        "path": "src/modules/vtol_att_control/tailsitter.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2018-11-08T13:45:25Z",
+        "body": "Fixed, for now use thrust_z as offboard is used for multicopters",
+        "path": "src/modules/mavlink/mavlink_receiver.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2018-11-08T13:45:33Z",
+        "body": "Fixed",
+        "path": "src/modules/mc_att_control/mc_att_control_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "2018-11-08T16:01:21Z",
+        "body": "It seems obvious that this is only done in fixed wing mode but where is that decision?",
+        "path": "src/modules/navigator/gpsfailure.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "2018-11-08T16:11:59Z",
+        "body": "I strongly suggest that we use arrays to store vecotrs inside uORB messages like here:\r\nhttps://github.com/PX4/Firmware/blob/master/msg/vehicle_local_position_setpoint.msg#L20",
+        "path": "msg/vehicle_attitude_setpoint.msg",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2018-11-10T15:53:04Z",
+        "body": "@MaEtUgR The gpsfailure class is only used for fixed wing. It's executed if the navigation state is set to NAVIGATION_STATE_AUTO_LANDGPSFAIL. If you go look into the commander you'll see that it's only used for fixed wing.",
+        "path": "src/modules/navigator/gpsfailure.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2018-11-10T16:16:02Z",
+        "body": "@MaEtUgR Done!",
+        "path": "msg/vehicle_attitude_setpoint.msg",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-11-10T18:21:22Z",
+        "body": "@RomanBapst I believe this is the issue. Clang doesn't let you use static constexpr with these template functions.",
+        "path": "src/modules/fw_att_control/FixedwingAttitudeControl.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-11-13T01:32:30Z",
+        "body": "@RomanBapst I believe this change was done intentionally ~~for flaps deployment~~ to fix rudder stuttering in manual mode with FW_RLL_TO_YAW_FF. I'll track down the original so we can make sure the intended fix is preserved.",
+        "path": "src/modules/fw_att_control/FixedwingAttitudeControl.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-11-13T01:33:25Z",
+        "body": "https://github.com/PX4/Firmware/pull/9607",
+        "path": "src/modules/fw_att_control/FixedwingAttitudeControl.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "2018-11-20T16:40:40Z",
+        "body": "Perfect thanks!",
+        "path": "msg/vehicle_attitude_setpoint.msg",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "",
+        "body": "Looks good generally. Flight Review is fine too, it's using the thrust from actuator_controls.\r\n\r\nIs the uavcan submodule update on purpose?",
+        "state": "COMMENTED",
+        "type": "review"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "",
+        "body": "The multicopter part looks good, the fw, vtol as well for the part that I can still follow.",
+        "state": "COMMENTED",
+        "type": "review"
+      },
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "This reverts https://github.com/PX4/Firmware/pull/9607",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

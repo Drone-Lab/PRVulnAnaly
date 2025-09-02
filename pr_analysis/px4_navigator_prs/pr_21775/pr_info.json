@@ -1,0 +1,31 @@
+{
+  "title": "Navigator: Loiter: always establish new Loiter with center at current position",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21775",
+  "number": 21775,
+  "created_at": "2023-06-29T12:43:22Z",
+  "merged": true,
+  "merged_at": "2023-07-04T07:35:41Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "### Solved Problem\r\nhttps://github.com/PX4/PX4-Autopilot/issues/21702\r\n\r\nVehicle keeps flying towards Loiter waypoint if Hold mode is selected. In the past we within Navigator set the type to POSITION when far away from a Loiter waypoint, and then only to LOITER when really on established loiter, but this distinction is now no longer part of Navigator and the FW position controller handles it.\r\n\r\n### Solution\r\nWhen switching into Hold mode establish a Loiter around current position, even if we were before already loitering (eg in Mission mode). This results in the same behavior when switching into Hold/Loiter mode directly (either through RC switch or in the flight mode selection in QGC) or through the \"Hold\" button in QGC (which sends a DO_REPOSITION with the fields at the current position). \r\n\r\nIn this screen recording you see the behavior prior and after this PR.\r\nhttps://github.com/PX4/PX4-Autopilot/assets/26798987/9079b575-77fc-40a2-be54-b3c11816cca3\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nBugfix: Fixed-wing: Always establish loiter around current position when switching into Hold mode\r\n```\r\n\r\n\r\n### Alternatives\r\nFix detection on whether we're currently on an established loiter, and in that case don't loiter around current position but keep established loiter. Personally I though prefer to stick to Hold = Loiter around current position always. Imagine being on a huge loiter. If the vehicle then keeps following it it's hardly anymore \"Holding position\". \r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-06-30T18:26:40Z",
+        "body": "> But while testing that I found that when I press pause in QGC it actually flies to the next waypoint still and stops there. The code changed it here not called at all in this case probably because of the reposition command like you wrote.\r\n\r\nWhich QGC version did you test with? I couldn't reproduce with mine (v4.2.6 from this March). But yes, like you said not affected by this PR.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "MaEtUgR",
+        "created_at": "",
+        "body": "Makes sense to me.\r\nI tested and with the multirotor I could not get it to not stop when just changing to hold mode also before.\r\n\r\nBut while testing that I found that when I press pause in QGC it actually flies to the next waypoint still and stops there. The code changed it here not called at all in this case probably because of the reposition command like you wrote.",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

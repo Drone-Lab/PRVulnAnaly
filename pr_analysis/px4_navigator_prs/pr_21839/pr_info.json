@@ -1,0 +1,118 @@
+{
+  "title": "Support mavlink opaque ID",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21839",
+  "number": 21839,
+  "created_at": "2023-07-12T07:09:06Z",
+  "merged": true,
+  "merged_at": "2023-11-29T16:10:41Z",
+  "state": "closed",
+  "conversation": {
+    "author": "KonradRudin",
+    "body": "<!--\r\n\r\nThank you for your contribution!\r\n\r\nGet early feedback through\r\n- Dronecode Discord: https://discord.gg/dronecode\r\n- PX4 Discuss: http://discuss.px4.io/\r\n- opening a draft pr and sharing the link\r\n\r\n-->\r\n\r\n### Solved Problem\r\nThis PR adds support for the Mavlink Mission opaque ID as defined in https://github.com/mavlink/mavlink/pull/2012. It is based on the earlier implementation for the mission checksum support in https://github.com/PX4/PX4-Autopilot/pull/18418, but the mission checksum in Mavlink will be deprecated in https://github.com/mavlink/mavlink/pull/2010.\r\n\r\n### Solution\r\n- Add an opaque Id for the mission, geofence and rally points. The opaque id is based on a Crc32 checksum as in the implementation in https://github.com/PX4/PX4-Autopilot/pull/18418\r\n- Opaque id is send from the System in the MISSION_COUNT on download. On upload, the opaque id is sent on the final MISSION_ACK\r\n- The opaque Id is also streamed continuously in the MISSION_CURRENT message, such that a GCS can detect plan changes.\r\n- The opaque id internally also replaces the mission counter, as those serves the same purpose.\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nFeature: Add Support for Mavlink mission opaque Id.\r\n```\r\n\r\n### Alternatives\r\nOpqaue id could also just be a counter instead of the Crc32. The hash implementation has the advantage that on loading the same mission (e.g. also from a file) should result in the same Id and thus the potentially multiple connected GCS does not need to download it again. Also it would allow for the feature, that a GCS does not need to download the mission on first connection if the old stored mission and opaque id is the same.\r\n\r\n### Test coverage\r\n- Unit/integration test: SITL testing by observing the mavlink message sent from the system.\r\n\r\n### Context\r\n- Before this can be merged, the respective mavlink PR should be merged\r\n",
+    "issue_comments": [
+      {
+        "author": "hamishwillee",
+        "created_at": "2023-11-14T08:08:10Z",
+        "body": "@KonradRudin Looks like this is getting close. Let me know when it is ready to merge and you have test results/stuff we can use to validate this (so that I can push for merging of the MAVLink changes). ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2023-11-20T15:26:13Z",
+        "body": "As soon as https://github.com/mavlink/mavlink/pull/2012 is merged we can update the mavlink submodule and bring this in.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-11-20T19:53:48Z",
+        "body": "rebased on main again",
+        "type": "issue_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-11-20T19:55:20Z",
+        "body": "@hamishwillee This PR was discussed now in the maintainer call and in agreement wirh @dagar . This side is ready now",
+        "type": "issue_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-11-29T10:18:14Z",
+        "body": "Upstream mavlink is merged now. Update the mavlink submodule",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "ThomasDebrunner",
+        "created_at": "2023-11-08T15:19:11Z",
+        "body": "I assume this will have to be changed to upstream mavlink, once it is merged in upstream mavliink, right? (Before we merge here)",
+        "path": ".gitmodules",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "ThomasDebrunner",
+        "created_at": "2023-11-08T15:19:53Z",
+        "body": "That would now be \"if changed\" and not \"if increased\", right?",
+        "path": "msg/Mission.msg",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "ThomasDebrunner",
+        "created_at": "2023-11-08T15:23:11Z",
+        "body": "Why is this needed?",
+        "path": "src/modules/mavlink/mavlink_mission.cpp",
+        "position": 223,
+        "type": "review_comment"
+      },
+      {
+        "author": "ThomasDebrunner",
+        "created_at": "2023-11-08T15:24:21Z",
+        "body": "I misunderstood this as some sort of CRC for the current mission item (e.g. waypoint or something). Maybe rename to \"current_mission_type_crc\" or similar?",
+        "path": "src/modules/mavlink/mavlink_mission.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-11-10T08:46:01Z",
+        "body": "Exactly, this PR will stay in draft because of this. I need to update this as soon as it is merged on Mavlink",
+        "path": ".gitmodules",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-11-10T08:59:51Z",
+        "body": "The mission current has now the IDs which should be periodically send. That means it should send it periodically as well, when there is no mission available, so that the ground station is informed when the mission is cleared.",
+        "path": "src/modules/mavlink/mavlink_mission.cpp",
+        "position": 223,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "ThomasDebrunner",
+        "created_at": "",
+        "body": "",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

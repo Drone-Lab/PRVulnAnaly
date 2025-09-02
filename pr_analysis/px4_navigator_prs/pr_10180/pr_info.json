@@ -1,0 +1,23 @@
+{
+  "title": "[WIP] Avoidance feedback",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10180",
+  "number": 10180,
+  "created_at": "2018-08-07T12:37:54Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "mrivi",
+    "body": "Branch based on #10013 plus #10037 cherry-picked on top. \n- if the vehicle projected position on the line previous-current triplet is past the current triplet, the acceptance radius is enlarged such that navigator updates the triplets\n- if the vehicle is within the xy acceptance radius but not inside the z one, enlarge the altitude acceptance radius such that navigator updates the triplets\n- set the feedback yaw acceptance to NAN such that it is ignored by navigator\n\nMissions shouldn't get stuck anymore because a waypoint is not reachable or a waypoint is reached with a heading different from what navigator expects",
+    "issue_comments": [
+      {
+        "author": "mrivi",
+        "created_at": "2018-08-15T15:22:11Z",
+        "body": "Closing this in favor of #10240 ",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

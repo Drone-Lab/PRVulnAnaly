@@ -1,0 +1,38 @@
+{
+  "title": "mission: only run update_mission() if mission is updated, not when reset due to landing",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21492",
+  "number": 21492,
+  "created_at": "2023-04-19T08:56:56Z",
+  "merged": true,
+  "merged_at": "2023-04-21T05:47:58Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "\r\n### Solved Problem\r\nWhen landing with a mission stored on the vehicle, that has not been updated since power cycling, these errors appear:\r\n```\r\nERROR [navigator] mission update failed\r\nWARN  [mavlink] ERROR: wp index out of bounds\r\n```\r\n\r\n### Solution\r\nThe errors come from the fact that when the mission is not updated, the [_mission_sub.copy(_mission) ](https://github.com/PX4/PX4-Autopilot/blob/202e2770da50caff0ed00c06a574e3c39933df52/src/modules/navigator/mission.cpp#L524)returns false, and thus the code below is not run, which would [reset _current_mission_index to 0 over current_seq](https://github.com/PX4/PX4-Autopilot/blob/202e2770da50caff0ed00c06a574e3c39933df52/src/modules/navigator/mission.cpp#L527), that was previously set to 0 in reset_mission. \r\nI thus here propose to only run `update_mission()` when the mission was actually updated, and otherwise, when we need to reset the mission on landing, only reset `_current_mission_index` to 0. \r\n\r\nWhat I'm not very sure yet: do we want to run the mission feasibility checks also on the reset? \r\n\r\n### Changelog Entry\r\nNot relevant.\r\n\r\n### Alternatives\r\nRemove the whole auto-reset logic on landing? It's not given that a mission should always start from 0. Though then the option in QGC should be there to reset the mission on landing/on vehicle boot.\r\n\r\n### Test coverage\r\nSITL tested. \r\n\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-04-20T11:13:05Z",
+        "body": "> _navigator->reset_vroi(); \r\n\r\nRight, added it.\r\n\r\n> set_current_mission_item()\r\n\r\nThat one contains partly duplicated logic that is also in reset_mission() . But I don't a reason speaking against also including it here.\r\n\r\nAdded both.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "bkueng",
+        "created_at": "",
+        "body": "> What I'm not very sure yet: do we want to run the mission feasibility checks also on the reset?\r\n\r\nI don't think so as the reset only changes the index.\r\n\r\nBut do these need to be called too?\r\n- https://github.com/PX4/PX4-Autopilot/blob/202e2770da50caff0ed00c06a574e3c39933df52/src/modules/navigator/mission.cpp#L520\r\n- https://github.com/PX4/PX4-Autopilot/blob/202e2770da50caff0ed00c06a574e3c39933df52/src/modules/navigator/mission.cpp#L586",
+        "state": "COMMENTED",
+        "type": "review"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

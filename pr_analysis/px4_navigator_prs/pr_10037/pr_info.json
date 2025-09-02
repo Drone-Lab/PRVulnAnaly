@@ -1,0 +1,102 @@
+{
+  "title": "generic position controller status/feedback message",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10037",
+  "number": 10037,
+  "created_at": "2018-07-25T14:34:37Z",
+  "merged": true,
+  "merged_at": "2018-08-31T18:43:53Z",
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "Not done, but should give you an idea.\n\nTODO\n - yaw acceptance (+ error threshold?)\n - z acceptance could come from the position controller\n - eliminate as much vehicle specific code from navigator as possible\n - consider vtol usage for back transition\n - stopping distance (loiter/rtl/geofence braking)",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2018-07-26T12:53:34Z",
+        "body": "TODO: vtol implications (multi topic).",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-08-19T16:51:14Z",
+        "body": "Ok I think this is everything we need right now. Needs testing and review.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mrivi",
+        "created_at": "2018-08-23T18:15:41Z",
+        "body": "@dagar can we get this PR tested?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-08-25T14:46:21Z",
+        "body": "@PX4/testflights could you test this branch on FW or VTOL (must transition to FW)? The test should include at least a couple waypoints. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dannyfpv",
+        "created_at": "2018-08-28T23:00:38Z",
+        "body": "pr tested on v3 fw\r\nhttps://review.px4.io/plot_app?log=851676a3-f71a-419f-b253-2d5aa822c350\r\nhttps://review.px4.io/plot_app?log=54f1fa1b-25c3-405d-b673-3ea058310f2a\r\nhttps://review.px4.io/plot_app?log=9586fcb4-e87a-4d51-860d-6ca7b709ef45\r\nhttps://review.px4.io/plot_app?log=aa094d9e-68d5-4c01-bf55-22f6a790d1a0",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-08-29T03:39:52Z",
+        "body": "Thanks @dannyfpv \r\n\r\nI did a little more testing in SITL and everything looks good except for a small regression in FW landing abort behaviour that I'll have fixed shortly.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mrivi",
+        "created_at": "2018-08-30T18:03:41Z",
+        "body": "@dagar have you made any progress?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-08-30T19:39:53Z",
+        "body": "@mrivi good to go.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mrivi",
+        "created_at": "2018-08-31T08:53:39Z",
+        "body": "@dagar do we need more tests or can we merge directly?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-08-31T13:24:22Z",
+        "body": "We can merge, but let's wait for master to be unbroken (https://github.com/PX4/Firmware/pull/10379). ",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "mrivi",
+        "created_at": "2018-08-21T07:14:55Z",
+        "body": "`yaw_acceptance` should be feedback into navigator, right? From #10240,  dc99bb088ad9c1a1b28a0db22e00a896bc9355d6",
+        "path": "msg/position_controller_status.msg",
+        "position": 14,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-08-25T14:43:37Z",
+        "body": "Yes.",
+        "path": "msg/position_controller_status.msg",
+        "position": 14,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "Looks fine in general. I'd like comments what the items in the message mean and what their units are.",
+        "state": "DISMISSED",
+        "type": "review"
+      }
+    ]
+  }
+}

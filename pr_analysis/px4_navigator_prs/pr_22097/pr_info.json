@@ -1,0 +1,41 @@
+{
+  "title": "VTOL Takeoff: Use global position instead of home for takoeff",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22097",
+  "number": 22097,
+  "created_at": "2023-09-19T10:47:07Z",
+  "merged": true,
+  "merged_at": "2023-09-19T17:00:54Z",
+  "state": "closed",
+  "conversation": {
+    "author": "RomanBapst",
+    "body": "\r\n### Solved Problem\r\nWhen the vehicle home position does not coincide with the takeoff position the vehicle drifts off towards the home position during takeoff which is not the expected behavior.\r\n\r\n\r\n### Solution\r\n- Use global position for takeoff instead of home position.\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nBugfix: \r\nPrevent VTOL Takeoff from drifting during takeoff ascent when home position does not coincide with takeoff position.\r\n```",
+    "issue_comments": [],
+    "review_comments": [
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-09-19T11:19:03Z",
+        "body": "What happens actually if that's not fulfilled? ",
+        "path": "src/modules/navigator/vtol_takeoff.cpp",
+        "position": 5,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2023-09-19T17:00:21Z",
+        "body": "@sfuhrer Then the triplet will not be published and not takeoff will happen.",
+        "path": "src/modules/navigator/vtol_takeoff.cpp",
+        "position": 5,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "sfuhrer",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

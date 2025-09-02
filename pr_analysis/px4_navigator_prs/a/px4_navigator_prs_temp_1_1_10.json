@@ -1,0 +1,551 @@
+[
+  {
+    "title": "rc.fw_defaults param fix",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/4121",
+    "number": 4121,
+    "created_at": "2016-03-30T16:25:38Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "dagar",
+      "body": "",
+      "issue_comments": [
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-30T16:27:31Z",
+          "body": "Thanks!\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-30T16:30:46Z",
+          "body": "Applied to master!\n",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [],
+      "reviews": []
+    }
+  },
+  {
+    "title": "fixing possible safety issue with altitude",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/4081",
+    "number": 4081,
+    "created_at": "2016-03-26T02:38:11Z",
+    "merged": true,
+    "merged_at": "2016-03-26T13:36:34Z",
+    "state": "closed",
+    "conversation": {
+      "author": "catch-twenty-two",
+      "body": "Ignoring requested altitude from target for now.\n",
+      "issue_comments": [],
+      "review_comments": [],
+      "reviews": []
+    }
+  },
+  {
+    "title": "more param metadata cleanup",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/4078",
+    "number": 4078,
+    "created_at": "2016-03-25T20:30:01Z",
+    "merged": true,
+    "merged_at": "2016-03-26T11:17:52Z",
+    "state": "closed",
+    "conversation": {
+      "author": "dagar",
+      "body": "",
+      "issue_comments": [],
+      "review_comments": [],
+      "reviews": []
+    }
+  },
+  {
+    "title": "added descend into navigator",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/4068",
+    "number": 4068,
+    "created_at": "2016-03-23T21:53:09Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "pickledgator",
+      "body": "Descend was unimplemented in navigator, and thus had no effect when the navigation state was changed. Utilized same land helper. Downstream logic in pos_control and commander successfully ignore position data that is applied in the setpoint message. Tested in gazebo for multi-rotors.\n",
+      "issue_comments": [
+        {
+          "author": "julianoes",
+          "created_at": "2016-03-24T08:11:05Z",
+          "body": "Nice catch. How did you find this, in which scenario did the bug show up?\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "pickledgator",
+          "created_at": "2016-03-24T22:41:56Z",
+          "body": "To support development, I needed a way to trigger a failsafe landing without xy position control, even when position data is available in the filter (eg., bad VO). Descend nav state provides the control mechanism that I desired, and I piped an RC channel to a new failsafe main state to trigger the Descend.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "mhkabir",
+          "created_at": "2016-03-25T00:23:40Z",
+          "body": "@pickledgator Sounds nice! Would you be able to send in a PR with the rest of your changes ? It would be very useful for others using VO too :)\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-28T10:27:37Z",
+          "body": "Rebased and applied, thanks!\n",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [],
+      "reviews": []
+    }
+  },
+  {
+    "title": "Follow me",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/4065",
+    "number": 4065,
+    "created_at": "2016-03-23T19:14:10Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "LorenzMeier",
+      "body": "@catch-twenty-two Replacing your PR with this rebased and formatted version.\n",
+      "issue_comments": [
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-23T19:38:15Z",
+          "body": "@catch-twenty-two What is the current state of this right now? Do you have an updated video?\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-23T19:39:30Z",
+          "body": "Matching QGC PR, not merged yet and with CI errors: https://github.com/mavlink/qgroundcontrol/pull/2817\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "catch-twenty-two",
+          "created_at": "2016-03-23T21:19:59Z",
+          "body": "@LorenzMeier Great thanks for doing that, No updated video yet. I did go out with friend to test it on a bicycle so I could see how well it tracked a fast moving object and all went well.  I'll do one more test tomorrow with all the updated changes and then call it good.  I'll also I'll see if I can get some more video if possible.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "liang-tang",
+          "created_at": "2016-03-24T07:33:01Z",
+          "body": "@catch-twenty-two Is there a bug?\n\n``` javascript\nvoid FollowTarget::update_position_sp(bool use_velocity, bool use_position)\n{\n    // convert mission item to current setpoint\n\n    struct position_setpoint_triplet_s *pos_sp_triplet = _navigator->get_position_setpoint_triplet();\n\n    // activate line following in pos control if position is valid\n\n    pos_sp_triplet->previous.valid = use_position;\n    pos_sp_triplet->previous = pos_sp_triplet->current;\n    mission_item_to_position_setpoint(&_mission_item, &pos_sp_triplet->current);\n    pos_sp_triplet->current.type = position_setpoint_s::SETPOINT_TYPE_FOLLOW_TARGET;\n    pos_sp_triplet->current.position_valid = use_position;\n    pos_sp_triplet->current.velocity_valid = use_velocity;\n    pos_sp_triplet->current.vx = _current_vel(0);\n    pos_sp_triplet->current.vy = _current_vel(1);\n    pos_sp_triplet->next.valid = false;\n    _navigator->set_position_setpoint_triplet_updated();\n}\n```\n\n   pos_sp_triplet->current.valid is miss? control_auto couldn't work well if we missed it. when i switch to follow target mode, the vehicle isn't moving at all.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "catch-twenty-two",
+          "created_at": "2016-03-24T19:53:45Z",
+          "body": "@LorenzMeier Happy to report I went out today and everything worked great.  I have some video but my I'll have to see if it's worth posting.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "catch-twenty-two",
+          "created_at": "2016-03-24T20:04:58Z",
+          "body": "> pos_sp_triplet->current.valid is miss? control_auto couldn't work well if we missed it. when i switch to follow target mode, the vehicle isn't moving at all.\n\nHmmm...you are right.  I'm actually surprised my tests went okay today, odd.... Good catch.  I'll have to fix it and retest tomorrow. \n\nNevermind see here where the sp is marked as valid:\n\nhttps://github.com/PX4/Firmware/pull/4065/files#diff-c8b2face30ea93f334a64cf7f9aff096L83\n\nThere could possibly be something wrong with your gps...Do you have another phone you can try?\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-24T20:13:09Z",
+          "body": "I always love videos, so I hope it turns out well!\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "DonLakeFlyer",
+          "created_at": "2016-03-24T22:20:28Z",
+          "body": "My suggestion for basic follow me support would be to maintain the current height of the Vehicle. Also mantain the current distance/positioning from the target calculated from the first follow me message.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "catch-twenty-two",
+          "created_at": "2016-03-25T03:40:04Z",
+          "body": "I'm no filmmaker... which is very apparent from this video, it contains:\n\n1) Me walking with follow me mode activated.\n2) My mother who I recruited to help me, walking with follow me mode activated (all the rest of my friends are at work on weekday mornings, imagine that! :) )\n3) Me riding my Xooter Scooter that I use to get around San Francisco, with follow me activated. At this point I was actually brave enough to set the RC down so I had no safety net (if anything were to go wrong) and let my code do it's work....\n\nThere was a slight wind blowing probably around 7-10 mph the frame type is a DJI style 330. \n\n> I always love videos, so I hope it turns out well!\n\n@LorenzMeier Did it turn out well?  Not really. But hopefully your love of videos makes up for that. lol!\n\nhttps://youtu.be/RxDL4CtkzAQ\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-27T10:17:47Z",
+          "body": "Awesome, merged! Now on to the QGC merge, @DonLakeFlyer!\n",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [],
+      "reviews": []
+    }
+  },
+  {
+    "title": "VTOL_TAKEOFF, VTOL_LAND commands and VT_FORCE_VTOL param",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/4055",
+    "number": 4055,
+    "created_at": "2016-03-22T10:30:16Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "sanderux",
+      "body": "support for MAV_CMD_NAV_VTOL_TAKEOFF and MAV_CMD_NAV_VTOL_LAND \nAlso implement VT_FORCE_VTOL to force land as VTOL\nreplaces https://github.com/PX4/Firmware/pull/3720\n\nFixes #3492\nFixes #3712\n",
+      "issue_comments": [
+        {
+          "author": "sanderux",
+          "created_at": "2016-03-24T00:14:26Z",
+          "body": "@AndreasAntener I cleaned up the mission code, sanitized the functionality, improved back transition behavior, fixed alignment and implemented force_vtol procedure.\nSITL tested all reasonable scenarios and regression tested on the old procedure (takeoff -> trans -> wp -> trans -> land).\n\nI'm especially happy with the back transition improvement, we could see if the basis could change from time to velocity but for now this seems to be a big improvement.\n\nI will test fly this tree soon but i think it is ready to rebase and merge as i see no possible regression and it only implements previously unsupported functionality.\n\nSomehow this tagged along through a submodule init and causes travis to fail: https://github.com/PX4/Firmware/pull/4055/files#diff-d62dbab64e619e0e5926b64585204efdR1\nI think that should be resolved by rebasing but i'm not sure.\n\n/cc @LorenzMeier @tumbili \n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "AndreasAntener",
+          "created_at": "2016-03-24T09:04:46Z",
+          "body": "@sanderux Could you rebase and squash the development commits? There are also wrong indentations in the mission code it seems\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-24T11:02:40Z",
+          "body": "@AndreasAntener @sanderux There is a 15 character limit on parameter length, what I proposed works, what you proposed doesn't.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "sanderux",
+          "created_at": "2016-03-24T11:11:00Z",
+          "body": "@LorenzMeier I tested VT_NAV_FORCE_VTL as param and that works. Do you want me to change it?\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-24T11:13:09Z",
+          "body": "16 is the hard limit without NUL-termination. It should work, but you can get yourself into corner cases in downstream implementations. I suggest to use VT_NAV_FORCE_VT instead.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "sanderux",
+          "created_at": "2016-03-24T11:20:04Z",
+          "body": "ready to merge\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-24T12:03:20Z",
+          "body": "Is this state SITL and outdoor tested? I think it should be, as the changes are significant.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "sanderux",
+          "created_at": "2016-03-24T12:10:05Z",
+          "body": "Sitl is tested, outdoor tomorrow\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "sanderux",
+          "created_at": "2016-03-25T20:34:02Z",
+          "body": "Outdoor tested in quite strong wind. \nhttp://logs.uaventure.com/view/JRG4pRghKoV3RK8eS3o75k#AS_Yaw_PLOT\n\n1 There was a sudden unintended yaw action when front transition started, see yaw setpoint change\n2 Very smooth back transition but quite a high time and in strong winds it drifts a lot \n3 During lading it weathervaned and got lift from it's wings, it therefor acted up a little.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "sanderux",
+          "created_at": "2016-03-25T21:49:39Z",
+          "body": "Here is a second log:\nhttp://logs.uaventure.com/view/PJYu2ARidpuQyFsX9qxdKm\n\nThe yaw setpoint issue is consistent\nThe airspeed sensor for the quadranger acted up here (turned out to be the radio telem being too close)\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "sanderux",
+          "created_at": "2016-03-26T18:04:08Z",
+          "body": "This should fix the yaw issue during transition\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "AndreasAntener",
+          "created_at": "2016-03-27T01:13:09Z",
+          "body": "@sanderux before I forget, mission item reached: one reason to not wait on the transition to be finished is that the position controller won't know the next waypoint and therefore cannot control the position during the transition in case we later implement this. haven't thought about it in detail though.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "sanderux",
+          "created_at": "2016-03-27T08:16:59Z",
+          "body": "the advantage of this command is that the user can point the vehicle into the wind. It is basically the autonomous equivlant of flicking the aux1 switch.\n\nFor position control it should hold altitude and heading until ttansition has completed or timeout occurs. \n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "AndreasAntener",
+          "created_at": "2016-03-27T09:34:31Z",
+          "body": "Sure but it's changing the behaviour in general, also for the separate transitions (not part of VTOL tko/lnd). What we talked about yesterday, if we want the FW position controller to guide it through blending, it needs to know the next waypoint. If it doesn't get the actual next mission waypoint, we need to generate a temporary waypoint that lies in the direction of the target transition heading. Another option would be to look at the \"next\" waypoint in the triplet, which contains the next position during the transition. Ok, I think we have 2 good options here so it's fine.\n\nNote: simply holding heading and attitude is not going to work, it will drift off path.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "sanderux",
+          "created_at": "2016-03-27T09:45:41Z",
+          "body": "Yes your right, i think a temp waypoint would be a good idea.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-27T10:27:38Z",
+          "body": "Waiting for conclusive test flights to merge this.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "AndreasAntener",
+          "created_at": "2016-03-27T10:31:39Z",
+          "body": "I did a sitl test to check on the Z velocity issue that i see in your log from #4079:\n\n<img width=\"1368\" alt=\"screen shot 2016-03-27 at 12 15 55\" src=\"https://cloud.githubusercontent.com/assets/5750020/14064961/98febe76-f416-11e5-9277-f6557dca7d42.png\">\n\nThe position controller still sees a takeoff type setpoint during the transition. Needs to be reset, should be a small fix.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "sanderux",
+          "created_at": "2016-03-27T23:48:12Z",
+          "body": "@AndreasAntener do you agree on the location of setting the setpoint type?\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "sanderux",
+          "created_at": "2016-03-29T21:06:49Z",
+          "body": "@AndreasAntener i added the virtual waypoint in front of the takeoff item. This should work fine now with your transition position holding\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "sanderux",
+          "created_at": "2016-03-30T11:51:22Z",
+          "body": "Here is a log for a SITL flight based on this branch combined with https://github.com/PX4/Firmware/pull/4093. looks very smooth and functions as expected.\nhttp://logs.uaventure.com/view/VXJnLmimbG8px8aiuPtBja\n\n![image](https://cloud.githubusercontent.com/assets/14801663/14141202/fab81b6c-f67d-11e5-8f05-aa66601c9d1f.png)\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "sanderux",
+          "created_at": "2016-04-02T18:20:36Z",
+          "body": "Outdoor tested, looking good:\nhttp://logs.uaventure.com/view/jg2rHZDRmAboYLiqyFVuge\nVideo: https://drive.google.com/file/d/0B27AvDmVit4KQlpCMllyaDVxQmM/view?usp=sharing\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-04-02T20:29:55Z",
+          "body": "Rebased and applied, thanks!\n",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-24T08:31:49Z",
+          "body": "This should be defined in the navigator params, (NAV_FORCE_VTOL), as its only used there.\n",
+          "path": "src/modules/vtol_att_control/vtol_att_control_params.c",
+          "position": 1,
+          "type": "review_comment"
+        },
+        {
+          "author": "sanderux",
+          "created_at": "2016-03-24T08:59:09Z",
+          "body": "All vtol related params start with VT_ perhaps VT_NAV_FORCE_VTOL ?\n",
+          "path": "src/modules/vtol_att_control/vtol_att_control_params.c",
+          "position": 1,
+          "type": "review_comment"
+        }
+      ],
+      "reviews": []
+    }
+  },
+  {
+    "title": "MissionFeasibilityChecker geofence ignore NAV_CMD_DO_*",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/4046",
+    "number": 4046,
+    "created_at": "2016-03-21T03:39:11Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "dagar",
+      "body": "-closes #4040\n",
+      "issue_comments": [
+        {
+          "author": "dagar",
+          "created_at": "2016-03-21T14:59:29Z",
+          "body": "Thanks @AndreasAntener \nIs there a better place a helper like item_contains_position() could live in navigator? At the moment I made it public and static within MissionBlock so it was accessible from MissionFeasibilityChecker.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "AndreasAntener",
+          "created_at": "2016-03-21T19:24:30Z",
+          "body": "Only idea I'd have would be to add a helper class, but it's a bit overkill atm for one method. Maybe add a comment about it.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2016-03-22T00:21:41Z",
+          "body": "Added todo\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "AndreasAntener",
+          "created_at": "2016-03-22T05:56:18Z",
+          "body": "Thanks, applied\n",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [
+        {
+          "author": "AndreasAntener",
+          "created_at": "2016-03-21T13:10:07Z",
+          "body": "We could use https://github.com/PX4/Firmware/blob/master/src/modules/navigator/mission_block.cpp#L318 and also add NAV_CMD_DO_JUMP to the list there (it's currently not because it's handled separately in missions but adding it won't have any other effect)\n",
+          "path": "src/modules/navigator/mission_feasibility_checker.cpp",
+          "position": 1,
+          "type": "review_comment"
+        }
+      ],
+      "reviews": []
+    }
+  },
+  {
+    "title": "reset mission after vehicle was in mission and then disarms",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/4043",
+    "number": 4043,
+    "created_at": "2016-03-20T13:46:35Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "AndreasAntener",
+      "body": "Fixes #3978 , SITL tested\nPlease review\n\nNote: I had the reset code in commander first but that didn't feel right so I moved it to mission. There might be a better way to trigger the reset instead via the `offboard_mission` topic.\n",
+      "issue_comments": [
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-20T13:56:32Z",
+          "body": "Changes / architecture looks good.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-24T14:06:58Z",
+          "body": "I commented on this. I think it needs to be done solely in the navigator without intervention from the commander.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "AndreasAntener",
+          "created_at": "2016-03-25T09:25:53Z",
+          "body": "@LorenzMeier makes sense, will fix this\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "AndreasAntener",
+          "created_at": "2016-03-27T02:02:24Z",
+          "body": "Updated, SITL tested.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-27T10:27:01Z",
+          "body": "Looked good, sane and safe, so I applied it to master, thanks!\n",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-24T14:05:18Z",
+          "body": "Why is this logic in the commander after all? Can't the navigator just do this by itself, since it knows the current flight mode?\n",
+          "path": "src/modules/commander/commander.cpp",
+          "position": 1,
+          "type": "review_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-24T14:05:49Z",
+          "body": "This introduces a race with the mavlink app, which also publishes this topic. If we publish something from the commander, it would need to be done on a different topic.\n",
+          "path": "src/modules/commander/commander.cpp",
+          "position": 1,
+          "type": "review_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-24T14:06:28Z",
+          "body": "Would prefer to trigger this on a vehicle status change with state == mission and disarmed.\n",
+          "path": "src/modules/navigator/mission.cpp",
+          "position": 1,
+          "type": "review_comment"
+        }
+      ],
+      "reviews": []
+    }
+  },
+  {
+    "title": "Reset current setpoint when entering RTL",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/4012",
+    "number": 4012,
+    "created_at": "2016-03-14T21:53:11Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "AndreasAntener",
+      "body": "Fixes #3844 \nSITL tested\n",
+      "issue_comments": [
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-14T22:08:12Z",
+          "body": "Sounds like we should merge this once Travis passes.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "AndreasAntener",
+          "created_at": "2016-03-14T22:38:15Z",
+          "body": "Rebased, I was a bit out of date..\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-19T15:30:39Z",
+          "body": "Rebased and applied.\n",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [],
+      "reviews": []
+    }
+  },
+  {
+    "title": "Param unit cleanup",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/4000",
+    "number": 4000,
+    "created_at": "2016-03-13T18:28:53Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "dagar",
+      "body": "",
+      "issue_comments": [
+        {
+          "author": "dagar",
+          "created_at": "2016-03-13T20:46:47Z",
+          "body": "@LorenzMeier @DonLakeFlyer ready for review please\n\nCurrent @unit usage\n\n```\n  4  * @unit 1/s\n  1  * @unit A\n  1  * @unit bit/s\n 44  * @unit boolean\n 40  * @unit deg\n  4  * @unit deg * 1e7\n 19  * @unit deg/s\n 54  * @unit enum\n  1  * @unit Gauss\n  1  * @unit Gauss/s\n  1  * @unit hPa\n  5  * @unit Hz\n  1  * @unit kg\n  3  * @unit kg*m^2\n 47  * @unit m\n  1  * @unit m^2\n  1  * @unit mA\n  1  * @unit min\n  1  * @unit m/m\n 12  * @unit ms\n  1  * @unit m-s\n 35  * @unit m/s\n  2  * @unit (m/s)-s\n 10  * @unit m/s/s\n  1  * @unit (m/s/s)-s\n  1  * @unit rad\n  8  * @unit rad/s\n 26  * @unit s\n  7  * @unit SD\n 66  * @unit us\n  3  * @unit V\n  1  * @unit W\n```\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "DonLakeFlyer",
+          "created_at": "2016-03-13T20:54:19Z",
+          "body": "I'd probably change the seconds ones to secs, msecs, usecs. A little more clear. What is SD?\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2016-03-13T20:59:14Z",
+          "body": "It's in ekf2 so I left it alone. Standard deviation?\nhttps://github.com/PX4/Firmware/blob/cecec86081566f243a0dec33b9dedc3dd1624f58/src/modules/ekf2/ekf2_params.c#L316\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2016-03-13T21:22:40Z",
+          "body": "I used s, ms, us to stick to SI, but if you want the abbreviation I'll change them.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2016-03-14T08:13:14Z",
+          "body": "Rebased and applied.\n",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [],
+      "reviews": []
+    }
+  }
+]

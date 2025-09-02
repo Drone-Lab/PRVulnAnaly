@@ -1,0 +1,82 @@
+{
+  "title": "Missions: ignore waypoint yaw when avoidance is active",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/9880",
+  "number": 9880,
+  "created_at": "2018-07-11T17:12:51Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "mrivi",
+    "body": "@dagar  @LorenzMeier @thomasgubler \n\nThis is a sketch of  what we discussed in the dev call. If the avoidance is active and healthy the flag `_waypoint_yaw_reached ` is always set to true.",
+    "issue_comments": [
+      {
+        "author": "mhkabir",
+        "created_at": "2018-07-12T03:56:07Z",
+        "body": "General question - why should we disregard yaw when in avoidance mode? ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "nicovanduijn",
+        "created_at": "2018-07-12T05:54:56Z",
+        "body": "@mhkabir The navigator usually checks whether the aircraft arrives in the direction from the previous mission item. When in avoidance mode, this is not necessarily true, because there may have been a detour that causes it to fly along a path other than the straight line connecting the two mission items",
+        "type": "issue_comment"
+      },
+      {
+        "author": "thomasgubler",
+        "created_at": "2018-07-12T07:22:00Z",
+        "body": "@nicovanduijn Can you test this? I think you were the one that could reproduce the error symptoms most consistently.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "nicovanduijn",
+        "created_at": "2018-07-12T08:07:22Z",
+        "body": "I'll test this, but cherry-picked onto #9270, since anything else doesn't make sense (If you're not flying OA in mission mode, this has no effect)\r\n\r\nEdit: @thomasgubler I've been running it a few times and it looks good so far. Never seen the problem of mission items not getting checked off so far. This is by no means exhaustive testing though",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mrivi",
+        "created_at": "2018-07-12T08:25:54Z",
+        "body": "I didn't put it on top of the avoidance PR because I thought that's going to be merged soon. So it doesn't makes sense to add things and void all the testing done so far.\r\nThe goal was to show what can be achieved easily and discuss the architecture more concretely. I am quite aware that this PR alone doesn't do anything (it doesn't even compile)",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mrivi",
+        "created_at": "2018-07-13T07:01:00Z",
+        "body": "Since #9270 got merged, I have rebased this PR on top of master",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mrivi",
+        "created_at": "2018-07-24T11:41:13Z",
+        "body": "I have added he proposal from last week dev call:\r\nIf the vehicle projected position on the vector previous-current triplet is past the current triplet or if no progress towards the goal is made for 10 seconds, `_waypoint_position_reached` is set to true which forces the triplet update.\r\n\r\nThis is a proposal to start the the discussion.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mrivi",
+        "created_at": "2018-07-26T11:59:20Z",
+        "body": "Closing this PR, because the final solution will be based on #10037 . The decision to update the triplet will be take in the position controller and feed it back to navigator thorough uORB. ",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "thomasgubler",
+        "created_at": "2018-07-12T07:20:34Z",
+        "body": "is it a good pattern to return pointers to private members? I see the same on lines below and above so it might not be something that should be fixed in this PR",
+        "path": "src/modules/navigator/navigator.h",
+        "position": 13,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-07-12T15:49:16Z",
+        "body": "I believe almost all of these can be changed to return const references fairly easily.",
+        "path": "src/modules/navigator/navigator.h",
+        "position": 13,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": []
+  }
+}

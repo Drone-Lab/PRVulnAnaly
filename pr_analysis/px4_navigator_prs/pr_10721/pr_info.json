@@ -1,0 +1,41 @@
+{
+  "title": "ekf2: increase min value of MAG_YAWLIM",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10721",
+  "number": 10721,
+  "created_at": "2018-10-18T15:42:35Z",
+  "merged": true,
+  "merged_at": "2018-10-22T13:26:07Z",
+  "state": "closed",
+  "conversation": {
+    "author": "CarlOlsson",
+    "body": "- Some fixed wing platforms require a higher value of EKF2_MAG_YAWLIM in order not to constantly switch mag fusion mode during straight lines in gusty weather. [Relevant commit](https://github.com/PX4/Firmware/commit/1cdfaaf2e19d1a8fb988679d968c68ae0b0d1742)\n- Also fixed some typos",
+    "issue_comments": [],
+    "review_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2018-10-18T16:53:40Z",
+        "body": "Just a personal preference? I've added some other perf counters with spaces in the name, but don't really care either way.",
+        "path": "src/modules/fw_pos_control_l1/FixedwingPositionControl.cpp",
+        "position": 5,
+        "type": "review_comment"
+      },
+      {
+        "author": "CarlOlsson",
+        "created_at": "2018-10-18T18:26:12Z",
+        "body": "I was doing some tests and noticed that all others had underscores so thought it was inconsistent. But if that is not the case, yes I would prefer underscores ",
+        "path": "src/modules/fw_pos_control_l1/FixedwingPositionControl.cpp",
+        "position": 5,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "title": "Speed reset when switching flight modes",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21414",
+  "number": 21414,
+  "created_at": "2023-04-03T04:56:00Z",
+  "merged": true,
+  "merged_at": "2023-04-27T15:32:44Z",
+  "state": "closed",
+  "conversation": {
+    "author": "afwilkin",
+    "body": "<!--\r\n\r\nThank you for your contribution!\r\n\r\nGet early feedback through\r\n- Dronecode Discord: https://discord.gg/dronecode\r\n- PX4 Discuss: http://discuss.px4.io/\r\n- opening a draft pr and sharing the link\r\n\r\n-->\r\n\r\n### Solved Problem\r\nWhen I issued a DO_CHANGE_SPEED, and then changed flight modes, that speed continued over to the new flight mode. \r\nFor example, if I issue a DO_CHANGE_SPEED in mission mode for 1 m/s, and then switch to Loiter mode, I am still restricted to 1 m/s.\r\n\r\nFrom the conversations that I have had with maintainers, this is not the behavior we want to have\r\n\r\nThe only flight mode that this **does not** happen for is RTL, which has the following line\r\n`_navigator->reset_cruising_speed();`\r\n\r\n\r\n### Solution\r\nI reset the cruising speed upon entering a new navigation mode.\r\n\r\n### Alternatives\r\nWe could also create a new module that keeps track of what mode we are in and changes speed limits from there\r\n\r\n### Test coverage\r\n- Create a waypoint mission with a change speed waypoint item at 1 m/s. Mid-mission flip to HOLD mode and issue a do_relocate. \r\nBefore the change: [log](https://review.px4.io/plot_app?log=784a1777-8dff-446c-989e-8bf3cc0210ec)\r\n![image](https://user-images.githubusercontent.com/16963678/229414814-126a9520-6e09-45c8-9e83-ca82b665525d.png)\r\n\r\nAfter the change: [log](https://review.px4.io/plot_app?log=015494ff-ad95-498b-bfd3-b59632db3525)\r\n![image](https://user-images.githubusercontent.com/16963678/229414936-f46b1814-8105-4f38-a5c5-cfbb1b980273.png)\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "DronecodeBot",
+        "created_at": "2023-04-04T15:25:41Z",
+        "body": "This pull request has been mentioned on **Discussion Forum for PX4, Pixhawk, QGroundControl, MAVSDK, MAVLink**. There might be relevant details there:\n\nhttps://discuss.px4.io/t/px4-community-q-a-april-05-2023/31435/4\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "junwoo091400",
+        "created_at": "2023-04-05T15:19:48Z",
+        "body": "@dagar we mentioned this during the call, and concluded that more discussion on the context of this problem is needed. So it would be nice to have your feedback on use-cases for this!",
+        "type": "issue_comment"
+      },
+      {
+        "author": "DronecodeBot",
+        "created_at": "2023-04-05T15:36:48Z",
+        "body": "This pull request has been mentioned on **Discussion Forum for PX4, Pixhawk, QGroundControl, MAVSDK, MAVLink**. There might be relevant details there:\n\nhttps://discuss.px4.io/t/px4-community-q-a-april-05-2023/31435/1\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "sfuhrer",
+        "created_at": "",
+        "body": "This is good to go from my side. We've tested it a bit in SITL and real vehicles (VTOLs). Needs follow up https://github.com/PX4/PX4-Autopilot/pull/21503 to have effect immediately always and not just when you set a new loiter for example.\r\n\r\nThe speed interface / handling in Navigator is quite ugly so I hope we get to fix it more fundamentally after the release. ",
+        "state": "APPROVED",
+        "type": "review"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "title": "Minor mission fixes",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22434",
+  "number": 22434,
+  "created_at": "2023-11-23T08:35:36Z",
+  "merged": true,
+  "merged_at": "2023-11-24T07:10:07Z",
+  "state": "closed",
+  "conversation": {
+    "author": "bkueng",
+    "body": "2 smaller things I found when going through the code:\r\n- [fix comparison logic for saving mission state](https://github.com/PX4/PX4-Autopilot/commit/96c2b51a9b5c32684699b1a47ae21554bc68c8cf)\r\n- [publish mission after updating dataman](https://github.com/PX4/PX4-Autopilot/commit/d982dde3d181b22d140af3e5d811a243333a2f4a)",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "bresch",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "title": "Store parameter xml size in .px4 file",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/2029",
+  "number": 2029,
+  "created_at": "2015-04-15T02:18:04Z",
+  "merged": true,
+  "merged_at": "2015-04-15T07:35:29Z",
+  "state": "closed",
+  "conversation": {
+    "author": "DonLakeFlyer",
+    "body": "This is needed in order to decompress in QGroundControl\n",
+    "issue_comments": [
+      {
+        "author": "DonLakeFlyer",
+        "created_at": "2015-04-15T06:08:18Z",
+        "body": "Hold off on merging this. I have some parameter meta data fixes to go in here as well.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "DonLakeFlyer",
+        "created_at": "2015-04-15T06:28:31Z",
+        "body": "Ok. I've cleaned up the parameter meta data that QGC is complaining about. Specific problems:\n- If the param is float or int then the default/min/max values must be float or int. No \"1.0\" value for an int.\n- Float values don't end in \"f'. Floats are just 0.0 not 0.0f. This breaks string conversion.\n\nEventually this will all get better when I switch the firmware to generate param c++ code from xml. This way the parser will validate the xml.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2015-04-15T07:35:27Z",
+        "body": "Thanks!\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

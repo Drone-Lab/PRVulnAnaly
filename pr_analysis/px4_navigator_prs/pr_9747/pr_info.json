@@ -1,0 +1,53 @@
+{
+  "title": "[WIP] mission_result split into mission_status and navigator_status",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/9747",
+  "number": 9747,
+  "created_at": "2018-06-23T03:03:24Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "The navigator message `mission_result` has become overloaded to contain both general navigator status, mission feasibility, and mission status. This has resulted in some confusion in both logs and usage from commander.\n\nThis PR splits mission_result into a general navigator_status message, and a mission_status that's specific to the planned dataman stored mission.",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2018-06-23T12:51:56Z",
+        "body": " - fixes https://github.com/PX4/Firmware/issues/9746\r\n - possibly fixes https://github.com/PX4/Firmware/issues/9515 (TBD)",
+        "type": "issue_comment"
+      },
+      {
+        "author": "stale[bot]",
+        "created_at": "2019-01-20T04:33:43Z",
+        "body": "This issue has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs. Thank you for your contributions.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2019-01-20T15:29:39Z",
+        "body": "this PR is still valid, or at least the part the tries to fix this current bug:  https://github.com/PX4/Firmware/issues/9746",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2019-02-05T21:08:38Z",
+        "body": "Needs to be rebased badly.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "stale[bot]",
+        "created_at": "2019-10-13T17:18:05Z",
+        "body": "This issue has been automatically marked as stale because it has not had recent activity. Thank you for your contributions.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2021-01-10T17:51:22Z",
+        "body": "Closing as stale.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

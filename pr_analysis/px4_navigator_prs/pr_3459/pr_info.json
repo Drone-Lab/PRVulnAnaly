@@ -1,0 +1,23 @@
+{
+  "title": "Properly handle takeoff waypoint when not currently at takeoff location",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/3459",
+  "number": 3459,
+  "created_at": "2016-01-07T16:01:09Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "AndreasAntener",
+    "body": "Fixes #3387 \n\nInstead of taking off like this:\n![screen shot 2016-01-07 at 15 01 38](https://cloud.githubusercontent.com/assets/5750020/12174890/8cb62cd0-b55f-11e5-94e1-05624b7419d4.png)\n\nIt will now do this:\n![screen shot 2016-01-07 at 15 08 12](https://cloud.githubusercontent.com/assets/5750020/12174892/8e6dc330-b55f-11e5-8b6e-1bcc4df9e956.png)\n\nThis should also fix a bug where the \"next\" setpoint kept the type takeoff and just never stopped climbing. Although that one occurred randomly for me and I could never really pin it down.\n\nTested with takeoff WP at current location and away from current location. Fixed-wing should not be affected because the already existing takeoff flag is only set for MC\n",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-01-07T21:25:34Z",
+        "body": "Applied, thanks!\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "title": "Fix FOH effects after VTOL front transition",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/16373",
+  "number": 16373,
+  "created_at": "2020-12-11T06:53:01Z",
+  "merged": true,
+  "merged_at": "2021-01-02T01:19:00Z",
+  "state": "closed",
+  "conversation": {
+    "author": "RomanBapst",
+    "body": "This caused the navigator to use the next waypoint (after the vtol takeoff item)\r\nto be used as target during the transition. If the altitude of that waypoint\r\nwas much higher than the takeoff altitude then there were FOH effects\r\nafter the transition which caused the vehicle to first descend before\r\nclimbing again.\r\n\r\nSigned-off-by: RomanBapst <bapstroman@gmail.com>\r\n",
+    "issue_comments": [
+      {
+        "author": "RomanBapst",
+        "created_at": "2020-12-11T07:05:15Z",
+        "body": "TECS altitude setpoint with this PR:\r\n![image](https://user-images.githubusercontent.com/7610489/101873586-409c8780-3b98-11eb-9759-f49dfec67f8f.png)\r\n\r\nTECS altitude setpoint without this PR:\r\n![image](https://user-images.githubusercontent.com/7610489/101873627-5742de80-3b98-11eb-98fe-b42bf337fe61.png)\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2020-12-11T15:01:00Z",
+        "body": "You don't ever want to use the next item for transition? The altitude could be adjusted in the next item.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2021-01-02T01:19:41Z",
+        "body": "You want to keep level during transition. The plot shows that the system is then gaining altitude on the way to the next waypoint.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2021-01-02T01:34:38Z",
+        "body": "> You want to keep level during transition. The plot shows that the system is then gaining altitude on the way to the next waypoint.\r\n\r\nI know, I was talking about transition towards the next waypoint while keeping the vehicle level. Some people use this to control the direction of VTOL transition. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2021-01-02T12:58:22Z",
+        "body": "We need to get to a point where we set a heading and then let the vehicle transition on that heading. Otherwise we can run into crazy corner cases where someone sets a waypoint 90 degrees to the right or left and then complains that it's \"unstable\" or \"jerky\". So I would consider the transition atomic, configured beforehand and the vehicle comes back onto trajectory control at the end of it. You will need to set the transition up correctly and then let it execute.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2021-01-02T17:16:23Z",
+        "body": "I agree with that I'd just like to see these types of potential behaviour changes (eg transition heading alignment) addressed explicitly rather than something that slipped in as a byproduct of fixing something else (FOH altitude effects) with no mention.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

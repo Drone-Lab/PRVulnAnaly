@@ -1,0 +1,41 @@
+{
+  "title": "[DO NOT MERGE] introduce vehicle_thrust_setpoint",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10832",
+  "number": 10832,
+  "created_at": "2018-11-12T20:46:39Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "For discussion only at this point (not complete or tested).\n\nIf this is viable we might be able to drop the virtual attitude setpoints entirely. Then we can lean on thrust setpoints for coordination between position controllers. This should also lead to it being possible to drop virtual actuator controls.",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-11-12T23:17:34Z",
+        "body": "Nice! This is going in the right direction. We might want to do this in stages though (with the original PR going in first, then this on top of it).",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bresch",
+        "created_at": "2018-11-13T13:17:57Z",
+        "body": "@dagar We won't be able to drop the virtual attitude setpoints because during the transition of a standard VTOL, since we want pitch and thrust_x from TECS, roll from L1 and thrust_z from the multicopter position controller. Besides that, splitting the thrust setpoints from the attitudes ones is the right way to go :)",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-11-13T14:32:06Z",
+        "body": "@bresch yes, we'd still need a mechanism to combine orthogonal thrust setpoints (MPC altitude controller). This is one of the reasons I asked about the control allocation idea.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2019-02-05T21:06:48Z",
+        "body": "Revisit for v1.10.0",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

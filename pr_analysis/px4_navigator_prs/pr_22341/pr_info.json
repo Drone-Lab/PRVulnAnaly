@@ -1,0 +1,24 @@
+{
+  "title": "rtl: Only use approaches for vtols in fixed wing mode",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22341",
+  "number": 22341,
+  "created_at": "2023-11-10T08:03:30Z",
+  "merged": true,
+  "merged_at": "2023-11-12T14:41:29Z",
+  "state": "closed",
+  "conversation": {
+    "author": "KonradRudin",
+    "body": "<!--\r\n\r\nThank you for your contribution!\r\n\r\nGet early feedback through\r\n- Dronecode Discord: https://discord.gg/dronecode\r\n- PX4 Discuss: http://discuss.px4.io/\r\n- opening a draft pr and sharing the link\r\n\r\n-->\r\n\r\n### Solved Problem\r\nCurrently if a VTOl is in multicopter mode or a multicopter is used, the RTL still uses and loiter to alt approach for RTL, if it was uploaded. For multicopter and VTOL in RW mode, we want the system to directly fly to the home or RTL destination without using approaches.\r\n\r\n### Solution\r\n- Only use approaches when it is reported that the system is a vtol and in fixed wing mode.\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nBugfix Only use RTL approaches for vtols in fixed wing mode\r\n```\r\n### Test coverage\r\n",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "bresch",
+        "created_at": "",
+        "body": "Tested in SITL, I can't reproduce te issue anymore with this PR.",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

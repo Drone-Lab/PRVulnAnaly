@@ -1,0 +1,67 @@
+{
+  "title": "[WIP] navigator initialization and mode change improvements",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10611",
+  "number": 10611,
+  "created_at": "2018-09-30T18:52:58Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": " - safely initialize every MissionBlock's _mission_item\n - allow position setpoint triplets with no valid position setpoint to be published\n   - this ensures that the position controllers don't accidentally use an old position setpoint \n - move loiter and takeoff reposition handling into each class (full position setpoint triplet isn't needed)\n - delete dead code\n\n\n**Needs testing**\n\n### Test\n - [ ] takeoff -> hold\n - [ ] reposition usage\n - [ ] switching modes",
+    "issue_comments": [
+      {
+        "author": "dakejahl",
+        "created_at": "2018-10-05T17:38:05Z",
+        "body": "SITL test's worked fine, real world test not so much....\r\nhttps://review.px4.io/plot_app?log=f464696e-00bb-48a8-b82f-00e089d2fa98\r\n\r\n1. Issued a `takeoff`\r\n2. After successful takeoff then transition into loiter, changed to `position`\r\n3. Flew it forward a bit, no issues\r\n4. Issued `return` \r\n5. Quad begin to roll to reposition...kept rolling and then went inverted and smashed into the ground\r\n\r\nThis is flying todays `master` with `pr-navigator-robust` pulled on top of that.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dakejahl",
+        "created_at": "2018-10-09T21:05:39Z",
+        "body": "FYI @dagar I flew this again but this time using an RC setup.... Definitely not safe to fly! haha\r\n\r\nhttps://review.px4.io/plot_app?log=0d5f3f53-d3cc-4946-b125-cfeb4881ac8a\r\n\r\nedit: hardfaults as it starts to roll to move towards home...\r\n\r\n![selection_001](https://user-images.githubusercontent.com/37091262/46699087-ff824480-cbd5-11e8-97ec-47c6a420236c.png)\r\n\r\nSanity check.... SITL works fines, no local changes in navigator",
+        "type": "issue_comment"
+      },
+      {
+        "author": "stale[bot]",
+        "created_at": "2019-07-10T17:37:08Z",
+        "body": "This issue has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs. Thank you for your contributions.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "stale[bot]",
+        "created_at": "2019-07-24T18:56:34Z",
+        "body": "Closing as stale.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "stale[bot]",
+        "created_at": "2019-10-23T09:12:32Z",
+        "body": "This issue has been automatically marked as stale because it has not had recent activity. Thank you for your contributions.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "stale[bot]",
+        "created_at": "2020-01-22T18:30:46Z",
+        "body": "This issue has been automatically marked as stale because it has not had recent activity. Thank you for your contributions.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2020-01-22T20:15:53Z",
+        "body": "The majority of the changes here eventually ended up in master.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "dakejahl",
+        "created_at": "",
+        "body": ":hankey: ",
+        "state": "CHANGES_REQUESTED",
+        "type": "review"
+      }
+    ]
+  }
+}

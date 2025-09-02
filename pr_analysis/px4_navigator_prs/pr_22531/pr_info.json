@@ -1,0 +1,138 @@
+{
+  "title": "Add mission point check when update the geofence",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22531",
+  "number": 22531,
+  "created_at": "2023-12-13T06:41:05Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "open",
+  "conversation": {
+    "author": "Drone-Lab",
+    "body": "<!--\r\n\r\nThank you for your contribution!\r\n\r\nGet early feedback through\r\n- Dronecode Discord: https://discord.gg/dronecode\r\n- PX4 Discuss: http://discuss.px4.io/\r\n- opening a draft pr and sharing the link\r\n\r\n-->\r\n\r\n### Solved Problem\r\n\r\n1.  https://github.com/PX4/PX4-Autopilot/blob/c5101c70b31aa0c1454162c6ad1420e5af8086b2/src/modules/navigator/mission_feasibility_checker.cpp#L108 I've found that the MissionFeasibilityChecker()  is only triggered correctly when updating a mission.  when only updating a geofence,user need to click upload twice to invoke check function. Currently, the geofence update only checks the origin and the current position associated with the geofence, and I've added a check for mission waypoints to make the check on upload more complete.The problem is related to the state machine and asynchronous message reading in geofence.cpp.The checkMissionAgainstGeofence() is written in the mission and the geofence is still being read when the mission has finished uploading and checking.\r\n \r\n![%`%3Z`6)VGYLVSF_)N0L{BT](https://github.com/PX4/PX4-Autopilot/assets/151698793/38b3fe89-4ed8-47d7-8822-c5254984f679)\r\n\r\nFixes #{#22362}\r\nIn this bug issue , @czbxzm said ,\"1. When swapping the order, uploading the mission waypoint routes first and then plotting the no-fly zones does not trigger any checks, even if there is an overlap between the two;\"Actually this check triggers, but requires a second click on upload.(in the version reporting this bug issue)\r\n\r\n\r\n### Solution\r\n\r\n1. I've added a check for mission waypoints when update geofence.\r\n \r\n![95$0I@SC~0)3RA G`Q2XMCR](https://github.com/PX4/PX4-Autopilot/assets/151698793/d96db40e-0b0e-4061-9a9c-358a5bde2268)\r\n\r\n\r\n### Test coverage\r\n\r\n test on jmavsim/gz_x500 and QGC\r\n\r\n\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-12-22T12:31:10Z",
+        "body": "I think this could be fine. It would make you change the mission first if it would validate the planned GF, and then you can also update the GF.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-12-22T12:31:31Z",
+        "body": "Curious for other inputs though, @dagar @MaEtUgR ?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Drone-Lab",
+        "created_at": "2024-01-18T01:42:55Z",
+        "body": "Thank you for your advice.\r\n> it is checked again before the mission is executed and a geofence violation is caught at that time (though you don't have immediate feedback in QGC). \r\n\r\nI don't consider this to be a reasonable solution. And we've had discussions about it before,  it could pose issues in certain scenarios.https://github.com/PX4/PX4-Autopilot/pull/22394#issuecomment-1858063715\r\n\r\n> Also to not have a data race by writing and reading to the fence on the same time, there is another PR to add double geofence storage here: #22533. \r\n\r\nI agree with you that the drone needs double storage for geofence to separate checking and runing.\r\n\r\n> Further you could call check_mission_valid https://github.com/Drone-Lab/PX4-Autopilot/blob/5490f8913bd26ac04d59908271ce9c5e6a1bd414/src/modules/navigator/mission_base.cpp#L696 periodically as this checks if the geofence is changed since the last evaluation and runs it again.\r\n\r\nI'm concerned that periodically calling this function might introduce unnecessary overhead.\r\n\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2024-01-18T08:32:45Z",
+        "body": "> > it is checked again before the mission is executed and a geofence violation is caught at that time (though you don't have immediate feedback in QGC).\r\n> \r\n> I don't consider this to be a reasonable solution. And we've had discussions about it before, it could pose issues in certain scenarios.[#22394 (comment)](https://github.com/PX4/PX4-Autopilot/pull/22394#issuecomment-1858063715)\r\n> \r\n\r\nI agree on this and we should change that, and it is good that you take some initiative here.\r\n\r\n> > Further you could call check_mission_valid https://github.com/Drone-Lab/PX4-Autopilot/blob/5490f8913bd26ac04d59908271ce9c5e6a1bd414/src/modules/navigator/mission_base.cpp#L696 periodically as this checks if the geofence is changed since the last evaluation and runs it again.\r\n> \r\n> I'm concerned that periodically calling this function might introduce unnecessary overhead.\r\n\r\nYeah it potentially does, But the check if the mission feasibility checker is with the most recent data should be minimal and other overheads might be the Same as your solution, no?\r\nAlso for short term fixes, i have no better idea. Your solution runs it drectly on upload which is preferable, but then you should reflect this evaluation in the mission result uorb topic as its done here https://github.com/Drone-Lab/PX4-Autopilot/blob/5490f8913bd26ac04d59908271ce9c5e6a1bd414/src/modules/navigator/mission_base.cpp#L702-L707 such that it is not run again by the mission feasibility checker. The problem is then, that if e.g. the home position is changed, it is still not run again, up until the mission is started. Also now, it is checked once the geofence is uploaded and once the mission is uploaded, which means if you upload a new mission with new geofence, it is evaluated once on outdated data, depending which one is uploaded first.\r\n\r\nI also already have though about how to do the checking properly, but the above problem makes it difficult. i think that QGC always send the mission, geofence, and rally points, irrespective of what you have actually changed. But with mavlink in general you should be able to send only what you actually have changed. Also if you change both and upload them, you would preferably run the check only once after both are uploaded, else you would do the evaluation on outdated data. But there is currently no way of knowing if another upload is pending except maybe waiting for a short amount of time and checking if another mission upload is in progress. Maybe there is also something mission in MAVLINK itself to solve this.\r\n\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Drone-Lab",
+        "created_at": "2024-01-18T13:25:33Z",
+        "body": "> but then you should reflect this evaluation in the mission result uorb topic as its done here https://github.com/Drone-Lab/PX4-Autopilot/blob/5490f8913bd26ac04d59908271ce9c5e6a1bd414/src/modules/navigator/mission_base.cpp#L702-L707 such that it is not run again by the mission feasibility checker. \r\n\r\nIs the 'reflect' necessary here? I'm not sure about its intended meaning. Currently, this patch does not trigger a recheck of the geofence by the mission feasibility checker.Because if geofence not feasible,it will not be added.\r\n\r\n> The problem is then, that if e.g. the home position is changed, it is still not run again, up until the mission is started. \r\n\r\nWe have discussed this topic here.Welcome more advice.https://github.com/PX4/PX4-Autopilot/issues/22373\r\n\r\n> Also now, it is checked once the geofence is uploaded and once the mission is uploaded, which means if you upload a new mission with new geofence, it is evaluated once on outdated data, depending which one is uploaded first.\r\n\r\nI don't think this is a problem.The ultimate outcome remains: Illegal missions and geofences will be rejected.\r\n\r\n> IAlso if you change both and upload them, you would preferably run the check only once after both are uploaded, else you would do the evaluation on outdated data. \r\n\r\nI agree with you .As I mentioned, the checkMissionAgainstGeofence() is written in the mission module. I believe this is the root cause.\r\n\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2024-01-18T14:12:38Z",
+        "body": "> > but then you should reflect this evaluation in the mission result uorb topic as its done here https://github.com/Drone-Lab/PX4-Autopilot/blob/5490f8913bd26ac04d59908271ce9c5e6a1bd414/src/modules/navigator/mission_base.cpp#L702-L707 such that it is not run again by the mission feasibility checker.\r\n> \r\n> Is the 'reflect' necessary here? I'm not sure about its intended meaning. Currently, this patch does not trigger a recheck of the geofence by the mission feasibility checker.Because if geofence not feasible,it will not be added.\r\n\r\nAh, i missed that, so if the mission violates the geofence, the geofence is ignored, correct? The mission feasibility checker makes the opposite, it defines the mission as invalid and wont let you execute the mission. So what i meant with 'reflect' is if the geofence is violated, you should define the mission as invalid as well. So with your approach you would now get the warning in QGC but you could execute the mission and it would fly out of the geofence, if i'm understanding this correctly. That would lead to unsafe behavior.\r\n\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Drone-Lab",
+        "created_at": "2024-01-19T01:11:13Z",
+        "body": "> So with your approach you would now get the warning in QGC but you could execute the mission and it would fly out of the geofence, if i'm understanding this correctly. That would lead to unsafe behavior.\r\n\r\nDon't  worry about the unmanned aerial vehicle carrying out the geofence breaching mission, as the mission always undergoes an feasibility check and upload process before the geofence.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Drone-Lab",
+        "created_at": "2024-01-19T01:14:12Z",
+        "body": "\r\nIf you are interested in \"the mission always before the geofence,\" you can obtain more details here. \r\n### Details\r\n\r\n1. When the ground control station upload mission or geofence to the drone.In geofence.cpp, there is a state machine designed to read geofence data from ourb and load it onto the drone, as illustrated in the following picture.\r\n   <p align=\"center\">\r\n     <img src=\"https://user-images.githubusercontent.com/151698793/294857321-53c6d894-448a-4130-85ae-30ab7e12e171.png\" width=\"622\" />\r\n   </p>\r\n   This functionality is called within a while(1) loop in navigator_main.cpp.\r\n\r\n   https://github.com/PX4/PX4-Autopilot/blob/cf840ff3731d8bebf65e79bd8c9c7bbd8d29d404/src/modules/navigator/navigator_main.cpp#L893  \r\nThe read and load operations within it utilize **asynchronous** reading, ensuring that they do not block the function loop.\r\nhttps://github.com/PX4/PX4-Autopilot/blob/cf840ff3731d8bebf65e79bd8c9c7bbd8d29d404/src/modules/navigator/geofence.cpp#L111-L112\r\nhttps://github.com/PX4/PX4-Autopilot/blob/cf840ff3731d8bebf65e79bd8c9c7bbd8d29d404/src/modules/navigator/geofence.cpp#L155-L163\r\n \r\n2. When the ground control station upload mission or geofence to the drone.In mission_feasibility_checker.cpp, **synchronous** reading is employed to retrieve updates for the mission, and to check for potential conflicts between the mission and geofence.\r\nhttps://github.com/PX4/PX4-Autopilot/blob/20129e63facab129ad31fa693d1397e7458afaa4/src/modules/navigator/mission_feasibility_checker.cpp#L122-L123\r\nThis functionality is called within a while(1) loop in navigator_main.cpp too.\r\nhttps://github.com/PX4/PX4-Autopilot/blob/20129e63facab129ad31fa693d1397e7458afaa4/src/modules/navigator/navigator_main.cpp#L873-L877\r\n\r\n3. This is the cause of the issue. When on the ground control station, both the geofence and mission are updated simultaneously. The geofence undergoes multiple state transitions through the state machine (with each state transition requiring the execution of a while(1) loop), and it is only after asynchronous reading that the geofence data can be loaded for the mission_feasibility_checker to examine.\r\nTherefore, when the mission_feasibility_checker utilizes synchronous reading to obtain mission data, the geofence data involved in the check has not yet been updated. Consequently, the check is performed with outdated geofence data, resulting in the failure of the checker.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mrpollo",
+        "created_at": "2024-01-30T16:38:39Z",
+        "body": "Hey @KonradRudin can you please check-in with us on this one? we want to help move it forward and have a few ideas",
+        "type": "issue_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2024-02-05T12:26:49Z",
+        "body": "Sorry, was away last week. So basically we need to make sure that the geofence module has already properly loaded the geofence data before we can test for it right? ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Drone-Lab",
+        "created_at": "2024-02-05T13:19:32Z",
+        "body": "Alternatively, add a check after successful upload?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2024-02-05T13:40:35Z",
+        "body": "> Alternatively, add a check after successful upload?\r\n\r\nYou mean after successful loading into cache i presume? Yes, as a first step we can force it to check again after successfully loading the geofence.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Drone-Lab",
+        "created_at": "2024-02-05T14:44:21Z",
+        "body": "what's the further plans? making geofence sync read and adding locks or semaphores?\r\n\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2024-02-05T17:42:46Z",
+        "body": "> what's the further plans? making geofence sync read and adding locks or semaphores?\r\n\r\nNo, the caching is fine. But the geofence should be more a service module as well as send an uorb message if it has loaded the new geofence set.\r\n\r\nMaybe for your short term problem we could add a new geofence uorb message, which sends the ID of the loaded geofence. And if this message is updated, other system like the mission feasibility checker know to recheck?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Drone-Lab",
+        "created_at": "2024-02-08T02:05:49Z",
+        "body": "I agree with your opinion. Do you need me to further modify the pull request according to this requirement?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2024-02-09T07:10:55Z",
+        "body": "It depends on your timeline. I also would like to improve the mission feasibility checks a bit and make it independent of the mission, but i won't have time right now. So any help input is appreciated, and this would be a good first incremental step.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "KonradRudin",
+        "created_at": "2024-01-17T15:16:59Z",
+        "body": "Why not reuse the code from https://github.com/Drone-Lab/PX4-Autopilot/blob/5490f8913bd26ac04d59908271ce9c5e6a1bd414/src/modules/navigator/mission_feasibility_checker.cpp#L108-L109? This is harder to maintain and currently does not work with non position mission items. ",
+        "path": "src/modules/navigator/geofence.cpp",
+        "position": 17,
+        "type": "review_comment"
+      },
+      {
+        "author": "Drone-Lab",
+        "created_at": "2024-01-18T01:35:46Z",
+        "body": "> Why not reuse the code from https://github.com/Drone-Lab/PX4-Autopilot/blob/5490f8913bd26ac04d59908271ce9c5e6a1bd414/src/modules/navigator/mission_feasibility_checker.cpp#L108-L109? This is harder to maintain and currently does not work with non position mission items.\r\n\r\nI made partial modifications to the code based on reference here.The code here cannot be directly used. This is because it checks using the geofence that has already been successfully uploaded, while we now need to perform pre-upload checks for the geofence.",
+        "path": "src/modules/navigator/geofence.cpp",
+        "position": 17,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "KonradRudin",
+        "created_at": "",
+        "body": "\r\nHey, i dont think this is the way to go. As you stated, there is already the check here https://github.com/Drone-Lab/PX4-Autopilot/blob/5490f8913bd26ac04d59908271ce9c5e6a1bd414/src/modules/navigator/mission_feasibility_checker.cpp#L108-L109 and your new function is basically a reimplementation of it. I know that this function is executed as soon as a mission is uploaded, and thus it could be that a geofence upload is in progress and the mission is not checked with the right geofence, which would result in a wrong evaluation. However, it is checked again before the mission is executed and a geofence violation is caught at that time (though you don't have immediate feedback in QGC). Also to not have a data race by writing and reading to the fence on the same time, there is another PR to add double geofence storage here: https://github.com/PX4/PX4-Autopilot/pull/22533. I think the way to go would be to decouple the mission feasibility checker from the mission and run the checks if the home position, geofence, or mission changed, and there is no mavlink mission upload in progress. As a short term fix i would suggest changing the order in which QGC is uploading the mission and make sure that the geofence are uploaded before the mission is uploaded. Further you could call check_mission_valid https://github.com/Drone-Lab/PX4-Autopilot/blob/5490f8913bd26ac04d59908271ce9c5e6a1bd414/src/modules/navigator/mission_base.cpp#L696 periodically as this checks if the geofence is changed since the last evaluation and runs it again.",
+        "state": "COMMENTED",
+        "type": "review"
+      }
+    ]
+  }
+}

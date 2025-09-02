@@ -1,0 +1,31 @@
+{
+  "title": "reenable WV after Front Transition alignment",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/16335",
+  "number": 16335,
+  "created_at": "2020-12-04T17:00:58Z",
+  "merged": true,
+  "merged_at": "2020-12-09T16:36:21Z",
+  "state": "closed",
+  "conversation": {
+    "author": "ThomasRigi",
+    "body": "**Describe problem solved by this pull request**\r\nFixes https://github.com/PX4/PX4-Autopilot/issues/16305\r\n\r\n@sfuhrer @dagar \r\n\r\n**Describe your solution**\r\nReenable Weathervane after front transition alignment also for VTOL Transition item.\r\n\r\n**Describe possible alternatives**\r\n\r\n\r\n**Test data / coverage**\r\nSITL gazebo standard vtol: https://logs.px4.io/plot_app?log=7fa8edf3-84bc-4c9b-918b-a16c53b8d2b0\r\n\r\n**Additional context**\r\n",
+    "issue_comments": [
+      {
+        "author": "xdwgood",
+        "created_at": "2020-12-10T01:08:18Z",
+        "body": "I think v1.11 also need this",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "sfuhrer",
+        "created_at": "",
+        "body": "That makes sense to me, thanks!",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

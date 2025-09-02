@@ -1,0 +1,65 @@
+{
+  "title": "Simulation lockstep",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/3675",
+  "number": 3675,
+  "created_at": "2016-02-04T23:56:36Z",
+  "merged": true,
+  "merged_at": "2016-02-05T15:52:05Z",
+  "state": "closed",
+  "conversation": {
+    "author": "LorenzMeier",
+    "body": "This PR implements the Simulator -> SITL direction and blocks the execution of SITL if the simulator is lagging. It also does time bookkeeping and ensures the blocked execution does not lead to jumping timestamps. \"Flight tested\" in Sim, leads to a lot more stability.\n\n@liamstask @tumbili You probably will enjoy this.\n",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-04T23:58:03Z",
+        "body": "@vbuskirk @darknight-007 This should fix your cloud environment.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "liamstask",
+        "created_at": "2016-02-05T00:01:03Z",
+        "body": "nice, checking this out now\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-02-05T08:26:27Z",
+        "body": "@LorenzMeier Great, this is fantastic!\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-05T08:44:01Z",
+        "body": "@tumbili could you help with the code review so we can get it in?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-02-05T09:00:23Z",
+        "body": "@LorenzMeier Yes, will do!\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-02-05T09:46:50Z",
+        "body": "@LorenzMeier Works perfectly fine for me! Will do a review now.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-05T15:52:18Z",
+        "body": "Merged after more testing and review.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "i-sheremet",
+        "created_at": "2016-02-06T12:25:48Z",
+        "body": "@LorenzMeier Thank you for working on it!\nI have already made a [post](https://groups.google.com/forum/#!topic/px4users/O3r9kFyVT4Y) regarding the issue and my PC setup (_Asus ux32vd : Intel i7 3517U Processor x4_cores, 10 Gb RAM, SSD memory, discrete video card - Nvidia GT 620M_), but unfortunately I didn't notice any significant difference in performance with this corrections. Here are the results I got:\n\nFlight with default setup, gzclient on, shuttling between waypoints 2-3-4. [Flight log](https://drive.google.com/file/d/0B9wE0Um8rdPgc0duUTd0aW1mWE0/view?usp=sharing)\n![1](https://cloud.githubusercontent.com/assets/7020958/12866583/7363e1e4-ccdb-11e5-9415-f1780acf04af.png)\n![2](https://cloud.githubusercontent.com/assets/7020958/12866595/f77c5e84-ccdb-11e5-9f23-1afaac3c6c97.png)\nnutshell constantly prints messages as these:\n\n```\nINFO  simulator is slow. Delay added: 17398 us\nINFO  simulator is slow. Delay added: 13763 us\nINFO  simulator is slow. Delay added: 13225 us\nINFO  simulator is slow. Delay added: 10039 us\nINFO  simulator is slow. Delay added: 11732 us\nINFO  simulator is slow. Delay added: 23303 us\nINFO  simulator is slow. Delay added: 12116 us\nINFO  simulator is slow. Delay added: 11689 us\nINFO  simulator is slow. Delay added: 20377 us\n```\n\nThe exact flight with gzclient off. It made several circles, path is overlapped. [Flight log](https://drive.google.com/file/d/0B9wE0Um8rdPgbXFnREplSHVlLXM/view?usp=sharing)\n![3](https://cloud.githubusercontent.com/assets/7020958/12866610/aa20a662-ccdc-11e5-9a05-d24a9086d4b0.png)\n![4](https://cloud.githubusercontent.com/assets/7020958/12866617/1a1cdcb0-ccdd-11e5-984b-b8f2f4456bc9.png)\nonly 3 messages in nutshell:\n\n```\nINFO  simulator is slow. Delay added: 17390 us\nINFO  simulator is slow. Delay added: 13690 us\nINFO  simulator is slow. Delay added: 14090 us\n```\n\nSo the problem remains. Maybe it has something to do with my gazebo or pc setup? I have gazebo version 6.5.1\nThanks!\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

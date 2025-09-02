@@ -1,0 +1,198 @@
+{
+  "title": "Px4.enhancement.3760.implement auto follow me.wip [WIP do not merge]",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/3814",
+  "number": 3814,
+  "created_at": "2016-02-21T03:50:56Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "catch-twenty-two",
+    "body": "adds ability for px4 firmware to track a target.  Implements rudimentary following of target position in navigator.\n\nNote: this uses a new version of the mavlink library with the proposed follow target method, will not work with current mavlink library version.\n\nhttps://github.com/catch-twenty-two/mavlink\n\nAlso uses new version of qground control with follow me option implemented:\n\nhttps://github.com/mavlink/qgroundcontrol/pull/2817\n\nSome concerns:\n\nPlease comment on ideas for error checking on bad position sent from tracker.  (e.g. ignore tracker if new pos vector is x meters away and instead just loiter)\n\nDoes it make sense for the \"follow previous - current line\" following be activated for this?  (currently I have it activated) I guess this might come in handy for intermittent GPS being sent...\n\nIn both instances ( \"follow previous - current line\" on and off) the result is \"jumpy\" if the new sp is to close to the current set point. \n\nMaybe this entire follow feature needs to be treated more like an instance using the position control code, except instead of manual input it gets tracker input. Or maybe it needs to be some type of hybrid of both pos control and auto line/position following code.\n\nAnyways, just some ideas, I'd like to get other's suggestions. \n\n@LorenzMeier had suggested using a predictive model if we have the target velocity. (this doesn't seem to be an option on my nexus 7 as it doesn't seem to output gps velocity)\n\nHere is a video of the current implementation, Qground control has been coded to send out sinusoidal gps coors, you can see the jumpiness I am referring to:\n\nhttps://www.youtube.com/watch?v=qGC464eVI5E&feature=youtu.be\n",
+    "issue_comments": [
+      {
+        "author": "devbharat",
+        "created_at": "2016-02-21T08:37:25Z",
+        "body": "This reminded me of the target following I had implemented in APM a few years ago (used the same fixed wing libraries (l1 with TECS) as we do now) and the issues I faced. I did it by setting the target's position as the waypoints for the 'follower' (also I think I overwrote the current target waypoint with the latest waypoint I received from the target. Otherwise, the follower's position oscillated heavily). \nThis strategy 'works' but you end up with steady state error between the target(say, moving in a straight line) and the follower (who never got directly in line behind the target, was always a bit to the left or the right). This can be seen in the following pic:\n\n![dsc_0615](https://cloud.githubusercontent.com/assets/3105122/13201714/9179428e-d87d-11e5-9f86-2a6d8ccab171.JPG)\n\nYou can see the green plane (fixed wing UAV) is following not directly behind the leader, but to the side. This was because unlike a single static waypoint, the waypoints in this case were constantly overwritten to the new target position values, with the controller never getting the time to correct the steady state error. This made me feel that, atleast for fixedwings, tracking moving targets required something more than just setting moving waypoints from the controls point of view.\n\nYou can see a mission with 3 aircrafts daisy-chained here:\n![3-ac-lf-2013-09-28 13_41_29](https://cloud.githubusercontent.com/assets/3105122/13201743/7d2f5934-d87e-11e5-85f1-1635b420890e.png)\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-22T11:58:54Z",
+        "body": "Awesome! I'm not so worried about the back and forth as my intention was not to keep sending a specific setpoint all the time, but to implement a \"rubber-band\" controller in that navigator class which trades smoothness for accuracy and only updates the next position gradually.\n\nWhat I however indeed forgot is that we need to feed a desired velocity. That should be supported by the triplet as well. Or we can go straight to the position setpoint instead. I need to think about that and maybe we can discuss this on the dev call?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-02-22T14:27:58Z",
+        "body": "> What I however indeed forgot is that we need to feed a desired velocity. That should be supported by the triplet as well. Or we can go straight to the position setpoint instead. I need to think about that and maybe we can discuss this on the dev call?\n\nOkay sounds good. Ill be on the call this morning, interested in hearing more about the controller you have in mind.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-01T08:16:38Z",
+        "body": "@catch-twenty-two Any update on the current state? Could you push your latest commits so others have a chance to review and join in?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-01T08:17:03Z",
+        "body": "You also might want to rebase. We kept improving the sim, in particular Gazebo, quite a bit.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-03-12T22:16:07Z",
+        "body": "@LorenzMeier Sorry your request got lost in all the noise of my email in box.  The first iteration of the px4 side of the firmware code should be complete now.  Over all operation is a lot smoother.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "liang-tang",
+        "created_at": "2016-03-14T06:56:16Z",
+        "body": "@catch-twenty-two I reviewed your code. You can use a pixhawk & mavros to send waypoint message include gps velocity. run rosrun mavros gcs_bridge, roslaunch mavros px4.launch.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-14T07:44:34Z",
+        "body": "@liang-tang You missed the intent of this PR. It does follow-me without a companion computer. So what you describe is not of interest here.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "liang-tang",
+        "created_at": "2016-03-15T10:01:32Z",
+        "body": "@catch-twenty-two\n\n `if (_pos_sp_triplet.current.type == position_setpoint_s::SETPOINT_TYPE_FOLLOW_TARGET) {\n                    _vel_sp(0) = _pos_sp_triplet.current.vx;\n                    _vel_sp(1) = _pos_sp_triplet.current.vy;\n                } else if (vel_norm_xy > _params.vel_max(0)) {\n                    /* note assumes vel_max(0) == vel_max(1) */\n                    _vel_sp(0) = _vel_sp(0) * _params.vel_max(0) / vel_norm_xy;\n                    _vel_sp(1) = _vel_sp(1) * _params.vel_max(1) / vel_norm_xy;\n                }`\nThere is a bug that _pos_sp_triplet.current.valid should be valid.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-03-15T18:29:39Z",
+        "body": "@liang-tang True probably better to double check than assume if you are in follow target mode you have a velocity to use.  I have since changed this entire statement to use the velocity setpoint type and made some other significant changes as well.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-03-17T16:23:41Z",
+        "body": "Hello, this is ready for testing if anyone has some time available. Integration to get the system working can be a bit of a pain because it involves changes in qgc, mavlink and px4 fw.  It also requires an Android device with OTG and GPS capability. Let me know if you're interested. Thanks!\n\n@julianoes @tumbili: @LorenzMeier said I should request validation testing from you so we can pull this into master. \n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-17T19:13:17Z",
+        "body": "CI failed, fix would be great. Can you also help to get the required PR for QGC through? Then it will be available on Android automatically.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-03-17T22:48:10Z",
+        "body": "@LorenzMeier Sure will do\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "liang-tang",
+        "created_at": "2016-03-18T01:05:05Z",
+        "body": "@catch-twenty-two Testing is in process.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-03-18T03:44:10Z",
+        "body": "@liang-tang Great thanks, make sure you grab the latest code, for now I have set the minimum altitude of follow me/missions to 10 meters above home for safety.  If you have changed the mission minimum altitude to something custom for now make sure it set to at least 10m. \n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-03-19T04:06:46Z",
+        "body": "@LorenzMeier I was able to get the CI to pass by changing the mavlink submodule to point to a temporary branch with the new follow target messages...Once the pr with the new messages are approved in the mavlink repo here:\n\nhttps://github.com/mavlink/mavlink/pull/526\n\n can switch it back to pointing to the correct repo and it should build ok without the hack.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-19T07:27:40Z",
+        "body": "@catch-twenty-two Will start to integrate this tonight, so will be done in your morning.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-19T14:28:26Z",
+        "body": "MAVLink PR is in. Now moving on to do a final review here and get it in.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-19T14:48:19Z",
+        "body": "Almost all changes look good, except for the multi rotor position control where I see changes which will affect the general flight behaviour. When this is resolved it should be good to go.\n\nI brought in the MAVLink changes in master (c27981d), please rebase.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-03-19T16:09:24Z",
+        "body": "> Almost all changes look good, except for the multi rotor position control where I see changes which will affect the general flight behaviour. When this is resolved it should be good to go.\n> \n> I brought in the MAVLink changes in master (c27981d), please rebase.\n\nThanks, I addressed your concerns in the comments lmk what you think.  Will do the rebase asap.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "liang-tang",
+        "created_at": "2016-03-21T02:22:42Z",
+        "body": "@catch-twenty-two  I have some advise to give you.\n\n``` ruby\nvoid FollowTarget::pause()\n{\n    //math::Vector<3> vel(0, 0, 0);\n    _current_vel.zero();\n\n    set_loiter_item(&_mission_item, _param_min_alt.get());\n\n    //update_position_sp(vel);\n\n    _previous_target_gps_pos_valid = false;\n    //_current_target_motion.lat = _navigator->get_global_position()->lat;\n    //_current_target_motion.lon = _navigator->get_global_position()->lon;\n    //mavlink_log_info(_navigator->get_mavlink_fd(),\"pause\");\n}\n```\n\nI think _previous_target_gps_pos_valid should reset to false when pause status, so _target_vel is really valid when update_target_velocity() next time.\n\n``` ruby\nvoid FollowTarget::update_target_motion()\n{\n    bool updated;\n\n    orb_check(_follow_target_sub, &updated);\n\n    if (updated) {\n\n        // save last known motion topic\n\n        _previous_target_motion = _current_target_motion;\n\n        orb_copy(ORB_ID(follow_target), _follow_target_sub, &_current_target_motion);\n\n        update_target_velocity();\n\n        if (_previous_target_gps_pos_valid == false) {\n            _previous_target_motion = _current_target_motion;\n            _previous_target_gps_pos_valid = true;\n        }\n```\n\n if  _current_target_motion is Null, _target_vel will be wrong when update_target_velocity(). So can it be modified like this?\n\n``` ruby\n        if (_previous_target_gps_pos_valid == false) {\n            _previous_target_motion = _current_target_motion;\n            _previous_target_gps_pos_valid = true;\n        }\n\n        update_target_velocity();\n```\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-03-21T15:45:43Z",
+        "body": "@LorenzMeier Hey Lorenz,  I got rid of the SETPOINT_TYPE_VELOCITY statement by checking if the velocity or position setpoints are valid in the setpoint triplet.  This works the exact same way, and allows me to get rid of the statement for ignoring pos setpoint generated velocity if SETPOINT_TYPE_VELOCITY is the setpoint type.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-03-22T19:40:20Z",
+        "body": "@liang-tang I took some time to make the code more robust and readable overall.  It should address all of your concerns. Were you able to fly it at all?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "liang-tang",
+        "created_at": "2016-03-23T00:55:08Z",
+        "body": "@catch-twenty-two I tested many times, i found it difficult to catch up with me, maybe gps data lost?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-03-23T02:42:23Z",
+        "body": "@liang-tang Great thanks for testing... Yes, that might be the case, the 3dr radio interferes with my phone gps...  I have to hold it very far away from the phone to get it to work correctly...Once it works though it works well...I'm going to play around with it some more to find the optimal placement for the radio. My friend and  I were able to take turns riding our bikes while having it follow us.  We stopped and started abruptly and also looped back on ourselves over a fairly large parking lot and it stayed with in 5-10 meters of us the whole time. \n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-23T19:42:53Z",
+        "body": "Replaced by https://github.com/PX4/Firmware/pull/4065/files\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-03-12T22:17:22Z",
+        "body": "Don't require a home position\n",
+        "path": "src/modules/commander/state_machine_helper.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-19T14:33:46Z",
+        "body": "In the section below are changes which exceed the changes needed for follow-me. Either this is a bad merge or the conditioning is incorrect (they should be guarded by if == FOLLOW_TARGET).\n",
+        "path": "src/modules/mc_pos_control/mc_pos_control_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-03-19T15:57:50Z",
+        "body": "The above code uses a combination of overriding the velocity set point when it is appropriate while still using the position set point when it's not so I can take advantage of the velocity braking code as the position set point error delta gets smaller.  The code below overrides the velocity set point at all times and ignores the position set point for when the follow target module is in velocity tracking mode.  I was going to make a new set point type for the code below but saw that the position set point type already defined a set point type for velocity only, it just wasn't being used in the code anywhere. I used both of these set point types for a smooth transition between following using position and the velocity only tracking mode. Let me know if you still think I need to fix something or possibly have a better idea for what I am trying to accomplish.\n\nHere is where I switch between the 2 tracking methods:\n\nhttps://github.com/PX4/Firmware/pull/3814/files?diff=unified#diff-35e82494becdfdcc5afaafb5b3f4e361R278\n",
+        "path": "src/modules/mc_pos_control/mc_pos_control_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": []
+  }
+}

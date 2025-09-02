@@ -1,0 +1,93 @@
+{
+  "title": "Navigator: Fix fixed-wing first order altitude hold",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/9850",
+  "number": 9850,
+  "created_at": "2018-07-06T15:52:20Z",
+  "merged": true,
+  "merged_at": "2018-07-16T03:54:09Z",
+  "state": "closed",
+  "conversation": {
+    "author": "philipoe",
+    "body": "**Issue**\r\nNavigator's fixed-wing first-order altitude hold (FOH) is currently causing altitude reference oscillations when in any LOITER mode. See screenshot below. Not only altitude, but also pitch and throttle can thus oscillate significantly. We observed this during a recent test flight.\r\n\r\n![image](https://user-images.githubusercontent.com/2565608/42387985-53c6343e-8144-11e8-86d2-a42aecc4c5c0.png)\r\n\r\n\r\nLog file from SITL where this can be seen: https://review.px4.io/plot_app?log=f18c45ab-622e-4b1d-9819-03cfb06af2b5 . Here, after t=3:20 the true altitude setpoint is still the same as before t=2:20 (i.e. 630m AMSL) but the FOH logic just wrongly sets it to 660m and adds slight oscillations on top. The exact amount of oscillations depends on waypoint distance, altitude difference etc, but i have seen altitude ref oscillations of up to 30m, resulting in full pitch up/down of the aircraft.\r\n\r\n**Analysis**\r\nSee the commit for the location of the code where this is happening. Essentially, every time that the loiter radius of any loiter WP is larger than the acceptance radius calculated from the L1 turn distance, then the Navigator FOH would _not_ consider the waypoint reached and would thus not stop modifying the current altitude setpoint. This leads to the oscillations or offsets in the altitude reference. \r\n\r\n**Solution**\r\nIf in any loiter mode, consider the loiter radius times a factor of 1.2 (same as for the waypoint_reached logic [here](https://github.com/PX4/Firmware/blob/master/src/modules/navigator/mission_block.cpp#L217) as the acceptance radius. Tested in SITL, which should be sufficient for this case.\r\n\r\n@acfloria @ryanjAA @antiheavy FYI\r\n@dagar Made this PR as a quick hotfix independently of your PR at https://github.com/PX4/Firmware/pull/8883/files which supposedly also fixes this but is much larger and where it is more uncertain when this would be merged.",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2018-07-06T15:55:52Z",
+        "body": "This actually needs a little thought to review. There are a few situations where the position setpoint type and mission_item type are not the same. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-07-06T16:12:36Z",
+        "body": "I can of course also check for `(_mission_item.nav_cmd == NAV_CMD_LOITER_UNLIMITED ||\r\n\t\t\t    _mission_item.nav_cmd == NAV_CMD_LOITER_TIME_LIMIT))` if you prefer that... just let me know.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-07-06T16:53:41Z",
+        "body": "If you can do it entirely from the position setpoint (ignoring mission_item) it should effectively avoid the edge cases (LOITER_TO_ALT, mission work items, etc).",
+        "type": "issue_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-07-06T17:09:20Z",
+        "body": "So you'd also want to use `acc_rad = _navigator->get_acceptance_radius(fabsf(pos_sp_triplet->current.loiter_radius) * 1.2f);` instead of using the mission item loiter radius?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-07-06T17:29:28Z",
+        "body": "Yes, but drop the mission_item entirely and do a quick skim of the entire altitude_sp_foh_update() to make sure nothing is dependant on the mission item. This is one of the reasons I wanted to move it to the position controller. Multicopter skips this thing entirely.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-07-06T21:19:54Z",
+        "body": "> Yes, but drop the mission_item entirely and do a quick skim of the entire altitude_sp_foh_update() to make sure nothing is dependant on the mission item. This is one of the reasons I wanted to move it to the position controller. Multicopter skips this thing entirely.\r\n\r\nI'll can do this tomorrow if you can't get to it.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-07-06T21:58:12Z",
+        "body": "> I'll can do this tomorrow if you can't get to it.\r\n\r\nSure, I guess you know exactly how you'd like to do it. Let me know if i should retest it afterwards then.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-07-16T01:29:51Z",
+        "body": "> Sure, I guess you know exactly how you'd like to do it.\r\n\r\nNot really, I just see a number of subtle edge cases that make me uncomfortable.\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-07-16T03:52:19Z",
+        "body": "I played around with this a bit, but there's still another (small) possible hole when the mission item nav_cmd is out of sync with the current position setpoint type.\r\n\r\nLet's merge this now, but work on moving it to the position controller soon. From there it's much easier to safely handle the altitude ramp or hand off between loiter <-> position without fighting to plug numerous holes.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      },
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "Possibly not 100% correct in all situations to mix _mission_item and position_setpoints here.",
+        "state": "CHANGES_REQUESTED",
+        "type": "review"
+      },
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

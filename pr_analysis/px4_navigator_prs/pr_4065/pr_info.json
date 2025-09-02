@@ -1,0 +1,77 @@
+{
+  "title": "Follow me",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/4065",
+  "number": 4065,
+  "created_at": "2016-03-23T19:14:10Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "LorenzMeier",
+    "body": "@catch-twenty-two Replacing your PR with this rebased and formatted version.\n",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-23T19:38:15Z",
+        "body": "@catch-twenty-two What is the current state of this right now? Do you have an updated video?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-23T19:39:30Z",
+        "body": "Matching QGC PR, not merged yet and with CI errors: https://github.com/mavlink/qgroundcontrol/pull/2817\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-03-23T21:19:59Z",
+        "body": "@LorenzMeier Great thanks for doing that, No updated video yet. I did go out with friend to test it on a bicycle so I could see how well it tracked a fast moving object and all went well.  I'll do one more test tomorrow with all the updated changes and then call it good.  I'll also I'll see if I can get some more video if possible.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "liang-tang",
+        "created_at": "2016-03-24T07:33:01Z",
+        "body": "@catch-twenty-two Is there a bug?\n\n``` javascript\nvoid FollowTarget::update_position_sp(bool use_velocity, bool use_position)\n{\n    // convert mission item to current setpoint\n\n    struct position_setpoint_triplet_s *pos_sp_triplet = _navigator->get_position_setpoint_triplet();\n\n    // activate line following in pos control if position is valid\n\n    pos_sp_triplet->previous.valid = use_position;\n    pos_sp_triplet->previous = pos_sp_triplet->current;\n    mission_item_to_position_setpoint(&_mission_item, &pos_sp_triplet->current);\n    pos_sp_triplet->current.type = position_setpoint_s::SETPOINT_TYPE_FOLLOW_TARGET;\n    pos_sp_triplet->current.position_valid = use_position;\n    pos_sp_triplet->current.velocity_valid = use_velocity;\n    pos_sp_triplet->current.vx = _current_vel(0);\n    pos_sp_triplet->current.vy = _current_vel(1);\n    pos_sp_triplet->next.valid = false;\n    _navigator->set_position_setpoint_triplet_updated();\n}\n```\n\n   pos_sp_triplet->current.valid is miss? control_auto couldn't work well if we missed it. when i switch to follow target mode, the vehicle isn't moving at all.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-03-24T19:53:45Z",
+        "body": "@LorenzMeier Happy to report I went out today and everything worked great.  I have some video but my I'll have to see if it's worth posting.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-03-24T20:04:58Z",
+        "body": "> pos_sp_triplet->current.valid is miss? control_auto couldn't work well if we missed it. when i switch to follow target mode, the vehicle isn't moving at all.\n\nHmmm...you are right.  I'm actually surprised my tests went okay today, odd.... Good catch.  I'll have to fix it and retest tomorrow. \n\nNevermind see here where the sp is marked as valid:\n\nhttps://github.com/PX4/Firmware/pull/4065/files#diff-c8b2face30ea93f334a64cf7f9aff096L83\n\nThere could possibly be something wrong with your gps...Do you have another phone you can try?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-24T20:13:09Z",
+        "body": "I always love videos, so I hope it turns out well!\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "DonLakeFlyer",
+        "created_at": "2016-03-24T22:20:28Z",
+        "body": "My suggestion for basic follow me support would be to maintain the current height of the Vehicle. Also mantain the current distance/positioning from the target calculated from the first follow me message.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "catch-twenty-two",
+        "created_at": "2016-03-25T03:40:04Z",
+        "body": "I'm no filmmaker... which is very apparent from this video, it contains:\n\n1) Me walking with follow me mode activated.\n2) My mother who I recruited to help me, walking with follow me mode activated (all the rest of my friends are at work on weekday mornings, imagine that! :) )\n3) Me riding my Xooter Scooter that I use to get around San Francisco, with follow me activated. At this point I was actually brave enough to set the RC down so I had no safety net (if anything were to go wrong) and let my code do it's work....\n\nThere was a slight wind blowing probably around 7-10 mph the frame type is a DJI style 330. \n\n> I always love videos, so I hope it turns out well!\n\n@LorenzMeier Did it turn out well?  Not really. But hopefully your love of videos makes up for that. lol!\n\nhttps://youtu.be/RxDL4CtkzAQ\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-27T10:17:47Z",
+        "body": "Awesome, merged! Now on to the QGC merge, @DonLakeFlyer!\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

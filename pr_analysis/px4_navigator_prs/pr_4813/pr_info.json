@@ -1,0 +1,35 @@
+{
+  "title": "Fw vtol no airspeed",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/4813",
+  "number": 4813,
+  "created_at": "2016-06-14T08:51:44Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "RomanBapst",
+    "body": "",
+    "issue_comments": [
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-06-14T08:52:49Z",
+        "body": "@sanderux I was looking at it and noticed that with this implementation we will not be blending controls during the transition. Might make sense to blend the controls based on time just like it's done for the backtransition.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-06-15T22:12:04Z",
+        "body": "i'll get that in, do you think it's ok to base it on min trans time, or should i add a seperate param?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-06-21T08:35:36Z",
+        "body": "@sanderux I think min trans time is ok.\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

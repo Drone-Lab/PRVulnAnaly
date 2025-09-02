@@ -1,0 +1,113 @@
+{
+  "title": "Clean up vehicle_status message",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/3846",
+  "number": 3846,
+  "created_at": "2016-02-24T18:17:26Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "julianoes",
+    "body": "Do not merge yet, untested, just for review.\n\nThis is work in progress trying to clean up the vehicle_status message.\nCurrent changes include:\n- Remove circuit breakers from vehicle_status\n- Delete mavlink compatible fields which were not in sync anymore.\n- Move vtol_vehicle_status enum to vtol_status topic.\n- Move battery calculations to the respective drivers (sensors.cpp and px4io.cpp).\n- Move battery data to battery_status topic.\n- Internalize condition bools into commander and out of vehicle_status.\n- Use land_detected message everywhere instead of the landed bool in vehicle_status.\n\nFor more detailed explanations, please read through the commit messages.\n\nThis PR is now on top of #3857.\n",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-24T18:24:59Z",
+        "body": "Architectural implications / cleanup looks good.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-02-26T13:04:28Z",
+        "body": "@LorenzMeier Any idea why the mavlink include doesn't work in travis:\nhttps://travis-ci.org/PX4/Firmware/jobs/111996908#L625\n\nIf I use the exact same command on my machine, it works.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-02-26T15:48:27Z",
+        "body": "Have you tried `#include <v1.0/common/mavlink.h>`?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-02-26T16:07:52Z",
+        "body": "@dagar thanks, I'll give it a try.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "jschall",
+        "created_at": "2016-02-27T00:36:09Z",
+        "body": "@julianoes looks like there's some ros stuff failing CI tests (src/platforms/ros/nodes/commander/commander.cpp). Looks like it is simple to fix. Should I address problems with it? Can I be made a collaborator here so that I can push to the branch?\n\n@LorenzMeier what is the timeline like for getting this pushed in once it passes CI tests?\n\n@liamstask fyi\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "jschall",
+        "created_at": "2016-02-27T00:43:44Z",
+        "body": "Which target should I build to reproduce the error? I tried ros_sitl_default but it said that target was deprecated and to use posix_sitl_default (which works)\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "liamstask",
+        "created_at": "2016-02-28T01:04:46Z",
+        "body": "@LorenzMeier any pointers on debugging the travis failures per @jschall's questions above?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-02-28T02:46:23Z",
+        "body": "@jschall you can open a pull request onto this branch. It looks like you just need to update the ros commander node to use the new commander_state.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "jschall",
+        "created_at": "2016-02-29T07:30:06Z",
+        "body": "There's a new \"commander_state\" message but no one publishes it as far as I can tell.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-02-29T09:22:30Z",
+        "body": "@jschall :\n\n> looks like there's some ros stuff failing CI tests (src/platforms/ros/nodes/commander/commander.cpp). Looks like it is simple to fix. Should I address problems with it? Can I be made a collaborator here so that I can push to the branch?\n\nI didn't know about this ROS stuff, let me have a look.\n\n> There's a new \"commander_state\" message but no one publishes it as far as I can tell.\n\nOh, good catch. I'll add that.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-29T16:47:58Z",
+        "body": "Jenkins: test this please\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-03-03T13:24:53Z",
+        "body": "I rebased this once again on master. Every time there is some conflicts, so it would be good to flight test this and merge as soon as possible.\n\n@tumbili any chance you could give this a flight test (in the snow :smile:)?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-04-08T08:12:17Z",
+        "body": "Jenkins: test this please\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-04-08T13:49:52Z",
+        "body": "@LorenzMeier and @liamstask\n\nThis would be ready to be merged, I've test flown it today. However, I'd like to hold off the merge until Monday in case it breaks somebody's setup because I'll be offline and not able to resolve conflicts or help debug problems.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "liamstask",
+        "created_at": "2016-04-08T15:09:05Z",
+        "body": "sounds good!\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-04-11T16:42:21Z",
+        "body": "Rebased and applied!\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "title": "Geofence",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/17362",
+  "number": 17362,
+  "created_at": "2021-04-08T12:15:33Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "open",
+  "conversation": {
+    "author": "garfieldG",
+    "body": "Hi,\r\n\r\nfollowing https://github.com/PX4/PX4-Autopilot/issues/16679 some changes were made :\r\n-fixed bug that caused a breach of geofence if trying to go above the geofence more than one time\r\n-gf alert will disappear when changing gf action to none\r\n-mission will be accepted if gf action is none or warning",
+    "issue_comments": [
+      {
+        "author": "garfieldG",
+        "created_at": "2021-04-11T13:52:40Z",
+        "body": "changed to draft due to a bug I found. I Will change it back after fixing it",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-11-28T12:17:49Z",
+        "body": "Hi @garfieldG can you check if your changes are still needed with https://github.com/PX4/PX4-Autopilot/pull/22394?",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

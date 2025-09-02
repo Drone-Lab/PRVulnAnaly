@@ -1,0 +1,87 @@
+{
+  "title": "Navigator: Geofence improvements",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22394",
+  "number": 22394,
+  "created_at": "2023-11-16T15:20:26Z",
+  "merged": true,
+  "merged_at": "2023-11-23T02:45:02Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "### Solved Problem\r\n\r\nFixes: \r\n1) listen to GF_SOURCE (fixes https://github.com/PX4/PX4-Autopilot/issues/20677)\r\n2) do not constantly send new reposition waypoints when GF is breached as a fixed-wing\r\n\r\nNew features:\r\n3) if armed, do not allow to upload GF that would immediately trigger\r\n4) do not allow to upload GF if it doesn't contain Home (to not break RTL)\r\n\r\nFunctional changes (neither new features nor fixes):\r\n5) has to be in all inclusion GF \r\n6) remove GF_ALTMODE (with the big baro offset usually present this is quite unusable)\r\n7) remove GF_COUNT (don't see need, don't find it intuitive)\r\n8) change messaging\r\n9) some code cleanup\r\n\r\n### Solution\r\n1) correctly listen to it.\r\n2) if GF_ACTION is HOLD, and GF is breached: stay in the \"GF breached mode\" until the current loiter is changed (through new reposition or change of mode) --> see https://github.com/PX4/PX4-Autopilot/commit/66ca5c294952689e0775c5136ad0d7f6604a2d17\r\n3) check GF breach in update function, and stop updating the current GF if it would immediately get breached --> see https://github.com/PX4/PX4-Autopilot/commit/83f3665d9576b453142196c2e4725e46728d1f46\r\n4) check GF breach in update function, and stop updating the current GF if it doesn't contain Home --> see https://github.com/PX4/PX4-Autopilot/commit/83f3665d9576b453142196c2e4725e46728d1f46\r\n5) Change logic that all GF action already gets triggered when the GF leaves one inclusion GF, not only when outside of all inclusion GF. \r\nI'm not entirely sure what we want, but for me it seems cleaner that way.\r\n6) remove it.\r\n7) remote it.\r\n8) see https://github.com/PX4/PX4-Autopilot/commit/8e1c3e8093e3da0dbe9a276eb01d2672d7cd190b:\r\n - geofence_result.cpp contains to contain separate fields for the 3 geofence types\r\n -  remote \"primary\" from messages, as we don't distinguish primary vs secondary etc\r\n - do all user notification due to GF breach from Commander\r\n9) various \r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nBugfix: Geofence: correctly listen to GF_SOURCE\r\nBugfix: Geofence: do not constantly send new reposition waypoints when GF is breached as a fixed-wing\r\nFeature: Geofence: if armed, do not allow to upload GF that would immediately trigger\r\nFeature: Geofence: do not allow to upload GF if it doesn't contain Home (to not break RTL)\r\nDocumentation: TODO\r\n```\r\n\r\n### Alternatives\r\nWe should also fix the pre-emptive geofence triggering (GF_PREDICT=1). I haven't touched that in this PR, and even split it up further (without GF_PREDICT=1 it will now always set the Hold point at the position it is currently at).\r\n\r\n### Test coverage\r\nSITL tested\r\n\r\n### Context\r\nScreen recording with current main, where issues 4) and 2) are visible:\r\n\r\nhttps://github.com/PX4/PX4-Autopilot/assets/26798987/87cd8a30-1768-493f-afa6-9ce8dc84ac27\r\n\r\nScreen recording of this PR, where the new features 3) and 4) are shown, plus fixed 2):\r\n\r\nhttps://github.com/PX4/PX4-Autopilot/assets/26798987/2469124f-63e4-4f1e-9ac4-5315b2d020da\r\n\r\n\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "MaEtUgR",
+        "created_at": "2023-11-21T16:48:02Z",
+        "body": "Maintainers call: Would be nice to have an automated test for this e.g. MAVSDK test using https://github.com/mavlink/MAVSDK/blob/main/examples/geofence/geofence.cpp",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-12-15T15:08:42Z",
+        "body": "> Hello @sfuhrer ! It appears there might be a potential issue with the invocation of the checkMissionAgainstGeofence() function when only the geofence undergoes an update [484a44e](https://github.com/PX4/PX4-Autopilot/commit/484a44e5e97c24ef74d108d26725d38f73db5e39) . The problem is related to the state machine and asynchronous message reading in geofence.cpp.I'm here to assist further if needed.\r\n\r\nHi! Do you mean that when you update the geofence, you would want the mission feasibility checks to be run immediately against it, and then\r\n- (A) reject the geofence update if the mission feasibility check then would fail\r\n- (B) make the mission invalid\r\n\r\n?\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Drone-Lab",
+        "created_at": "2023-12-15T15:29:08Z",
+        "body": "\r\n> Hi! Do you mean that when you update the geofence, you would want the mission feasibility checks to be run immediately against it, and then\r\n> \r\n> * reject the geofence update if the mission feasibility check then would fail\r\n> * make the mission invalid\r\n\r\nYes.\r\n\r\nCurrently, the same upload button doesn't trigger a check when updating only the fence, only updating the mission triggers a check, which I think is patently unreasonable.\r\n\r\nFor example, a scenario like this: a user plans a task in advance and passes the check, is ready to execute it some time later, but doesn't get a notification that the task is not compliant until just before execution.\r\n\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-12-22T11:36:18Z",
+        "body": ">Yes.\r\n\r\nIt wasn't a yes/no question :sweat_smile: \r\nWhich of the two options would you prefer? A or B? Before we decide on that we cannot implement anything. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Drone-Lab",
+        "created_at": "2023-12-22T12:18:10Z",
+        "body": "> It wasn't a yes/no question 😅 Which of the two options would you prefer? A or B? Before we decide on that we cannot implement anything.\r\n\r\nwhen I update the geofence, I need the mission feasibility checks to be run immediately.\r\nSince the geofence and mission updates are under the same button \"upload\", we just need to reject this update(include geofence and mission if they have been updated) and leave it as it was before we clicked upload.So,it is a yes/no question.😀\r\n\r\n\r\nSince now there is already a feasibility check in the module of the mission, when a new upload of a new mission is not available, it will be rejected.\r\nWe can accomplish the above by simply adding the same check to the geofence.Like this:https://github.com/PX4/PX4-Autopilot/pull/22531\r\n\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-12-22T12:29:57Z",
+        "body": "> > It wasn't a yes/no question 😅 Which of the two options would you prefer? A or B? Before we decide on that we cannot implement anything.\r\n> \r\n> when I update the geofence, I need the mission feasibility checks to be run immediately. Since the geofence and mission updates are under the same button \"upload\", we just need to reject this update(include geofence and mission if they have been updated) and leave it as it was before we clicked upload.So,it is a yes/no question.😀\r\n> \r\n> Since now there is already a feasibility check in the module of the mission, when a new upload of a new mission is not available, it will be rejected. We can accomplish the above by simply adding the same check to the geofence.Like this:#22531\r\n\r\nBut isn't that exactly option A? You propose to reject the GF if it's not compatible with the mission.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Drone-Lab",
+        "created_at": "2023-12-22T12:53:36Z",
+        "body": "> But isn't that exactly option A? You propose to reject the GF if it's not compatible with the mission.\r\n\r\nYes,you are right!\r\nI want to reject a whole round of uploads that aren't feasible, and if the upload only updates the geofence, it's case A.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "DronecodeBot",
+        "created_at": "2024-07-25T01:09:08Z",
+        "body": "This pull request has been mentioned on **Discussion Forum for PX4, Pixhawk, QGroundControl, MAVSDK, MAVLink**. There might be relevant details there:\n\nhttps://discuss.px4.io/t/px4-v1-15-public-changes-what-needs-docs/39850/1\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "mcsauder",
+        "created_at": "",
+        "body": "This is a nice simplification and improvement.  Thanks @sfuhrer !",
+        "state": "APPROVED",
+        "type": "review"
+      },
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      },
+      {
+        "author": "Drone-Lab",
+        "created_at": "",
+        "body": " Hello @sfuhrer  ! It appears there might be a potential issue with the invocation of the checkMissionAgainstGeofence() function when only the geofence undergoes an update 484a44e5e97c24ef74d108d26725d38f73db5e39 .  The problem is related to the state machine and asynchronous message reading in geofence.cpp.I'm here to assist further if needed. ",
+        "state": "COMMENTED",
+        "type": "review"
+      }
+    ]
+  }
+}

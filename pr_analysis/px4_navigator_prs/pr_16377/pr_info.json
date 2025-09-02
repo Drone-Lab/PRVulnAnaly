@@ -1,0 +1,229 @@
+{
+  "title": "Various RTL improvements (mainly VTOL specific)",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/16377",
+  "number": 16377,
+  "created_at": "2020-12-11T15:23:13Z",
+  "merged": true,
+  "merged_at": "2021-01-04T10:58:17Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "Replaces https://github.com/PX4/PX4-Autopilot/pull/14728.\r\n\r\n**Describe problem solved by this pull request**\r\n- currently landing on the landing pattern doesn't seem to work (land pattern = whatever of the mission is after the DO_LAND_START marker)\r\n- high transition altitude (see https://github.com/PX4/PX4-Autopilot/pull/14728 for context)\r\n\r\n**Describe your solution**\r\nRTL logic with this PR, changes to current logic in **bold**\r\n(assuming RTL_TYPE is set to 1 (VTOL and FW default, using mission landing if available))\r\n- if close to RTL landing position and in hover, use cone RTL logic (if mission landing is planned that one is used)\r\n- if VTOL and in hover mode, use normal MC RTL strategy (climb to `RTL_RETURN_ALT`, come back and land at RTL landing position)\r\n- if DO_LAND_START is set (landing using mission landing): \r\n  - if in FW mode, go to DO_LAND_START marker in FW mode and from there on follow mission landing\r\n  - if in MC mode, go to the Land position and land there (don't follow landing pattern as in FW mode)\r\n-  if DO_LAND_START is not set \r\n   - if VTOL and in FW mode, climb to `RTL_RETURN_ALT`, fly to home, **loiter down until `RTL_DESCEND_ALT` in FW mode**, transition to hover and land\r\n\r\n**Test data / coverage**\r\nSITL tested with Standard VTOL and multicopter. \r\n\r\n**Additional context**\r\nFor VTOL, it is recommended to always fly with a mission landing planned, such that this one can be used during the RTL. Landing approaches using mission landing can be optimized for current wind direction (transition into the wind), and result in less hover time (vehicle transitions over hover, instead of while loitering around home)\r\n",
+    "issue_comments": [
+      {
+        "author": "Antiheavy",
+        "created_at": "2020-12-11T23:35:52Z",
+        "body": "is this:\r\n\r\n\r\n> For VTOL, it is recommended to always fly with a mission landing planned, such that this one can be used during the RTL. Landing approaches using mission landing can be optimized for current wind direction (transition into the wind), and result in less hover time (vehicle transitions over hover, instead of while loitering around home)\r\n\r\nconsistent with this?:\r\n\r\n\r\n> * if close to home position and in hover, use cone RTL logic\r\n> \r\n> * if VTOL and in hover mode, use normal MC RTL strategy (climb to `RTL_RETURN_ALT`, come back and land)\r\n\r\nHave you considered if there should be a parameter that allows/avoids RTL at the Home location if in MC mode?  I wonder how many VTOL people would always want to use the mission landing if at all possible?  The \"return to home\" fall-back in the RTL_TYPE=1 logic was originally designed for the case when the mission landing accidentally gets deleted or gets overwritten with an infeasible landing pattern (which unfortunately is something that can easily happen).  \r\n\r\nFrom the way this PR is currently written you intend the VTOL vehicle will perform different Return mode behaviors depending on the context.  I wonder if that is how 100% of VTOL users will want it to work.  I'm not a VTOL expert so I'm not advocating one way or another, just curious.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2020-12-15T10:34:45Z",
+        "body": "> Have you considered if there should be a parameter that allows/avoids RTL at the Home location if in MC mode?\r\n\r\nThanks for pointing this out. I actually wrote it down wrongly in the description. It will **always use the mission landing for RTL if RTL_TYPE is 1**. What changes is that it now won't follow the landing pattern (all that is after the DO_LAND_START) in hover, but directly go to Land and descend there. \r\n\r\n\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "moreba1",
+        "created_at": "2020-12-29T12:58:36Z",
+        "body": "in the master version, VTOL has a dangerous behavior when it reaches VTOL Land.\r\n@sfuhrer \r\nhttps://logs.px4.io/plot_app?log=9df156fc-233e-4b54-ad23-e82017ff47f4\r\n\r\ndesirable behavior is that VTOL transition location be near to land location to minimize power consumption, and the drone doesn't have that much tilt angle and oscillation in MC mode.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2020-12-29T17:13:23Z",
+        "body": "Rebased on master.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ghost",
+        "created_at": "2020-12-31T03:42:06Z",
+        "body": "I also noticed that the standard_vtol back transition is behaving dangerously. it's on master and also in this pr,\r\nI noticed this on my flight on the real hardware as well. \r\njust after the back-transition it tries to do a roll maneuver in most of the times,\r\nBut every once in a while, it does a ok back-transition, without trying to roll . \r\n\r\nsame mission, two instances, same-pr (firmware), back-transition behavior is different.\r\nhttps://review.px4.io/plot_app?log=1e1bb5d2-5260-40da-bd7e-46fadf55fc6c ---> rolling\r\nhttps://review.px4.io/plot_app?log=12468162-8610-4965-831c-dd25c8edfeda ---> without roll\r\n\r\nhttps://user-images.githubusercontent.com/25317204/103393299-f0d23000-4b47-11eb-8937-cd642d604219.mp4\r\n\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2020-12-31T10:27:09Z",
+        "body": "Thanks for reporting - @RomanBapst @sfuhrer could you please follow up?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2021-01-04T08:48:34Z",
+        "body": "@yuthikasagarage Have you reviewed your flights? It looks like the vehicle is overshooting the transition waypoint (so your plan is \"not doable\") and hence correcting. There is nothing wrong about the control performance, this seems to be more a planning UX / tuning issue than anything else. That still needs to be solved, but not necessarily in the VTOL controller.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ghost",
+        "created_at": "2021-01-04T09:29:15Z",
+        "body": "i will look into the flights again, and will try to tune the back transition and check whether the issue persists.\r\nhowever, with a bad planning let's say it does a back-transition in some case, i think all the back-transitions need to be on level flight even if it overshoots, just my two cents.  ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-01-04T12:40:56Z",
+        "body": "@moreba1 \r\n\r\n> in the master version, VTOL has a dangerous behavior when it reaches VTOL Land.\r\n\r\nThis should be fixed with this PR, please re-test.\r\n\r\n> desirable behavior is that VTOL transition location be near to land location to minimize power consumption, and the drone doesn't have that much tilt angle and oscillation in MC mode.\r\n\r\nWith the code from this PR in, it will transition at a distance of the loiter radius from home if no mission landing is planned and the waypoint before the landing waypoint isn't at the transition altitude (RTL_DESCEND_ALT). I'm aware that this isn't optimal for minimized hover time, but at least it should be an improvement to before where it could transition 100m above home and then descend in hover. \r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "moreba1",
+        "created_at": "2021-01-28T16:12:01Z",
+        "body": ">     * if in FW mode, go to DO_LAND_START marker in FW mode and from there on follow mission landing\r\n\r\nIs it possible that VTOL first climbs to RTL_RETURN_ALT and keep this attitude until it reaches to landing pattern?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-01-28T16:52:58Z",
+        "body": ">Is it possible that VTOL first climbs to RTL_RETURN_ALT and keep this attitude until it reaches to landing pattern?\r\n\r\nThat should be the desired behavior. If you noticed something else then let me know, that would indicate a bug.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "VTOLDavid",
+        "created_at": "2021-02-10T18:34:07Z",
+        "body": "> \r\n> \r\n> i will look into the flights again, and will try to tune the back transition and check whether the issue persists.\r\n> however, with a bad planning let's say it does a back-transition in some case, i think all the back-transitions need to be on level flight even if it overshoots, just my two cents.\r\n\r\nI having this problem with a tailsitter with very dangerous turns during transition. Is it possible to disable the navigation during transition? The sugested solution is to give more time to the backtransition?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-02-11T14:48:08Z",
+        "body": "> I having this problem with a tailsitter with very dangerous turns during transition. Is it possible to disable the navigation during transition? The sugested solution is to give more time to the backtransition?\r\n\r\nI don't think this is directly related to this specific PR - would you mind creating a new issue, and include some flight logs in the description? Thanks!",
+        "type": "issue_comment"
+      },
+      {
+        "author": "hamishwillee",
+        "created_at": "2021-03-24T06:26:02Z",
+        "body": "@sfuhrer @Antiheavy Are there any docs changes related to this for PX4v1.12? My guess is yes, though it is unclear with the long thread, what delivered/what the landing behaviour is (?).\r\n\r\nLooking at the initial post, it is mostly about what should happen if RTL_TYPE is set to use a mission landing (RTL_TYPE=1) and there was no mission landing pattern defined - in which case it should fly down in FW mode to the descent altitude and then switch to MC and descend \"as per usual\". \r\n\r\nThe description is a little flawed because it does not cater for the behaviour with rally points. \r\n\r\nDocs for vtol are here:\r\nhttps://docs.px4.io/master/en/flight_modes/return.html#vtol\r\nhttps://docs.px4.io/master/en/flight_modes/return.html#mission-landing-rally-point-return-type-rtl-type-1",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2020-12-17T00:58:53Z",
+        "body": "I'm not sure I follow, how would this fail if the mission landing progress was set to false immediately on first inactivation?",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 16,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2020-12-17T01:01:13Z",
+        "body": "```suggestion\r\n\t\t\t// even if current climb altitude is below (e.g. RTL immediately after take off)\r\n```",
+        "path": "src/modules/navigator/rtl.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2020-12-17T01:02:54Z",
+        "body": "Now I'm wondering why this wasn't already set by default.",
+        "path": "src/modules/navigator/rtl_params.c",
+        "position": 28,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2020-12-18T13:20:04Z",
+        "body": "Yes that's a big wonder. I found the cone RTL always really useful so far, both for VTOL in hover and MC.",
+        "path": "src/modules/navigator/rtl_params.c",
+        "position": 28,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2020-12-18T13:20:06Z",
+        "body": "@dagar This prevents the situation where e.g. you are on a mission landing and then RTL kicks in. You don't want to start from the beginning but continue the mission. However, if e.g. the user takes over in manual during a mission landing and then switches back, you probably want to start he mission landing from scratch, as you have no clue where exactly you are and if you are still aligned with the path.",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 16,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2020-12-18T14:30:06Z",
+        "body": "I should have been more specific, the part I don't follow is the magic 2 seconds.",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 16,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2020-12-21T11:01:58Z",
+        "body": "@dagar A long study over many years has calculated this number to be the one and only reasonable value. It's almost like pi....",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 16,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2020-12-21T15:04:36Z",
+        "body": "Why not do it immediately on the actual mission deactivation?",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 16,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2020-12-21T15:06:19Z",
+        "body": "This is for mission -> RTL (failsafe, etc) -> mission (planned landing) with little to no delay?",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 16,
+        "type": "review_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2021-01-04T10:57:52Z",
+        "body": "Let's track this in a separate issue - we shouldn't be blocking an incremental move towards a much better behavior.",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 16,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-01-05T08:21:41Z",
+        "body": "Issue to track that: https://github.com/PX4/PX4-Autopilot/issues/16488",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 16,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2021-01-29T13:06:28Z",
+        "body": "@dagar I think I might need to explain this a bit better:\r\nWhen you are executing a mission landing and RTL kicks in due to low battery, then the mode switches from mission to RTL and back to mission (assuming you are executing a mission landing, which is the preferred choice almost always).\r\nTwo the second delay (it actually needs way less) allows the mission to just continue the landing rather than restarting the landing pattern.",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 16,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2021-01-29T13:06:54Z",
+        "body": "@dagar Sorry, I noticed I told you this before. What is the issue here?",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 16,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2021-01-29T14:54:56Z",
+        "body": "> @dagar Sorry, I noticed I told you this before. What is the issue here?\r\n\r\nNothing necessarily, I just wanted to make sure there wasn't a potential hole for a hard to reproduce bug down the round. Eg dataman chokes reading the sdcard and there's a one off delay that's much longer than expected. \r\n￼\r\n",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 16,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "Reviewed, approving after intense flight testing.",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

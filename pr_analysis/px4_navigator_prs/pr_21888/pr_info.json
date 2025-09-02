@@ -1,0 +1,24 @@
+{
+  "title": "Fix mission failed bug",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21888",
+  "number": 21888,
+  "created_at": "2023-07-26T14:28:44Z",
+  "merged": true,
+  "merged_at": "2023-07-27T05:21:30Z",
+  "state": "closed",
+  "conversation": {
+    "author": "KonradRudin",
+    "body": "<!--\r\n\r\nThank you for your contribution!\r\n\r\nGet early feedback through\r\n- Dronecode Discord: https://discord.gg/dronecode\r\n- PX4 Discuss: http://discuss.px4.io/\r\n- opening a draft pr and sharing the link\r\n\r\n-->\r\n\r\n### Solved Problem\r\nI found two issues with mission uploading in the newest main. \r\n\r\n1. Mission module per default assumed the mission was not valid when the mission uorb topic changed. Only when the mission counter is updated, it actually checks the validity of the mission. But since the mission topic gets updated as well when the geofence or safepoints changed, this would lead to wrongly failed missions in the mission module where the mission would be reset.\r\n2. The mission counter in mavlink_mission module was always set to 0 on startup. When on the last powercycle, exactly one mission was loaded, the mission counter in the dataman was set to one. On the next powerccle and the first mission upload, the mavlink_mission would report again a mission counter of 1. This would lead in the mission module to believe, that the mission was not updated at all.\r\n\r\nFixes #{Github issue ID}\r\n\r\n### Solution\r\n\r\n1. Mission module loads the previously calculated mission validity and if the mission changes, calculates it newly.\r\n2. mavlink_mission loads the mission counter on startup from the datamn (safepoints as well, already done for geofence).\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nBugfix: Mission failed on geofence/safepoint upload\r\nBufgix: Mission failed on first mission upload\r\n```\r\n\r\n### Test coverage\r\n- SITL test: checking the px4 console output.\r\n",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "bkueng",
+        "created_at": "",
+        "body": "Thanks, a good reminder to me to not just quickly do things.",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

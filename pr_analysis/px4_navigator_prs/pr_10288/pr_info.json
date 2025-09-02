@@ -1,0 +1,82 @@
+{
+  "title": "mission:reset mission after finished",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10288",
+  "number": 10288,
+  "created_at": "2018-08-21T13:24:10Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "jinchengde",
+    "body": "vehicle could reset mission after mission finished, change the flight mode to others and back to mission mode, no need disarm, the mission will reset.",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2018-08-21T19:42:34Z",
+        "body": "Great! This looks like a safe and simple way to do it.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "stale[bot]",
+        "created_at": "2019-03-01T13:40:17Z",
+        "body": "This issue has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs. Thank you for your contributions.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "stale[bot]",
+        "created_at": "2019-03-15T13:54:37Z",
+        "body": "Closing as stale.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2020-01-13T20:22:26Z",
+        "body": "I realize this is old and closed, but after a recent conversation with @jinchengde and after thinking about this a lot, I think this proposed change makes a lot of sense.  @jinchengde I recommend you rebase and reopen this PR.  I can't comment intelligently on the code, but the functionality makes sense.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2018-08-21T19:46:59Z",
+        "body": "We have to be a little careful here because other parts of navigator set the mission result as well.",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 5,
+        "type": "review_comment"
+      },
+      {
+        "author": "jinchengde",
+        "created_at": "2018-08-22T06:04:38Z",
+        "body": "could you help to give some prompt which we need to protect, do we need to confirm vehicle in loiter mode before we reset the mission?",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 5,
+        "type": "review_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-11-25T21:51:49Z",
+        "body": "@jinchengde we need to make sure that the next state after the mission ends does not crash the vehicle. Example: make sure the vehicle changes to HOLD or to LAND.",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 5,
+        "type": "review_comment"
+      },
+      {
+        "author": "jinchengde",
+        "created_at": "2018-11-26T09:52:37Z",
+        "body": "OK，I will test for that, and I wish to have another PR for more modify",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 5,
+        "type": "review_comment"
+      },
+      {
+        "author": "jinchengde",
+        "created_at": "2018-12-01T12:48:20Z",
+        "body": "@TSC21 I had test in SITL as below\r\n1. automatic takeoff and mission\r\n2. mission end, the vehicle start to circle around the last waypoint\r\n3. change the mode to hold, the vehicle stay current altitude and circle around\r\n4. change the mode to mission, the vehicle fly to the first waypoint\r\nso there is no crash after we change the mode after the mission ends",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 5,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": []
+  }
+}

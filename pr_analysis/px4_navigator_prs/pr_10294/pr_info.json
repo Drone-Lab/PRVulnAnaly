@@ -1,0 +1,61 @@
+{
+  "title": "navigator: set yaw_valid flag in reposition triplet",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10294",
+  "number": 10294,
+  "created_at": "2018-08-21T21:00:11Z",
+  "merged": true,
+  "merged_at": "2018-09-16T23:29:39Z",
+  "state": "closed",
+  "conversation": {
+    "author": "RomanBapst",
+    "body": "@dagar @MaEtUgR @Stifael I'm wondering if we need these flags. On one hand we allow the yaw setpoint to be set to NAN on the other hand we still require a valid flag to be set.\nAnd sometimes one means the other like here\nhttps://github.com/PX4/Firmware/blob/master/src/modules/navigator/mission_block.cpp#L507\n\n@DonLakeFlyer @LorenzMeier FYI\n\n",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-08-22T06:38:40Z",
+        "body": "@RomanBapst The fixed wing mission test failed.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Stifael",
+        "created_at": "2018-08-22T06:48:52Z",
+        "body": "> On one hand we allow the yaw setpoint to be set to NAN on the other hand we still require a valid flag to be set.\r\n\r\nI think what is missing is clear definition. In addition to NAN and the valid flags, Infinity is also used. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2018-08-26T09:58:29Z",
+        "body": "@dagar Any idea what went wrong here? Is it one of those cases where you just need to restart it?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2018-08-26T09:59:51Z",
+        "body": "@dagar From what I see it lost datalink connection. Are these simulations actually using the reposition commands?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2018-09-12T06:26:05Z",
+        "body": "@dagar How do it get the ulog file from a CI run?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-09-16T23:02:28Z",
+        "body": "Rebased on master.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

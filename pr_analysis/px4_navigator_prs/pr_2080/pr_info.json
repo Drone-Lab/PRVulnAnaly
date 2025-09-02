@@ -1,0 +1,77 @@
+{
+  "title": "Fmuv1 space",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/2080",
+  "number": 2080,
+  "created_at": "2015-04-24T23:35:50Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "LorenzMeier",
+    "body": "@kd0aij could you test this? Particularly interested in the log - it should work the same as in master (so could have this 8 byte error I haven't traced back yet), but should work with 2 MAVLink instances.\n\nBench-tested on FMUv1 hardware.\n",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2015-04-25T05:10:23Z",
+        "body": "This change set brings FMUv1 from:\n\n```\n             total       used       free    largest\n\nMem:        181456     158384      23072      22672\n```\n\nto\n\n```\n             total       used       free    largest\n\nMem:        181456     153968      27488      27136\n```\n\nwithout any loss of functionality.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2015-04-25T06:17:24Z",
+        "body": "Passes testing on FMUv1 and FMUv2.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2015-04-25T06:18:20Z",
+        "body": "Output of top:\n\n```\nProcesses: 20 total, 2 running, 18 sleeping\nCPU usage: 41.69% tasks, 0.48% sched, 57.83% idle\nUptime: 61.275s total, 36.269s idle\n\n PID COMMAND                   CPU(ms) CPU(%)  USED/STACK PRIO(BASE) STATE \n   0 Idle Task                   36269 57.827     0/    0   0 (  0)  READY \n   1 hpwork                       1446  2.476   748/ 1792 192 (192)  w:sig \n   2 lpwork                        165  0.239   356/ 1792  50 ( 50)  READY \n   3 init                         1445  0.000  1324/ 2992 100 (100)  w:sem \n   6 nshterm                         0  0.000   560/ 1496  70 ( 70)  w:sem \n 142 top                           365  2.236  1156/ 1696 100 (100)  RUN   \n  63 dataman                        22  0.000   668/ 1792 100 (100)  w:sem \n  85 sensors_task                 1680  2.795  1292/ 1992 250 (250)  w:sem \n  87 commander                     333  0.399  2756/ 3392 215 (215)  w:sig \n  88 commander_low_prio            156  0.000   692/ 1992  50 ( 50)  w:sem \n  90 px4io                        1014  1.757   852/ 1792 240 (240)  w:sem \n 100 mavlink_if0                   472  0.718  1844/ 2392 100 (100)  w:sig \n 101 mavlink_rcv_if0                 4  0.000   780/ 1792 175 (175)  w:sem \n 109 sdlog2                       3273  5.591  1852/ 2992  70 ( 70)  w:sig \n 111 gps                           149  0.479   700/ 1496 220 (220)  w:sem \n 124 ekf_att_pos_estimator       12823 22.444  3476/ 7496 215 (215)  w:sem \n 126 mc_att_control                625  1.038  1060/ 1496 250 (250)  w:sem \n 136 mc_pos_control                416  0.718  1012/ 1496 250 (250)  w:sem \n 138 land_detector                 108  0.159   484/  992 100 (100)  w:sig \n 140 navigator                     460  0.641   860/ 1696 120 (120)  w:sem          \n```\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kd0aij",
+        "created_at": "2015-04-25T14:02:18Z",
+        "body": "with 2 mavlink instances:\n\n```\nProcesses: 21 total, 3 running, 18 sleeping\nCPU usage: 37.68% tasks, 0.54% sched, 61.78% idle\nUptime: 2058.952s total, 1325.763s idle\n\n PID COMMAND                   CPU(ms) CPU(%)  USED/STACK PRIO(BASE) STATE \n   0 Idle Task                 1325763 61.780     0/    0   0 (  0)  READY \n   1 hpwork                      43956  2.072   676/ 1792 240 (192)  w:sem \n   2 lpwork                       6610  0.306   364/ 1792  50 ( 50)  w:sig \n   3 init                          249  0.000  1460/ 2992 100 (100)  w:sem \n 198 top                            64  2.225  1164/ 1696 100 (100)  RUN   \n  75 dataman                       279  0.000   612/ 1792 100 (100)  w:sem \n  89 sensors_task                43186  2.072  1260/ 1992 250 (250)  w:sem \n  91 commander                    7329  0.306  2836/ 3392 215 (215)  w:sig \n  92 commander_low_prio            131  0.000   876/ 1992  50 ( 50)  w:sem \n  94 px4io                       32757  1.611   876/ 1792 240 (240)  w:sem \n 147 mavlink_if0                 27572  1.304  1844/ 2392 100 (100)  w:sig \n 148 mavlink_rcv_if0               134  0.000   780/ 1792 175 (175)  w:sem \n 111 sdlog2                      26906  1.304  1844/ 2992  70 ( 70)  w:sig \n 113 gps                          3497  0.153   740/ 1496 220 (220)  w:sig \n 125 ekf_att_pos_estimator      392557 19.186  3700/ 7496 215 (215)  w:sem \n 132 mc_att_control              18925  0.920   996/ 1496 250 (250)  w:sem \n 135 mc_pos_control              12791  0.537  1116/ 1496 250 (250)  w:sem \n 140 land_detector                3487  0.153   468/  992 100 (100)  w:sig \n 142 navigator                   22313  1.074   900/ 1696 120 (120)  w:sem \n 150 mavlink_if1                 88663  4.451  1908/ 2392 100 (100)  w:sig \n 151 mavlink_rcv_if1               267  0.000   944/ 1792 175 (175)  w:sem \n```\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kd0aij",
+        "created_at": "2015-04-25T14:50:23Z",
+        "body": "flight performance nominal in manual mode, but no log file generated. contents of msgs_2015_04_25_14_35_31.txt:\n\n```\nsettings autosaved\n[ekf] ref: LA 39.7501,LO -105.0975,ALT 1692.43\nhome: 39.7501216, -105.0975292, 1694.87\nARMED by RC\nhome: 39.7501293, -105.0975340, 1691.70\n[cmd] arming state: ARMED\nIN AIR MODE\nLANDED MODE\nIN AIR MODE\nDISARMED by RC\n[cmd] arming state: STANDBY\nLANDED MODE\n```\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "davids5",
+        "created_at": "2015-04-25T15:45:58Z",
+        "body": "I think the stack penetrations of the interrupt stack is 480 bytes (top on nuttx_next has the interrupt stack stats listed for idle)  and the allocations is 1500.  Since we do not nest there is another K that can be recover. \n\nBecause the configuration uses a separate interrupt stack. You really only need about 8 bytes of margin beyond the fully loaded system used values. So there are some gains that could reaped there.\n\nIf call time stack checking is enabled then this increases to an overly conservative 264 bytes. \nThe reason for the 264 byte margin is: It wants to see 64 bytes of head room plus 136 for the FP context and sets the limit at 64. But in reality because the separate interrupt stack we will never stack the full CPU and FP context on the user stack AND there is a and 64 bytes in where limit it set (R10 is 64 bytes from the bottom of the stack)  it is overly conservative.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2015-04-25T17:36:41Z",
+        "body": "@kd0aij Would you mind re-testing? I checked that sdlog2 works now. Please also make sure to run make distclean and make archives to get the full benefit.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kd0aij",
+        "created_at": "2015-04-25T19:21:47Z",
+        "body": "sdlog2 now working, log: http://dash.oznet.ch/view/gvn9ZVSM4PtYZSSStXD4sJ\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2015-04-26T12:34:39Z",
+        "body": "Applied on master.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "coveralls",
+        "created_at": "2016-12-20T02:24:43Z",
+        "body": "\n[![Coverage Status](https://coveralls.io/builds/9352764/badge)](https://coveralls.io/builds/9352764)\n\nChanges Unknown when pulling **573bfe85a6e0069a35aa6df12b0cf648942bca95 on fmuv1_space** into ** on master**.\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

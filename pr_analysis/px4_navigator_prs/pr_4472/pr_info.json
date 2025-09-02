@@ -1,0 +1,53 @@
+{
+  "title": "Param metadata",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/4472",
+  "number": 4472,
+  "created_at": "2016-05-06T22:23:51Z",
+  "merged": true,
+  "merged_at": "2016-05-11T16:47:26Z",
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "This mainly adds increment and decimal to fixed wing params.\n\nOne thing to note is that increment and decimal for `@unit norm` (0-1.0) is somewhat confusing. Those actually apply to the QGC formatted percent (0-100).\n",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-05-07T09:06:14Z",
+        "body": "Can you fix the decimal and increment to relate to the norm field, not to the percentage? The improper scaling should be fixed on the QGC side instead.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-05-08T00:49:56Z",
+        "body": "Yes that sounds like the better solution. I'll take a look.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-05-08T09:30:06Z",
+        "body": "@dagar Here is the QGC support for that (screenshot included against meta data from master):\nhttps://github.com/mavlink/qgroundcontrol/pull/3346\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-05-11T07:46:51Z",
+        "body": "@dagar Did you get a chance to rework the patch here to have the proper units? The QGC change is in and released, so all that's missing is really getting this PR in.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-05-11T16:36:44Z",
+        "body": "I fixed the @norm usage. QGC params already looked much better with just your change.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-05-11T16:49:07Z",
+        "body": "Thanks merged!\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

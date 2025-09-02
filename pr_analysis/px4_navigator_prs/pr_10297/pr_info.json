@@ -1,0 +1,53 @@
+{
+  "title": "fix loiter yaw error for multirotor(#10262)",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10297",
+  "number": 10297,
+  "created_at": "2018-08-22T04:26:03Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "KeyneZzz",
+    "body": "**Test data / coverage**\nbefore fix\nhttps://logs.px4.io/plot_app?log=58f3d121-cc66-4b11-9436-3ec3136b23c3\nafter fix\nhttps://logs.px4.io/plot_app?log=8a210ac9-fd87-4f63-8421-03a710e24153\n\nfixes #10262",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2018-09-16T23:00:53Z",
+        "body": "@KeyneZzz could you explain why this is needed? I think the multicopter position controller should be handling yaw setpoints properly.\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Stifael",
+        "created_at": "2018-09-17T07:07:44Z",
+        "body": "In principle it should be possible to set `yaw` to NAN and then the vehicle should keep its heading (https://github.com/PX4/Firmware/blob/master/msg/position_setpoint.msg#L36). \r\nIn the case of loiter, I think that is what's happening:\r\n- yaw-setpoint is set to NAN (https://github.com/PX4/Firmware/blob/master/src/modules/navigator/mission_block.cpp#L604) with the intention that yaw is hold\r\n- in FlightTaskAuto, the heading is mapped as follow: \r\n  - Triplet yaw-flag is valid (https://github.com/PX4/Firmware/blob/master/src/lib/FlightTasks/tasks/Auto/FlightTaskAuto.cpp#L201): the `yaw_setpoint` will be set to whatever triplet is, even if it is NAN. If the triplet has a finite yaw, then everything willl be handled as expected. If the triplet yaw is NAN (despite the valid yaw-flag), the the position-controller will set the yaw-setpoint to the current yaw (https://github.com/PX4/Firmware/blob/master/src/modules/mc_pos_control/PositionControl.cpp#L195)\r\n  - Triplet yaw-flag is not valid: the heading will be set according to `MPC_YAW_MODE`: https://github.com/PX4/Firmware/blob/master/src/lib/FlightTasks/tasks/Auto/FlightTaskAuto.cpp#L223-L277 where a yaw-lock is applied if the vehicle is within the acceptance radius\r\n\r\nBased on the above logic, I think one of the problems here is similar to https://github.com/PX4/Firmware/pull/10294, that  the yaw-valid-flag might be true, but the actual setpoint might still be infinite. \r\n\r\n\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "KeyneZzz",
+        "created_at": "2018-09-19T03:47:05Z",
+        "body": "In my case, i'm not giving any yaw setpoint, but giving a yawspeed setpoint as 0.\r\nI'm not sure if the yaw-valid-flag stuff can solve the problem I met. But the changes I commited can be one of the valid ways to solve it.\r\n\r\nIn fact, my upper FC is always controlling the yaw by sending yawspeed setpoint.\r\nIs it better to use yaw_sp than to ues yawspeed_sp?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "2018-10-30T14:52:03Z",
+        "body": "@KeyneZzz Is this an extended fixed wing/vtol fix for https://github.com/PX4/Firmware/pull/10291?\r\n\r\n> better to use yaw_sp than to ues yawspeed_sp?\r\n\r\nFor holding the heading it's better to have a constant yaw setpoint because a yawspeed setpoint can in principle drift.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-11-16T16:09:13Z",
+        "body": "Has this been resolved?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "2019-01-29T09:49:18Z",
+        "body": "Let's track if the issue was resolved in #10262. I don't think this pr would fix the root cause of the issue because of the same reasons that were already explained in https://github.com/PX4/Firmware/pull/10297#issuecomment-421909966",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

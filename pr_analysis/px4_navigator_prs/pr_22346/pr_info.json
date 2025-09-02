@@ -1,0 +1,95 @@
+{
+  "title": "Mission feasibility checks with changing home",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22346",
+  "number": 22346,
+  "created_at": "2023-11-11T16:43:55Z",
+  "merged": true,
+  "merged_at": "2023-11-24T07:11:42Z",
+  "state": "closed",
+  "conversation": {
+    "author": "KonradRudin",
+    "body": "<!--\r\n\r\nThank you for your contribution!\r\n\r\nGet early feedback through\r\n- Dronecode Discord: https://discord.gg/dronecode\r\n- PX4 Discuss: http://discuss.px4.io/\r\n- opening a draft pr and sharing the link\r\n\r\n-->\r\n\r\n### Solved Problem\r\nMisison feasibility was not checked again, if the home position or the geofence changed after it was checked once. Further, if the mission was invalid during upload (e.g. home position not valid yet) the mission is cleared.\r\n\r\nFixes #{Github issue ID}\r\n\r\n### Solution\r\n- Remove clearing the mission when the mission is invalid during mission upload.\r\n- Mission feasibility checks also checks if the geofence counter or the home position timestamp has changed since last check.\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nBugfix: Do not clear invalid mission after upload\r\nBugfix: Mission feasibility checks also checks if the geofence counter or the home position timestamp has changed since last check\r\n```\r\n\r\n### Alternatives\r\nThe mission feasibility checks should be moved to another location instead of being performed in the mission mode. They should be moved to the mavlink_mission class where it can be recalculated directly after a mission or geofence is uploaded.\r\n\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "Drone-Lab",
+        "created_at": "2024-01-12T14:06:35Z",
+        "body": "Hi @bkueng ,\r\n\r\nI believe that in this pull request, the root cause is not the following:\r\n> Mission feasibility was not checked again if the home position or the geofence changed after it was checked once.\r\n\r\nInstead, the issue seems to be related to a Multi-Threaded Race Condition.\r\nhttps://github.com/PX4/PX4-Autopilot/security/advisories/GHSA-p74g-gvg5-6pgc\r\nI would appreciate your perspective\r\n\r\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "bkueng",
+        "created_at": "2023-11-13T13:10:56Z",
+        "body": "You can use the existing home position:\r\n```\r\n_navigator->get_mission_result()->home_position_timestamp = _navigator->get_home_position()->timestamp;\r\n```",
+        "path": "src/modules/navigator/mission_base.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2023-11-13T13:16:35Z",
+        "body": "It's not an issue now, as `check_mission_valid` isn't called regularly, but should we change that, and there's a situation where home position is published frequently, the checks will be executed at that rate as well.\r\nSo a bit better would be to check if the `valid` flags change.",
+        "path": "src/modules/navigator/mission_base.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-11-20T13:11:03Z",
+        "body": "That means that we would tie this class again closer to the navigator module, although it might be decoupled in the future? Else i will apply your solution.",
+        "path": "src/modules/navigator/mission_base.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-11-20T13:11:53Z",
+        "body": "@bkueng as discussed, i added a counter to the home position. What do you think of the implementation now?",
+        "path": "src/modules/navigator/mission_base.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2023-11-23T08:29:49Z",
+        "body": "Maybe this is a bit more clear?\r\n```suggestion\r\nuint32 update_count \t# update counter of the home position\r\n```",
+        "path": "msg/HomePosition.msg",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2023-11-23T08:32:23Z",
+        "body": "I'm fine with it, but I also think this is easy to replace when the time comes to move it out.\r\nI'm mostly concerned with having many `SubscriptionData` around, which can become expensive in terms of memory.",
+        "path": "src/modules/navigator/mission_base.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-11-23T15:53:06Z",
+        "body": "@bkueng Yeah since memory can be a problem i fixed it to your solution",
+        "path": "src/modules/navigator/mission_base.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "bkueng",
+        "created_at": "",
+        "body": "",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

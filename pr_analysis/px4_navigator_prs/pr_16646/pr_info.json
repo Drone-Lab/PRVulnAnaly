@@ -1,0 +1,102 @@
+{
+  "title": "Navigator: some loiter refactoring and fixes",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/16646",
+  "number": 16646,
+  "created_at": "2021-01-25T18:54:31Z",
+  "merged": true,
+  "merged_at": "2021-01-29T18:37:01Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "**Describe problem solved by this pull request**\r\n- \"unable to reach heading within timeout\" error when loitering to altitude\r\n- \"hacky\" loiter position acceptance (1.2*loiter_radius)\r\n- MAV_CMD_NAV_LOITER_TIME: param2 (heading required) not considered\r\n- exit via tangent (xtrack) broken for NAV_CMD_LOITER_TIME_LIMIT \r\n\r\n**Describe your solution**\r\n- fix \"unable to reach heading\" bug when doing loiter to alt with heading wait \r\n- for loiter acceptance in fixed-wing, it is cleaner to use (loiter radius + L1 acceptance distance) to decide on acceptance, instead of the magic 1.2 factor in front of the loiter radius  \r\n- add ability of \"heading wait\" for NAV_CMD_LOITER_TIME_LIMIT (possible as mavlink/mavlink#1383 was merged)\r\n- enable exit via tangent (xtrack) for both NAV_CMD_LOITER_TIME_LIMIT and NAV_CMD_LOITER_TO_ALT, but let exit back to center connection as default\r\n\r\n\r\nGeneral: \r\n- unify logic inside Navigator for NAV_CMD_LOITER_TIME_LIMIT and NAV_CMD_LOITER_TO_ALT\r\n--> reach position --> start loitering --> reach altitude --> start timer (if applicable) --> reach exit heading (if applicable) --> declare mission item reached.\r\n\r\n- bit of clean up in Navigator, as I find the current structure more complex than needed. E.g. the return of get_acceptance_radius() should either be what's set in the NAV_ACC_RAD for MC, or the L1 distance for FW, as simple as that (unless I missed something?).\r\n\r\n**Test data / coverage**\r\nSITL and flight tested.\r\n\r\n\r\n**Additional context**\r\n\r\nSome screenshots from a SITL mission (standard VTOL) with a Loiter_time with heading wait (3,4), where 4 is with tangential exit, normal waypoints (with big altitude diff between 6 and 7), and a Loiter_Altitude with heading wait and tangential exit path (9). \r\n\r\nold:\r\n![image](https://user-images.githubusercontent.com/26798987/105750226-c5731300-5f44-11eb-90d6-ee52e675d256.png)\r\n\r\n\r\nnew:\r\n![image](https://user-images.githubusercontent.com/26798987/105751030-c48eb100-5f45-11eb-9ace-976df64ab0b7.png)\r\n\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2021-01-25T20:38:20Z",
+        "body": "This all looks correct, but as per usual with navigator there are a few areas where it's hard to be 100% sure there aren't unintended repercussions. I'll give it another detailed pass and let's try to identify any additional areas of concern that might warrant testing on other vehicle types or less common situations.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "RomanBapst",
+        "created_at": "2021-01-28T06:52:06Z",
+        "body": "@sfuhrer Are you sure that removing this logic does not have any side effects?",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 31,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-01-28T09:11:58Z",
+        "body": "@RomanBapst I guess you mainly refer to  `(pos_ctrl_status.timestamp > _pos_sp_triplet.timestamp)`? Do you see a logical reason where this could actually be false?\r\nAt least in SITL it wasn't yet a problem, but this specific part wasn't yet flight tested.",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 31,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2021-01-28T14:02:35Z",
+        "body": "Should this be the parameter (MIS_YAW_ERROR)?",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2021-01-28T14:06:04Z",
+        "body": "It might be safer if you flip it around so that for FW (and rover) you're using pos_ctrl_status.acceptance_radius, otherwise fallback to using the default acceptance radius.\r\n\r\nI would also keep a minimum pos_ctrl_status validity check, maybe just pos_ctrl_status.timestamp != 0 and finite.",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 31,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-01-29T10:17:08Z",
+        "body": "True, think that'd be more consistent. ",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-01-29T10:50:36Z",
+        "body": "@dagar how about it now? a7a5303bb6a93850c2c373575f5587e15c547dbb",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 31,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-01-29T10:50:44Z",
+        "body": "addressed in a7a5303bb6a93850c2c373575f5587e15c547dbb",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "@sfuhrer I had a look at this in detail and the changes look ok.\r\nIt's of course always hard to judge the effects in navigator but I definitely find this cleaner than before.",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      },
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

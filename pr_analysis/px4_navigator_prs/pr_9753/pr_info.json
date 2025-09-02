@@ -1,0 +1,44 @@
+{
+  "title": "mission feasibility: add small tolerance to fw landing slope alt",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/9753",
+  "number": 9753,
+  "created_at": "2018-06-24T09:14:25Z",
+  "merged": true,
+  "merged_at": "2018-06-29T12:10:54Z",
+  "state": "closed",
+  "conversation": {
+    "author": "tstastny",
+    "body": "Once sent from QGC to pixhawk, the fixed-wing landing pattern coordinates are again converted to local distances for feasibility checks, where small floating point errors can cause a rejection -- and the need to modify and resend the waypoints (somewhat tedious on the field). This PR simply adds a small tolerance to the check condition to avoid this.\n\n(also open to recommendations on the value of this tolerance, I just put 1m for now)\n\nPartially addresses #9472.",
+    "issue_comments": [
+      {
+        "author": "tstastny",
+        "created_at": "2018-06-26T07:20:48Z",
+        "body": "@dagar @LorenzMeier ok to merge? or any other thoughts?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-06-29T10:50:40Z",
+        "body": "@dagar @LorenzMeier LGTM given that all checks have passed?",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

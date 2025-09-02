@@ -1,0 +1,126 @@
+{
+  "title": "Support Figure of eight loitering",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21852",
+  "number": 21852,
+  "created_at": "2023-07-14T14:59:51Z",
+  "merged": true,
+  "merged_at": "2023-10-31T19:58:00Z",
+  "state": "closed",
+  "conversation": {
+    "author": "KonradRudin",
+    "body": "<!--\r\n\r\nThank you for your contribution!\r\n\r\nGet early feedback through\r\n- Dronecode Discord: https://discord.gg/dronecode\r\n- PX4 Discuss: http://discuss.px4.io/\r\n- opening a draft pr and sharing the link\r\n\r\n-->\r\n\r\n### Solved Problem\r\nAdd support for a figure of eight loitering pattern for fixed wing vehicles (can e.g. be used to replace orbit when tracking POIs with a limited panning gimbal). This adds the support for the MAV_CMD_DO_FIGURE_EIGHT mavlink command currently defined in the development dialect.\r\n\r\n### Solution\r\n- Add a new functionality in the FixedWingPositionControl to process a figure of eight loitering pattern. The class checks the relevant segment of the figure of eight and passes the path segment to the npfg guidance logic for lateral guidance.\r\n- Addded a configuration to enable the figure of 8 loitering. It is disabled by default since it would need the development mavlink dialect (only enabled for sitl config).\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nFeature Support for Figure 8 loiter pattern\r\n```\r\n\r\n### Alternatives\r\n\r\n### Test coverage\r\n- Simulation tests performed in sitl.\r\n- Build tests for fmu_v5x\r\n\r\n![Screenshot from 2023-07-14 16-50-24](https://github.com/PX4/PX4-Autopilot/assets/98741601/52325dc6-6aec-4f91-9d01-c3e5d67af798)\r\n\r\n\r\n### Context\r\nTo discuss:\r\n\r\n- [ ] Currently QGCS has no support for sending this command only AMC is this a problem?\r\n- [ ] Added a kconfig parameter to disable it since we need the development mavlink dialect to enable it. But i have not found a solution to make a dependency on the development dialect. Any input on how to handle this is appreciated.\r\n",
+    "issue_comments": [
+      {
+        "author": "tstastny",
+        "created_at": "2023-09-08T14:48:57Z",
+        "body": "@dagar just so that this one doesnt get kicked down the road too far:\r\n\r\n> Added a kconfig parameter to disable it since we need the development mavlink dialect to enable it. But i have not found a solution to make a dependency on the development dialect. Any input on how to handle this is appreciated.\r\n\r\ndo you have insights here how to handle? would the current action look something like default kconfiging the fig8 as disabled while there is a development mavlink link? (but then need to still make sure we have mavsdk test and a build that can run in ci.. even though on all the main binary builds it would be disabled)\r\n\r\n> no GCS implementation\r\n\r\nIs this already a nogo? or would mavsdk test be enough while this is in mavlink development.xml?\r\n\r\nIf the lack of operator command ease marks this as not good for merging now.. let's just decide quickly so that we'll take this back downstream until such point that we can bring it in more properly upstream.\r\n\r\n\r\n@KonradRudin if we proceed with this PR - you may need to check the implications of this PR on the figure eight logic #21988 ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Jaeyoung-Lim",
+        "created_at": "2023-09-27T09:05:41Z",
+        "body": "> Is this already a nogo? or would mavsdk test be enough while this is in mavlink development.xml?\r\n\r\n@tstastny Why not just add it to QGC :smirk:? ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "tstastny",
+        "created_at": "2023-09-27T09:10:08Z",
+        "body": "> @tstastny Why not just add it to QGC 😏?\r\n\r\n@KonradRudin @RomanBapst  ^^",
+        "type": "issue_comment"
+      },
+      {
+        "author": "tstastny",
+        "created_at": "2023-10-30T15:35:52Z",
+        "body": "@dagar is this ok to go in now? before we e.g. run out of flash / need another rebase with other fixed-wing things on the docket?\r\n\r\n@KonradRudin i re-started the tailsitter test, it was failing, but i didnt see an erroneous timeout.. may actually be something wrong, can you check? https://github.com/PX4/PX4-Autopilot/actions/runs/6655895059/job/18096246149#step:17:1383\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "tstastny",
+        "created_at": "2023-10-30T16:53:43Z",
+        "body": "@dagar all checks passing - should we smash the button?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-10-31T15:59:24Z",
+        "body": "@tstastny had to rebase, since it had some merge conflicts (only in the mavsdk tests).",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2023-10-25T20:03:08Z",
+        "body": "This part could be \r\n```suggestion\r\n#if defined(MAVLINK_MSG_ID_FIGURE_EIGHT_EXECUTION_STATUS)\r\n```",
+        "path": "src/modules/mavlink/mavlink_messages.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2023-10-25T20:04:42Z",
+        "body": "How about we make the mavlink part dependent on `MAVLINK_MSG_ID_ACTUATOR_CONTROL_TARGET`\r\n\r\nThen either drop CONFIG_FIGURE_OF_EIGHT or make it clear it's FW (with a dependency on CONFIG_MODULES_FW_POS_CONTROL).",
+        "path": "boards/px4/sitl/default.px4board",
+        "position": 4,
+        "type": "review_comment"
+      },
+      {
+        "author": "tstastny",
+        "created_at": "2023-10-25T20:31:23Z",
+        "body": "> How about we make the mavlink part dependent on MAVLINK_MSG_ID_ACTUATOR_CONTROL_TARGET\r\n\r\ndid you mean `MAVLINK_MSG_ID_FIGURE_EIGHT_EXECUTION_STATUS`?",
+        "path": "boards/px4/sitl/default.px4board",
+        "position": 4,
+        "type": "review_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-10-26T12:11:24Z",
+        "body": "Sounds like a good idea, thanks for the input.",
+        "path": "boards/px4/sitl/default.px4board",
+        "position": 4,
+        "type": "review_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-10-26T14:16:00Z",
+        "body": "@dagar the dependency is already defined in the kconfig, i guess this should be enough?",
+        "path": "boards/px4/sitl/default.px4board",
+        "position": 4,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2023-10-26T14:23:03Z",
+        "body": "It doesn't need to be completely tied to mavlink.",
+        "path": "boards/px4/sitl/default.px4board",
+        "position": 4,
+        "type": "review_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-10-26T14:26:09Z",
+        "body": "Yes the mavlink part i will make only dependent on the MAVLINK_MSG_ID but the CONFIG_FIGURE_OF_EIGHT is already dependent on MODULES_FW_POS_CONTROL in the kconfig.",
+        "path": "boards/px4/sitl/default.px4board",
+        "position": 4,
+        "type": "review_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-10-26T18:28:25Z",
+        "body": "Hey @dagar with the new commit, i have removed the dependency to the development dialect. you can now build the figure of eight with the common, you just wont get any feedback message. ",
+        "path": "boards/px4/sitl/default.px4board",
+        "position": 4,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "tstastny",
+        "created_at": "",
+        "body": "",
+        "state": "DISMISSED",
+        "type": "review"
+      }
+    ]
+  }
+}

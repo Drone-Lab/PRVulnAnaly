@@ -1,0 +1,31 @@
+{
+  "title": "Navigator: make sure to reset mission.item fields touched by set_vtol_transition_item",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21641",
+  "number": 21641,
+  "created_at": "2023-05-26T12:10:22Z",
+  "merged": true,
+  "merged_at": "2023-06-02T08:21:23Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "`\r\nmission_block::set_vtol_transition_item` sets the params of the mission item directly to values that make sense for NAV_CMD_DO_VTOL_TRANSITION, but don't for other NAV_CMDs. So make sure that whenever we use it, we then in the next step reset the touched mission_item fields.\r\n\r\n### Solved Problem\r\nacceptance radius and/or time_inside fields of mision_item can be wrong after a VTOL transition. \r\n\r\n### Solution\r\nMake sure to at least always fill the fields touched by set_vtol_transition_item, which are fields 0 (another union with eg time_inside), and acceptance_radius. \r\n\r\n### Alternatives\r\nChange the way of how `set_vtol_transition_item` works? Does it have to manually adapt the fields of _mission_item?\r\n\r\n### Test coverage\r\nSome SITL testing. \r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-05-31T17:42:02Z",
+        "body": "Flight tested on multiple VTOLs, LGTM.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

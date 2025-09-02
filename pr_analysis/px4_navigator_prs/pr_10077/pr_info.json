@@ -1,0 +1,109 @@
+{
+  "title": "uORB: update msgs fields from camelCase to snake_case",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10077",
+  "number": 10077,
+  "created_at": "2018-07-29T20:41:28Z",
+  "merged": true,
+  "merged_at": "2018-07-30T19:40:29Z",
+  "state": "closed",
+  "conversation": {
+    "author": "TSC21",
+    "body": "**Describe problem solved by the proposed pull request**\nIn the process of developing a ROS2 package that will be interfacing PX4 with ROS2 through fast-RTPS, I found out that while trying to building the package with the respective ROS msg generation, `rosidl_generate_interfaces()` does not process msg fields which have uppercase letters.\n\n**Describe your preferred solution**\nThis is an harmless PR which changes some message fields that have uppercase letters (or present a camelCase naming convention) so `rosidl_generate_interfaces()` is able to generate code for ROS IDL files. It basically replaces the uppercase with lowercase, and where required, change the naming convention to snake_case.\n\n**Describe possible alternatives**\nNot really much more we can do about it, unless one changes the copied file online during the build process, which is not really efficient.",
+    "issue_comments": [
+      {
+        "author": "TSC21",
+        "created_at": "2018-07-29T20:46:10Z",
+        "body": "Also, after this gets merged, I think it will make sense to actually have something like a schema validator for uORB msgs, so that we can make sure every new fields that is added follows the same convention (does make much sense to have fields following different naming conventions). This validator would run on CI as a new job, parallel to the style check job for example.\r\n@dagar any thoughts?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-07-29T21:02:42Z",
+        "body": "Anything from the ROS world that already solves this problem?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-07-29T21:07:03Z",
+        "body": "> Anything from the ROS world that already solves this problem?\r\n\r\nNo. This is actually a requirement for the message generation through ROS IDL generator python scripts.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-07-29T21:16:55Z",
+        "body": "Will be issuing a PR against Flight Review so to address these changes as well.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-07-29T21:49:17Z",
+        "body": "Changes on Flight Review addressed in https://github.com/PX4/flight_review/pull/123.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-07-29T21:50:33Z",
+        "body": "@TSC21 Can you add a change that breaks the build if someone re-introduces this? Like a check in the Python generator for PX4 uORB messages?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-07-29T21:53:24Z",
+        "body": ">@TSC21 Can you add a change that breaks the build if someone re-introduces this? Like a check in the Python generator for PX4 uORB messages?\r\n\r\n@LorenzMeier that's what I was actually referencing here https://github.com/PX4/Firmware/pull/10077#issuecomment-408704710. @dagar believes that clang-tidy could possibly handle this if we actually generate the headers and then do the check against those. Would that be a better alternative to a check in the Python generator?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-07-30T08:25:45Z",
+        "body": "@TSC21 Let's keep it simple so we can merge this: Extend our message generator and throw an error please. I don't want this to start depending on something else and we drag it out weeks.\r\n\r\nThanks!",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-07-30T14:54:08Z",
+        "body": "@LorenzMeier done",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-07-30T20:25:34Z",
+        "body": "@LorenzMeier thanks for merging. This does unblock the package development.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2018-07-29T21:10:41Z",
+        "body": "@CarlOlsson did you have opinions about the naming of these fields? If so we might as well tackle that here quickly.",
+        "path": "msg/tecs_status.msg",
+        "position": 5,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-07-29T21:11:27Z",
+        "body": "@bresch, @RomanBapst, @tstastny, @philipoe, @acfloria - anyone feel strongly about the naming of these fields?",
+        "path": "msg/tecs_status.msg",
+        "position": 5,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

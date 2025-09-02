@@ -1,0 +1,1476 @@
+[
+  {
+    "title": "Make DO_SET_SERVO work",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10320",
+    "number": 10320,
+    "created_at": "2018-08-24T15:26:45Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "kpetrykin",
+      "body": "Hello!\n\nMy goal was to make the mission command DO_SET_SERVO working with the possibility of triggering the servo with RC switch.\n\nFirst, I have found that \"vmount\" module (when enabled) publishes its values to actuator_controls_2 topic all the time. This overwrites all other publications to this topic. That is why DO_SET_SERVO is not working.\n\nI modified \"vmount\" module so that it would publish only if one of the actuator values were changed by RC. In other cases it stays silent.\n\nSecond, I have found that the formula, which translates PWM value from DO_SET_SERVO command parameters to -1..1 range for uORB, does not match the one which translates it back.\n[Original formula:](https://github.com/PX4/Firmware/blob/c997159e32f3870c7fd3202877324b76a62ea610/src/modules/navigator/mission_block.cpp#L433) `actuators.control[(int)item.params[0]] = 1.0f / 2000 * -item.params[1];`\n[Formula, which translates value back](https://github.com/4ert/Firmware/blob/397522d3813924380c209984b47b05bf743c3037/src/lib/pwm_limit/pwm_limit.cpp#L211): `effective_pwm[i] = control_value * (max_pwm[i] - min_pwm[i]) / 2 + (max_pwm[i] + min_pwm[i]) / 2;`\n[New formula](https://github.com/4ert/Firmware/blob/397522d3813924380c209984b47b05bf743c3037/src/modules/navigator/mission_block.cpp#L440): `actuators.control[(int)item.params[0]] = (float)(((float)item.params[1] - (PWM_DEFAULT_MAX + PWM_DEFAULT_MIN) / 2)/((PWM_DEFAULT_MAX - PWM_DEFAULT_MIN) / 2));`\n\nI need to discuss two questions about the formula: \n- to make it work properly we need to get actual \"max_pwm[i]\" and \"min_pwm[i]\" into navigator module. I have found a [way to get them](https://github.com/PX4/Firmware/blob/c997159e32f3870c7fd3202877324b76a62ea610/src/drivers/px4fmu/fmu.cpp#L1678), but I don't understand how to use it correctly\n- when I tested mission with DO_SET_SERVO command, servo works nice only with 1, 3 and 4 aux outputs. The second one for some reason outputs into first. I think there is something wrong with casting here: `(int)item.params[0]`\n\nI have tested everything with 1.7.3 Firmvare (px4fmu-v2_default), but did not save the flight log.\nI will test the last master in a few days.",
+      "issue_comments": [
+        {
+          "author": "dagar",
+          "created_at": "2018-08-24T23:00:07Z",
+          "body": "There are a few problems with this PR, but let's take a step back first.\r\n\r\nHow do people want/expect DO_SET_SERVO to even work?\r\n![screen shot 2018-08-24 at 18 55 07](https://user-images.githubusercontent.com/84712/44611459-43a8b980-a7cf-11e8-9266-6aad77f5252a.png)\r\n\r\nWhich servo does it correspond to? What's supposed to happen in the not entirely unlikely scenario that that PWM channel is already used for something?\r\n\r\nWhat's the real use case for DO_SET_SERVO? Would we be better implementing a couple higher level commands? payload, gripper, etc\r\n\r\nIf the answer is still DO_SET_SERVO then the right place to implement that command is in the px4io (MAIN pwm) and/or px4fmu (AUX pwm) drivers. Those drivers are the consumers of actuator_controls_{0, 1, 2, 3} and work directly with PWM values.\r\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2018-08-26T18:52:17Z",
+          "body": "@4ert We need to separate the different actuator groups for good to make this easier. Could you join the PX4 dev call this week?\r\nhttps://dev.px4.io/en/contribute/#dev_call",
+          "type": "issue_comment"
+        },
+        {
+          "author": "kpetrykin",
+          "created_at": "2018-08-27T12:16:37Z",
+          "body": "- **How do people want/expect DO_SET_SERVO to even work?**\r\nIn our case we want to release a cargo by the mission command. The cargo is locked by the servo which is connected to one of the AUX outputs. We want to use DO_SET_SERVO command to send a PWM signal (parameter 2) to the AUX output from paramter 1.\r\n- **Which servo does it correspond to?**\r\n[As we can see now](https://github.com/PX4/Firmware/blob/bbc0c28c2c07743e489a338677e449a28ab5fd74/src/modules/navigator/mission_block.cpp#L436) the Navigator publish DO_SET_SERVO values to actuator_controls_2 topic. This control group is used to rule gimbal:\r\n![image](https://user-images.githubusercontent.com/161284/44657760-b18af600-aa06-11e8-9fd8-8a5971d51ffe.png)\r\n- **What's the real use case for DO_SET_SERVO? Would we be better implementing a couple higher level commands? payload, gripper, etc**\r\nI think when you use DO_SET_SERVO command - you just want to send an exactly PWM to external servo connected to your controller. If you want to rule gimbal - you will use DO_MOUNT_CONTROL, if you have any flight control mechanizm connected to the AUX - you will want to use some more convenient commands for this.\r\n- **If the answer is still DO_SET_SERVO then the right place to implement that command is in the px4io (MAIN pwm) and/or px4fmu (AUX pwm) drivers. Those drivers are the consumers of actuator_controls_{0, 1, 2, 3} and work directly with PWM values.**\r\nSo, I just made a little repair into an existing WORKING mechanizm. For now, Navigator module publishes into an \"actuator_controls_2\" topic and the px4fmu driver gets values from it and sends to the servos. There's just two things which discourage the process: the vmount driver spamming with its own values to the topic and the formula which translates data wrong. If you switch vmount off (\"vmount stop\" command into a console) and correct the formula - DO_SET_SERVO will work as expected. And don't forget to load a mixer for AUX outputs.\r\n\r\n- **What's supposed to happen in the not entirely unlikely scenario that that PWM channel is already used for something?**\r\nI think, this question is up to the one who builds and sets up the specific device. If you connects some critical stuff to the AUX - edit mixers or just don't use DO_SET_SERVO.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "kpetrykin",
+          "created_at": "2018-08-27T16:01:36Z",
+          "body": "Made a flight, the log is here: https://logs.px4.io/plot_app?log=8fb644ab-1fe4-449a-9b0f-c4656fdae029#Nav-Actuator-Outputs-AUX\r\nThe mission was: \r\n- takeoff to 10 meters \r\n- DO_SET_SERVO on AUX1 1000 PWM \r\n- go to waypoint \r\n- DO_SET_SERVO on AUX1 2000 PWM\r\n- land \r\n- DO_SET_SERVO on AUX1 1000 PWM (example releasing cargo)\r\n- takeoff to 10 meters\r\n- RTL",
+          "type": "issue_comment"
+        },
+        {
+          "author": "kpetrykin",
+          "created_at": "2018-08-27T18:57:12Z",
+          "body": "@LorenzMeier my speaking english is not very good but I could try to join the devcall",
+          "type": "issue_comment"
+        },
+        {
+          "author": "maitham",
+          "created_at": "2018-09-05T14:11:09Z",
+          "body": "@kpetrykin  I'm currently trying to get this to work I've used your commit. So I have my Pixhawk connected to a servo and I'm trying to get the servo to move within the mavproxy shell by running servo set 1 1000. However the message I keep getting back is that the command was acknowledged but is unrecognised (result:3) . I can get the servo moving using nuttx shell, but I really want to be able to send a mavlink command to set the servo pwm is there any way of doing this? ",
+          "type": "issue_comment"
+        },
+        {
+          "author": "hamishwillee",
+          "created_at": "2018-09-05T23:19:26Z",
+          "body": "@maitham1 It looks like the  MAV_CMD_DO_SET_SERVO is **set in missions** and handled here: \r\nhttps://github.com/PX4/Firmware/blob/master/src/modules/navigator/mission_block.cpp#L424\r\n(FYI @bkueng  this is related to https://github.com/Dronecode/DronecodeSDK/issues/533)\r\n\r\nI can't find the message being handled outside of missions. While that does not mean it isn't, the fact that you're getting \"unrecognised\" is indicative. \r\n\r\nThere is quite a bit of discussion above about this. @dagar did the devcall come to any conclusions? Is there a short term recommendation on how people should approach this?\r\n\r\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "hamishwillee",
+          "created_at": "2018-09-06T00:04:36Z",
+          "body": "@dagar regarding https://github.com/PX4/Firmware/pull/10320#issuecomment-415903772 (your questions) there are some good points there. Below are \"in my opinion\". \r\n\r\n> Which servo does it correspond to? \r\n\r\nShouldn't this be defined at the MAVLink/message level by a convention? How about 1-n are the MAIN outputs as labeled on board, and n upwards are the AUX ports, if present? \r\n\r\n> What's supposed to happen in the not entirely unlikely scenario that that PWM channel is already used for something?\r\n\r\nIMO things screw up - it is up to the user of this tool to manage contention. See real use case below. \r\n\r\nDo we actually manage contention otherwise? ie does the system check that we don't have multiple control group inputs assigned to the same output?\r\n\r\n> What's the real use case for DO_SET_SERVO? \r\n\r\nThe real use case is probably the hardware we haven't thought about. Someone has some magic hardware that they want to drive, and a free port. They just want to be able to plug in that hardware and send it a command via MAVLink. They don't want to care about mixers. They are happy to manage contention themselves -  ie they know that nothing else is connected to the port, and if they screw up they screw up.\r\n\r\n> Would we be better implementing a couple higher level commands? payload, gripper, etc\r\n\r\nWe currently have [First Payload](http://dev.px4.io/en/concept/mixing.html#control-group-6-first-payload) which is just a parachute. Yes we should probably define something for a gripper. Not sure it will address the above use case.\r\n\r\nI've read http://dev.px4.io/en/concept/mixing.html and I am not 100% confident that my understanding of how these work is complete. I think that control groups are implemented as UORB topics that something can set (ie a controller). A mixer defines what actuators are set and their values based on these inputs. \r\n\r\nSo essentially you create a control group so that you can arbitrarily map a specific **type** of command to a physical output. For example to use a parachute you write a handler for it in MAVLink that sets the appropriate control group UORB topic. \"Something\" in the architecture then takes the mapping in the mixer file and based on that topic input sets the appropriate PWM output. Is that about right?\r\n\r\nThis is good because your system does not need to know what plugs into the output to implement a parachute or gripper (say). But it does mean that you need a mixer.\r\n\r\nQuestion: Are mixer's additive? Ie I have an airframe which uses the main outputs. I add a parachute. Do I need a completely new mixer file, or can I add my mixer just for my parachute?\r\n\r\nYou could implement this as a servo control group(s). But would be better if the mapping was transparent (ie no specific mixer required). \r\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "kpetrykin",
+          "created_at": "2018-09-06T10:16:30Z",
+          "body": "@maitham1 this PR is generally about mission's DO_SET_SERVO command.\r\nIt looks like if you want to pass it through mavlink it would not be handled.\r\nYou may experiment with writing your own handler somewhere here: https://github.com/PX4/Firmware/blob/039221fa93303a6840a45c3f8a72580aaaf2d74c/src/modules/mavlink/mavlink_receiver.cpp#L527\r\nOr you may assign an rc trigger for your servo and try to override it with mavlink message, but it is not a good way.\r\nAnd what do you want to do? What is your case?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "maitham",
+          "created_at": "2018-09-06T10:43:34Z",
+          "body": "@kpetrykin Thanks for getting back to me. I want to simply change pwm output from a script. \r\nCurrently I thought this would be possible via sending the MV_CMD_DO_SET_SERVO using pymavlink, \r\nit doesn't seem to be implemented, unless i'm missing something (which is highly likely as this is all new to me) but I'm open to other ways? ",
+          "type": "issue_comment"
+        },
+        {
+          "author": "kpetrykin",
+          "created_at": "2018-09-06T10:59:22Z",
+          "body": "@maitham1 so what is your goal of using servo? What you try to do with this?\r\nAnd from what you send MAV_CMD_DO_SET_SERVO using pymavlink? Onboard computer?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "maitham",
+          "created_at": "2018-09-06T11:32:51Z",
+          "body": "@kpetrykin I would like run certain tests to change servo positions, its a static test so nothings flying. I just want the ability to set servos to specific angles and motors to specific speeds within a python script. I don't intend to use it for flying. Its just for testing.\r\n\r\nSending MAV_CMD_DO_SET_SERVO using pymavlink! ",
+          "type": "issue_comment"
+        },
+        {
+          "author": "kpetrykin",
+          "created_at": "2018-09-25T11:07:11Z",
+          "body": "So, @dagar, @LorenzMeier - what's with this PR? What could i do to improve it?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "tubeme",
+          "created_at": "2018-10-24T03:53:21Z",
+          "body": "Hey @kpetrykin Can you share your mixer that you are using for the AUX channel? I'm trying to follow yur route but cannot make the mixer properly maybe. ",
+          "type": "issue_comment"
+        },
+        {
+          "author": "kpetrykin",
+          "created_at": "2018-10-24T09:28:11Z",
+          "body": "@tubeme, sure, it's simple:\r\n\r\n```\r\nM: 1\r\nO:      10000  10000      0 -10000  10000\r\nS: 2 0  10000  10000      0 -10000  10000\r\n\r\nM: 1\r\nO:      10000  10000      0 -10000  10000\r\nS: 2 1  10000  10000      0 -10000  10000\r\n\r\nM: 1\r\nO:      10000  10000      0 -10000  10000\r\nS: 2 2  10000  10000      0 -10000  10000\r\n\r\nM: 1\r\nO:      10000  10000      0 -10000  10000\r\nS: 2 3  10000  10000      0 -10000  10000\r\n```\r\nTo make it work:\r\n\r\n- Place a mixer into a /etc/mixers/pass.aux.mix on your pixhawk's SD card\r\n- Create /etc/extras.txt with the folowing command: `mixer load /dev/pwm_output1 /fs/microsd/etc/mixers/pass.aux.mix`",
+          "type": "issue_comment"
+        },
+        {
+          "author": "kpetrykin",
+          "created_at": "2018-11-07T09:27:43Z",
+          "body": "So, @tubeme, did you get the mixer to work?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "GaoGeolone",
+          "created_at": "2018-12-01T02:17:34Z",
+          "body": "@kpetrykin How to make it work, bro?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "bys1123",
+          "created_at": "2018-12-01T05:59:52Z",
+          "body": "Is there any new update?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "kpetrykin",
+          "created_at": "2018-12-03T10:29:35Z",
+          "body": "@GaoGeolone what have you done already?\r\n@bys1123 no, it's still as it is",
+          "type": "issue_comment"
+        },
+        {
+          "author": "GaoGeolone",
+          "created_at": "2018-12-04T03:20:49Z",
+          "body": "@kpetrykin I think I have already make it work, thank you~I just want to trigger my servo at a certain position. And by making a change to the AUXMIXER pass file , as well as modifying the Formula in Mission_block.cpp.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "stale[bot]",
+          "created_at": "2019-03-04T04:15:20Z",
+          "body": "This issue has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs. Thank you for your contributions.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "JamesChooWK",
+          "created_at": "2019-03-06T13:03:51Z",
+          "body": "Hi @kpetrykin , I want to follow what you have done the flight for example takeoff, go to a waypoint and drop a cargo. Now, I am trying to follow and write a same mixer that you provide. But there are some questions that I want to ask:\r\n\r\nQ1) Why do we create a \"extrats.txt\" file  with a command line \"mixer load /dev/pwm_output1 /fs/microsd/etc/mixers/pass.aux.mix\" ?\r\nQ2) Where do we place this \"extrats.txt\" file ? same folder as our mixer file?\r\nQ3) How can we upload the mixer and this \"extrats.txt\" file into our Pixhawk's SDcard? via QGC?\r\nQ4) If QGC is needed, do we need to place these two file into our Firmware before uploading it? \r\n\r\nSorry for asking these silly questions. Thanks. \r\n\r\n\r\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "hamishwillee",
+          "created_at": "2019-03-06T21:25:14Z",
+          "body": "@JamesChooWK The Extras.txt is documented here: https://dev.px4.io/master/en/concept/system_startup.html#customizing-the-system-startup\r\n\r\nIt is used for system startup customisations - basically you're adding the mixer at runtime rather than as part of the firmware build. This is much easier for examples, testing,  and when you're doing something that only applies to your setup. \r\n\r\nYou can copy the files onto the card using whatever mechanism you like - ie File explorer on windows. The files need to be present on the SD card before booting PX4. Again, they are not part of firmware, but are loaded as though they were.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "JamesChooWK",
+          "created_at": "2019-03-07T19:36:25Z",
+          "body": "@hamishwillee Thanks for answering my questions.  I manage to upload the mixer and Extras.txt file into MicroSD card. \r\n\r\nBut when I tried to push a DO_SET_SERVO command to pixhawk using mavros services(\"mavros/mission/push\") by assigning \"command=183\", it return this error (\" WP: upload failed: command is not supported\")\r\n\r\nI am not sure whether I use the DO_SET_SERVO in (\"mavros/mission/push\") correctly or I have to do it in (\"mavros/cmd/command\") or I have to use mavlink ?\r\n\r\nI am using MAVROS and PX4 native flight stack.\r\n\r\nMany thanks.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "hamishwillee",
+          "created_at": "2019-03-07T21:16:16Z",
+          "body": "@JamesChooWK Did you incorporate this PR? It has the code that is supposed to support  DO_SET_SERVO",
+          "type": "issue_comment"
+        },
+        {
+          "author": "JamesChooWK",
+          "created_at": "2019-03-07T21:45:40Z",
+          "body": "@hamishwillee  I am sorry I do not incorporate this PR, but I will do it. If I uses the new code, does it means that I have to build the firmware and load to pixhawk or I can copy the files and paste it into the SDcard like the mixer?\r\nI'm sorry to ask so many questions, I'm a newbie to these sort of things.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "hamishwillee",
+          "created_at": "2019-03-07T22:05:01Z",
+          "body": "@JamesChooWK So the point of the PR is that the message doesn't work on PX4 right now (as far as I know - I'm guessing based on what I see here).\r\nSo yes, you will have to build PX4 firmware with the changes in this code and upload it as \"custom firmware\". There are conflicts between the changes and master branch, so you might need to do some coding to integrate them.\r\n\r\nAlso note this PR did not get accepted yet - so there is no guarantee that even if you do this it will work. ",
+          "type": "issue_comment"
+        },
+        {
+          "author": "JamesChooWK",
+          "created_at": "2019-03-08T09:14:52Z",
+          "body": "@hamishwillee  I will try to amend the code and build the firmware, Thanks for the time answering my questions. Cheers. ",
+          "type": "issue_comment"
+        },
+        {
+          "author": "kpetrykin",
+          "created_at": "2019-03-11T08:31:46Z",
+          "body": "@JamesChooWK this PR does not contain code to accept DO_SET_SERVO from external sourses, it's about command from mission.\r\nIf you want to use external call of this command, you need to add a code to process a corresponding mavlink message.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "JamesChooWK",
+          "created_at": "2019-03-11T09:54:30Z",
+          "body": "@hamishwillee  I will try to amend the code and build the firmware, Thanks for the time answering my questions. Cheers. ",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [],
+      "reviews": []
+    }
+  },
+  {
+    "title": "fix loiter yaw error for multirotor(#10262)",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10297",
+    "number": 10297,
+    "created_at": "2018-08-22T04:26:03Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "KeyneZzz",
+      "body": "**Test data / coverage**\nbefore fix\nhttps://logs.px4.io/plot_app?log=58f3d121-cc66-4b11-9436-3ec3136b23c3\nafter fix\nhttps://logs.px4.io/plot_app?log=8a210ac9-fd87-4f63-8421-03a710e24153\n\nfixes #10262",
+      "issue_comments": [
+        {
+          "author": "dagar",
+          "created_at": "2018-09-16T23:00:53Z",
+          "body": "@KeyneZzz could you explain why this is needed? I think the multicopter position controller should be handling yaw setpoints properly.\r\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "Stifael",
+          "created_at": "2018-09-17T07:07:44Z",
+          "body": "In principle it should be possible to set `yaw` to NAN and then the vehicle should keep its heading (https://github.com/PX4/Firmware/blob/master/msg/position_setpoint.msg#L36). \r\nIn the case of loiter, I think that is what's happening:\r\n- yaw-setpoint is set to NAN (https://github.com/PX4/Firmware/blob/master/src/modules/navigator/mission_block.cpp#L604) with the intention that yaw is hold\r\n- in FlightTaskAuto, the heading is mapped as follow: \r\n  - Triplet yaw-flag is valid (https://github.com/PX4/Firmware/blob/master/src/lib/FlightTasks/tasks/Auto/FlightTaskAuto.cpp#L201): the `yaw_setpoint` will be set to whatever triplet is, even if it is NAN. If the triplet has a finite yaw, then everything willl be handled as expected. If the triplet yaw is NAN (despite the valid yaw-flag), the the position-controller will set the yaw-setpoint to the current yaw (https://github.com/PX4/Firmware/blob/master/src/modules/mc_pos_control/PositionControl.cpp#L195)\r\n  - Triplet yaw-flag is not valid: the heading will be set according to `MPC_YAW_MODE`: https://github.com/PX4/Firmware/blob/master/src/lib/FlightTasks/tasks/Auto/FlightTaskAuto.cpp#L223-L277 where a yaw-lock is applied if the vehicle is within the acceptance radius\r\n\r\nBased on the above logic, I think one of the problems here is similar to https://github.com/PX4/Firmware/pull/10294, that  the yaw-valid-flag might be true, but the actual setpoint might still be infinite. \r\n\r\n\r\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "KeyneZzz",
+          "created_at": "2018-09-19T03:47:05Z",
+          "body": "In my case, i'm not giving any yaw setpoint, but giving a yawspeed setpoint as 0.\r\nI'm not sure if the yaw-valid-flag stuff can solve the problem I met. But the changes I commited can be one of the valid ways to solve it.\r\n\r\nIn fact, my upper FC is always controlling the yaw by sending yawspeed setpoint.\r\nIs it better to use yaw_sp than to ues yawspeed_sp?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "MaEtUgR",
+          "created_at": "2018-10-30T14:52:03Z",
+          "body": "@KeyneZzz Is this an extended fixed wing/vtol fix for https://github.com/PX4/Firmware/pull/10291?\r\n\r\n> better to use yaw_sp than to ues yawspeed_sp?\r\n\r\nFor holding the heading it's better to have a constant yaw setpoint because a yawspeed setpoint can in principle drift.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-11-16T16:09:13Z",
+          "body": "Has this been resolved?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "MaEtUgR",
+          "created_at": "2019-01-29T09:49:18Z",
+          "body": "Let's track if the issue was resolved in #10262. I don't think this pr would fix the root cause of the issue because of the same reasons that were already explained in https://github.com/PX4/Firmware/pull/10297#issuecomment-421909966",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [],
+      "reviews": []
+    }
+  },
+  {
+    "title": "navigator: set yaw_valid flag in reposition triplet",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10294",
+    "number": 10294,
+    "created_at": "2018-08-21T21:00:11Z",
+    "merged": true,
+    "merged_at": "2018-09-16T23:29:39Z",
+    "state": "closed",
+    "conversation": {
+      "author": "RomanBapst",
+      "body": "@dagar @MaEtUgR @Stifael I'm wondering if we need these flags. On one hand we allow the yaw setpoint to be set to NAN on the other hand we still require a valid flag to be set.\nAnd sometimes one means the other like here\nhttps://github.com/PX4/Firmware/blob/master/src/modules/navigator/mission_block.cpp#L507\n\n@DonLakeFlyer @LorenzMeier FYI\n\n",
+      "issue_comments": [
+        {
+          "author": "LorenzMeier",
+          "created_at": "2018-08-22T06:38:40Z",
+          "body": "@RomanBapst The fixed wing mission test failed.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "Stifael",
+          "created_at": "2018-08-22T06:48:52Z",
+          "body": "> On one hand we allow the yaw setpoint to be set to NAN on the other hand we still require a valid flag to be set.\r\n\r\nI think what is missing is clear definition. In addition to NAN and the valid flags, Infinity is also used. ",
+          "type": "issue_comment"
+        },
+        {
+          "author": "RomanBapst",
+          "created_at": "2018-08-26T09:58:29Z",
+          "body": "@dagar Any idea what went wrong here? Is it one of those cases where you just need to restart it?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "RomanBapst",
+          "created_at": "2018-08-26T09:59:51Z",
+          "body": "@dagar From what I see it lost datalink connection. Are these simulations actually using the reposition commands?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "RomanBapst",
+          "created_at": "2018-09-12T06:26:05Z",
+          "body": "@dagar How do it get the ulog file from a CI run?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-09-16T23:02:28Z",
+          "body": "Rebased on master.",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [],
+      "reviews": [
+        {
+          "author": "dagar",
+          "created_at": "",
+          "body": "",
+          "state": "APPROVED",
+          "type": "review"
+        }
+      ]
+    }
+  },
+  {
+    "title": "Navigator: RC loss yaw mission item",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10291",
+    "number": 10291,
+    "created_at": "2018-08-21T16:17:09Z",
+    "merged": true,
+    "merged_at": "2018-08-21T19:05:56Z",
+    "state": "closed",
+    "conversation": {
+      "author": "dakejahl",
+      "body": "Added yaw mission item to `rcloss` state in `navigator`. This fixes the issue mentioned #10262 where the vehicle yaws in a seemingly random direction when RC is lost.\n\n**Test data / coverage**\nCurrent behavior:\n![selection_001](https://user-images.githubusercontent.com/37091262/44412682-c3f8c180-a526-11e8-9941-05af1f521a36.png)\nProposed behavior with this PR:\n![selection_002](https://user-images.githubusercontent.com/37091262/44414401-ed1b5100-a52a-11e8-837a-d81ea6349acb.png)\nhttps://review.px4.io/plot_app?log=2e96b2de-f511-49c0-a51a-a34ba7cabc13",
+      "issue_comments": [
+        {
+          "author": "dagar",
+          "created_at": "2018-08-21T19:05:05Z",
+          "body": "I didn't know anyone was actually using RC Auto Recovery.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dakejahl",
+          "created_at": "2018-08-21T22:52:01Z",
+          "body": "Hmm I thought this fixed our problem... but it seems our problem does not happen every time. We are seeing the quad yaw to a random heading when we lose RC  (most of the time). I know this is not the intended behavior in the code, and I've tracked it down to this line. Seems flight_tasks.update() is failing when we lose RC. The vehicle does not actually descend though.\r\n`line 607 in mc_pos_controller_main.cpp`\r\n```\r\n// update task\r\nif (!_flight_tasks.update()) {\r\n\t// FAILSAFE\r\n\t// Task was not able to update correctly. Do Failsafe.\r\n\tfailsafe(setpoint, _states);\r\n\r\n} \r\n```",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2018-08-22T06:50:52Z",
+          "body": "@MaEtUgR Yaw = NaN is used to signal \"do not change yaw\". Is this maybe not correctly handled in flight tasks?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "MaEtUgR",
+          "created_at": "2018-10-30T14:03:25Z",
+          "body": "@LorenzMeier For the vehicle_local_position_setpoints which are outputs of the flight task and input to the position control class NAN is defined as a state that has no setpoint and is therefore not controlled: https://github.com/PX4/Firmware/blob/master/msg/vehicle_local_position_setpoint.msg#L2\r\n\r\nIt seems that the navigator sets NAN to hold wherever that is documented and the FlightTaskAuto which handles the hold mode does not translate this correctly. This translation would need to happen here: https://github.com/PX4/Firmware/blob/master/src/lib/FlightTasks/tasks/Auto/FlightTaskAuto.cpp#L200\r\n\r\n**EDIT:** Or the meaning of a setpoint being NAN is handeled consistently and the fix is the one from this pr.",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [],
+      "reviews": [
+        {
+          "author": "dagar",
+          "created_at": "",
+          "body": "",
+          "state": "APPROVED",
+          "type": "review"
+        }
+      ]
+    }
+  },
+  {
+    "title": "mission:reset mission after finished",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10288",
+    "number": 10288,
+    "created_at": "2018-08-21T13:24:10Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "jinchengde",
+      "body": "vehicle could reset mission after mission finished, change the flight mode to others and back to mission mode, no need disarm, the mission will reset.",
+      "issue_comments": [
+        {
+          "author": "dagar",
+          "created_at": "2018-08-21T19:42:34Z",
+          "body": "Great! This looks like a safe and simple way to do it.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "stale[bot]",
+          "created_at": "2019-03-01T13:40:17Z",
+          "body": "This issue has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs. Thank you for your contributions.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "stale[bot]",
+          "created_at": "2019-03-15T13:54:37Z",
+          "body": "Closing as stale.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "Antiheavy",
+          "created_at": "2020-01-13T20:22:26Z",
+          "body": "I realize this is old and closed, but after a recent conversation with @jinchengde and after thinking about this a lot, I think this proposed change makes a lot of sense.  @jinchengde I recommend you rebase and reopen this PR.  I can't comment intelligently on the code, but the functionality makes sense.",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [
+        {
+          "author": "dagar",
+          "created_at": "2018-08-21T19:46:59Z",
+          "body": "We have to be a little careful here because other parts of navigator set the mission result as well.",
+          "path": "src/modules/navigator/mission.cpp",
+          "position": 5,
+          "type": "review_comment"
+        },
+        {
+          "author": "jinchengde",
+          "created_at": "2018-08-22T06:04:38Z",
+          "body": "could you help to give some prompt which we need to protect, do we need to confirm vehicle in loiter mode before we reset the mission?",
+          "path": "src/modules/navigator/mission.cpp",
+          "position": 5,
+          "type": "review_comment"
+        },
+        {
+          "author": "TSC21",
+          "created_at": "2018-11-25T21:51:49Z",
+          "body": "@jinchengde we need to make sure that the next state after the mission ends does not crash the vehicle. Example: make sure the vehicle changes to HOLD or to LAND.",
+          "path": "src/modules/navigator/mission.cpp",
+          "position": 5,
+          "type": "review_comment"
+        },
+        {
+          "author": "jinchengde",
+          "created_at": "2018-11-26T09:52:37Z",
+          "body": "OK，I will test for that, and I wish to have another PR for more modify",
+          "path": "src/modules/navigator/mission.cpp",
+          "position": 5,
+          "type": "review_comment"
+        },
+        {
+          "author": "jinchengde",
+          "created_at": "2018-12-01T12:48:20Z",
+          "body": "@TSC21 I had test in SITL as below\r\n1. automatic takeoff and mission\r\n2. mission end, the vehicle start to circle around the last waypoint\r\n3. change the mode to hold, the vehicle stay current altitude and circle around\r\n4. change the mode to mission, the vehicle fly to the first waypoint\r\nso there is no crash after we change the mode after the mission ends",
+          "path": "src/modules/navigator/mission.cpp",
+          "position": 5,
+          "type": "review_comment"
+        }
+      ],
+      "reviews": []
+    }
+  },
+  {
+    "title": "Add mission reset",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10287",
+    "number": 10287,
+    "created_at": "2018-08-21T12:06:11Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "jinchengde",
+      "body": "after the vehicle finish mission, change the flight mode to others and back to mission mode, the vehicle will reset the mission, no need to disarm vehicle",
+      "issue_comments": [],
+      "review_comments": [],
+      "reviews": []
+    }
+  },
+  {
+    "title": "Removed condition to move straight to RTL_LAND state.",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10252",
+    "number": 10252,
+    "created_at": "2018-08-16T21:24:54Z",
+    "merged": true,
+    "merged_at": "2018-08-16T22:08:47Z",
+    "state": "closed",
+    "conversation": {
+      "author": "dakejahl",
+      "body": "Essentially this not only doesn't work after adding the `_navigator->get_position_setpoint_triplet()->current.valid` check (setpoints are invalidated when navigator changes nav state) but sometimes it DOES work and instead of landing where it is AT (i.e `gpos.lat` and `gpos.lon`) the lat/lon setpoints are `home.lat` and `home.lon`. This is extremely bad, the vehicle just beelines towards `home.lat`, `home.lon`, and `home.alt`.\n\nThis wasn't a problem previously when we were using the `mc_pos_controller` for all the control, as previously the logic for `SETPOINT_TYPE_LAND` within `mc_pos_controller` would just set the lat/lon setpoints to NaN, which then caused the controller to default those setpoints to the current gpos.lat/gpos.lon and just land where it is at. \n\nI hope this didn't impact anyone other than ourselves. We've seen it maybe 5 times total over the course of the last few weeks of consistent flying. I don't know why it sometimes \"works\" and sometimes does not. Either way it needs to be removed!",
+      "issue_comments": [
+        {
+          "author": "dagar",
+          "created_at": "2018-08-16T22:08:15Z",
+          "body": "Thanks for following up and fixing it. We can find another way to accomplish the same (intended) result.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dakejahl",
+          "created_at": "2018-08-16T22:17:25Z",
+          "body": "Of course. And yes, I think the logic belongs `commander` itself though.",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [],
+      "reviews": [
+        {
+          "author": "dagar",
+          "created_at": "",
+          "body": "",
+          "state": "APPROVED",
+          "type": "review"
+        }
+      ]
+    }
+  },
+  {
+    "title": "Avoidance Feedback Rebased",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10240",
+    "number": 10240,
+    "created_at": "2018-08-15T15:21:26Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "mrivi",
+      "body": " Based on #10037 \n\n- if the vehicle projected position on the line previous-current triplet is past the current triplet, acceptance radius is enlarged such that navigator updates the triplets\n- if the vehicle is within the xy acceptance radius but not inside the z one, enlarge the altitude acceptance radius such that navigator updates the triplets set the feedback yaw acceptance to NAN such that it is ignored by navigator\n\nMissions shouldn't get stuck anymore because a waypoint is not reachable or a waypoint is reached with a heading different from what navigator expects",
+      "issue_comments": [
+        {
+          "author": "LorenzMeier",
+          "created_at": "2018-08-16T07:49:38Z",
+          "body": "@mrivi Could you please rebase one more time and check CI? Flash space is now resolved, so any remaining failures should be real.",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [
+        {
+          "author": "LorenzMeier",
+          "created_at": "2018-08-16T15:29:48Z",
+          "body": "Why is this code here just commented out?",
+          "path": "src/modules/gnd_pos_control/GroundRoverPositionControl.cpp",
+          "position": 1,
+          "type": "review_comment"
+        },
+        {
+          "author": "mrivi",
+          "created_at": "2018-08-17T15:12:10Z",
+          "body": "@dagar how can we bring this in? Could we use this new message only for avoidance and then in a new PR use it for VTOL as well?",
+          "path": "src/modules/gnd_pos_control/GroundRoverPositionControl.cpp",
+          "position": 1,
+          "type": "review_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2018-08-19T09:34:16Z",
+          "body": "@mrivi You are not filling the payload of the message but still publishing it below - is this intended?",
+          "path": "src/modules/gnd_pos_control/GroundRoverPositionControl.cpp",
+          "position": 1,
+          "type": "review_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-08-19T14:52:02Z",
+          "body": "This was from the original PR https://github.com/PX4/Firmware/pull/10037 where fw_pos_ctrl_status was being generalized. Some of these fields are straight copies of what also goes out in vehicle_attitude_setpoint, so I was going to drop them.\r\n\r\n\r\nLet's finish https://github.com/PX4/Firmware/pull/10037 and rebase.",
+          "path": "src/modules/gnd_pos_control/GroundRoverPositionControl.cpp",
+          "position": 1,
+          "type": "review_comment"
+        },
+        {
+          "author": "mrivi",
+          "created_at": "2018-08-20T13:57:51Z",
+          "body": "@dagar I have rebased. ",
+          "path": "src/modules/gnd_pos_control/GroundRoverPositionControl.cpp",
+          "position": 1,
+          "type": "review_comment"
+        }
+      ],
+      "reviews": []
+    }
+  },
+  {
+    "title": "Accept onboard computer heartbeats as telemetry",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10194",
+    "number": 10194,
+    "created_at": "2018-08-08T15:37:33Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "okalachev",
+      "body": "This PR solves #10042 problem, that `STATUSTEXT` messages are not passed, when there is no GCS.\nAlso, this is a partial implementation of #7985.\n\nI pass `telemetry_status`, when OBC heartbeats received, but I changed the commander logic, for not considering OBC as a datalink.\n\nSo `NAV_DLL_ACT`, `COM_DL_LOSS_T`, `COM_DL_REG_T` are only about GCS link, not OBC (not renaming for backwards compatibility).\n\nThe OBC failsafe params, like `NAV_OBC_DLL_ACT`, `COM_OBC_DL_LOSS_T`, `COM_OBC_DL_REG_T` can be added later.\n\n@LorenzMeier , @TSC21 .",
+      "issue_comments": [
+        {
+          "author": "TSC21",
+          "created_at": "2018-08-08T15:42:07Z",
+          "body": "This looks reasonable and can be extended for an OBC datalink failsafe after. Can you please rebase?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "TSC21",
+          "created_at": "2018-08-08T16:02:03Z",
+          "body": "@okalachev: http://ci.px4.io:8080/blue/organizations/jenkins/PX4%2FFirmware/detail/PR-10194/2/pipeline#step-205-log-1111",
+          "type": "issue_comment"
+        },
+        {
+          "author": "okalachev",
+          "created_at": "2018-08-08T16:22:55Z",
+          "body": "@TSC21 , thanks, I'll look.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-08-08T18:20:06Z",
+          "body": "A few minor comments, but overall looks good.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "okalachev",
+          "created_at": "2018-08-09T14:20:56Z",
+          "body": "@TSC21 , I found the bug.\r\n\r\nThe problem starts, when multiple telemetry \"sources\" are on the same Mavlink instance, so this is the same `telemetry_status` topic instance, and the same \"telemetry\" in commander's `telemetry_data` array.\r\n\r\nSo, I don's see an easy solution yet, looks like a lot of telemetry logic should be changed.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "TSC21",
+          "created_at": "2018-08-09T14:24:24Z",
+          "body": "@okalachev that probably means we need a different `telemetry_status` topic instance for each of the telemetry sources. Probably multitopic is required.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "okalachev",
+          "created_at": "2018-08-09T14:36:01Z",
+          "body": "I guess the maximum number of topic instances are `ORB_MULTI_MAX_INSTANCES`, which is 4. But the number of telemetry \"sources\" that way would be something like 255 (systems) * 255 (systems' components).\r\n\r\nSo, maybe not to use multitopic for that. Instead, to add system and component ids to `telemetry_status`? ",
+          "type": "issue_comment"
+        },
+        {
+          "author": "TSC21",
+          "created_at": "2018-08-09T14:39:52Z",
+          "body": "> I guess the maximum number of topic instances are `ORB_MULTI_MAX_INSTANCES`, which is 4. But the number of telemetry \"sources\" that way would be something like 255 (systems) * 255 (systems' components).\r\n\r\nWell I was thinking on limit the telemetry sources based on type and not on sys+comp id. But I guess that would make more sense yes. Can you propose that in a new issue as a RFC? Probably better to have a discussion about it first before one commits to it.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "okalachev",
+          "created_at": "2018-08-09T14:58:37Z",
+          "body": "You mean to write an RFC for adding sys and comp ids to `telemetry_status`?\r\n\r\nI'm not sure this is so large change to make an RFC.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "TSC21",
+          "created_at": "2018-08-09T15:00:39Z",
+          "body": "> I'm not sure this is so large change to make an RFC.\r\n\r\nIt's a conceptual/structural change/feature that needs to be discussed.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2018-08-16T16:35:59Z",
+          "body": "Could you please rebase? Thanks!",
+          "type": "issue_comment"
+        },
+        {
+          "author": "okalachev",
+          "created_at": "2018-08-16T16:45:27Z",
+          "body": "Unfortunately, it doesn't make sense for now, because this change introduces a new bug, that I described in previous messages.\r\n\r\nI don't see an easy solution yet, without rewriting `telemetry_status` logic.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "TSC21",
+          "created_at": "2018-11-25T21:07:19Z",
+          "body": "@okalachev what's the status of this? Have you thought of a way of bringing this into a state that does work?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "okalachev",
+          "created_at": "2018-11-25T21:18:52Z",
+          "body": "@TSC21, sorry, unfortunately I haven't worked at this yet. The easy workaround is to send fake GCS heartbeats from ROS code. The conversation can be continued at https://github.com/PX4/Firmware/issues/10042.\r\n\r\nThis PR can be closed I guess, as the implementation is incorrect.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "TSC21",
+          "created_at": "2018-11-25T21:25:52Z",
+          "body": "The PR is not totally incorrect. It's rather incomplete. But I accept that we can bring a more complete solution in a new PR. Please fill free to close it or maybe we can iterate from here.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-11-28T14:53:20Z",
+          "body": "Revisiting this idea - https://github.com/PX4/Firmware/pull/10933",
+          "type": "issue_comment"
+        },
+        {
+          "author": "stale[bot]",
+          "created_at": "2019-02-26T15:27:57Z",
+          "body": "This issue has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs. Thank you for your contributions.\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "stale[bot]",
+          "created_at": "2019-03-12T16:13:01Z",
+          "body": "Closing as stale.\n",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [
+        {
+          "author": "dagar",
+          "created_at": "2018-08-08T18:18:31Z",
+          "body": "Is there any reason we can't drop this check entirely now?",
+          "path": "src/modules/mavlink/mavlink_receiver.cpp",
+          "position": 8,
+          "type": "review_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-08-08T18:19:25Z",
+          "body": "How about ground control instead of GCS?",
+          "path": "src/modules/commander/state_machine_helper.cpp",
+          "position": 5,
+          "type": "review_comment"
+        },
+        {
+          "author": "okalachev",
+          "created_at": "2018-08-08T21:15:23Z",
+          "body": "What if there is a heartbeat from another drone (in a swarm network), charging station, or any other device? Should it be considered as a telemetry link?\r\nI don't think so.",
+          "path": "src/modules/mavlink/mavlink_receiver.cpp",
+          "position": 8,
+          "type": "review_comment"
+        },
+        {
+          "author": "okalachev",
+          "created_at": "2018-08-08T21:15:59Z",
+          "body": "I don't see a huge difference, but I can change it.",
+          "path": "src/modules/commander/state_machine_helper.cpp",
+          "position": 5,
+          "type": "review_comment"
+        }
+      ],
+      "reviews": []
+    }
+  },
+  {
+    "title": "Smooth auto desired vel",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10193",
+    "number": 10193,
+    "created_at": "2018-08-08T12:02:53Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "Stifael",
+      "body": "Please use [PX4 Discuss](http://discuss.px4.io/) or [Slack](http://slack.px4.io/) to align on pull requests if necessary.\r\n\r\n**Test data / coverage**\r\nLogs uploaded to http://logs.px4.io or screenshots.\r\n\r\n**Describe problem solved by the proposed pull request**\r\nA clear and concise description of the problem, if any, this feature will solve. E.g. I'm always frustrated when ...\r\n\r\n**Describe your preferred solution**\r\nA clear and concise description of what you have implemented.\r\n\r\n**Describe possible alternatives**\r\nA clear and concise description of alternative solutions or features you've considered.\r\n\r\n**Additional context**\r\nAdd any other context or screenshots for the feature request here.\r\n",
+      "issue_comments": [],
+      "review_comments": [],
+      "reviews": []
+    }
+  },
+  {
+    "title": "[WIP] Avoidance feedback",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10180",
+    "number": 10180,
+    "created_at": "2018-08-07T12:37:54Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "mrivi",
+      "body": "Branch based on #10013 plus #10037 cherry-picked on top. \n- if the vehicle projected position on the line previous-current triplet is past the current triplet, the acceptance radius is enlarged such that navigator updates the triplets\n- if the vehicle is within the xy acceptance radius but not inside the z one, enlarge the altitude acceptance radius such that navigator updates the triplets\n- set the feedback yaw acceptance to NAN such that it is ignored by navigator\n\nMissions shouldn't get stuck anymore because a waypoint is not reachable or a waypoint is reached with a heading different from what navigator expects",
+      "issue_comments": [
+        {
+          "author": "mrivi",
+          "created_at": "2018-08-15T15:22:11Z",
+          "body": "Closing this in favor of #10240 ",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [],
+      "reviews": []
+    }
+  },
+  {
+    "title": "uORB: update msgs fields from camelCase to snake_case",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10077",
+    "number": 10077,
+    "created_at": "2018-07-29T20:41:28Z",
+    "merged": true,
+    "merged_at": "2018-07-30T19:40:29Z",
+    "state": "closed",
+    "conversation": {
+      "author": "TSC21",
+      "body": "**Describe problem solved by the proposed pull request**\nIn the process of developing a ROS2 package that will be interfacing PX4 with ROS2 through fast-RTPS, I found out that while trying to building the package with the respective ROS msg generation, `rosidl_generate_interfaces()` does not process msg fields which have uppercase letters.\n\n**Describe your preferred solution**\nThis is an harmless PR which changes some message fields that have uppercase letters (or present a camelCase naming convention) so `rosidl_generate_interfaces()` is able to generate code for ROS IDL files. It basically replaces the uppercase with lowercase, and where required, change the naming convention to snake_case.\n\n**Describe possible alternatives**\nNot really much more we can do about it, unless one changes the copied file online during the build process, which is not really efficient.",
+      "issue_comments": [
+        {
+          "author": "TSC21",
+          "created_at": "2018-07-29T20:46:10Z",
+          "body": "Also, after this gets merged, I think it will make sense to actually have something like a schema validator for uORB msgs, so that we can make sure every new fields that is added follows the same convention (does make much sense to have fields following different naming conventions). This validator would run on CI as a new job, parallel to the style check job for example.\r\n@dagar any thoughts?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-07-29T21:02:42Z",
+          "body": "Anything from the ROS world that already solves this problem?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "TSC21",
+          "created_at": "2018-07-29T21:07:03Z",
+          "body": "> Anything from the ROS world that already solves this problem?\r\n\r\nNo. This is actually a requirement for the message generation through ROS IDL generator python scripts.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "TSC21",
+          "created_at": "2018-07-29T21:16:55Z",
+          "body": "Will be issuing a PR against Flight Review so to address these changes as well.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "TSC21",
+          "created_at": "2018-07-29T21:49:17Z",
+          "body": "Changes on Flight Review addressed in https://github.com/PX4/flight_review/pull/123.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2018-07-29T21:50:33Z",
+          "body": "@TSC21 Can you add a change that breaks the build if someone re-introduces this? Like a check in the Python generator for PX4 uORB messages?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "TSC21",
+          "created_at": "2018-07-29T21:53:24Z",
+          "body": ">@TSC21 Can you add a change that breaks the build if someone re-introduces this? Like a check in the Python generator for PX4 uORB messages?\r\n\r\n@LorenzMeier that's what I was actually referencing here https://github.com/PX4/Firmware/pull/10077#issuecomment-408704710. @dagar believes that clang-tidy could possibly handle this if we actually generate the headers and then do the check against those. Would that be a better alternative to a check in the Python generator?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2018-07-30T08:25:45Z",
+          "body": "@TSC21 Let's keep it simple so we can merge this: Extend our message generator and throw an error please. I don't want this to start depending on something else and we drag it out weeks.\r\n\r\nThanks!",
+          "type": "issue_comment"
+        },
+        {
+          "author": "TSC21",
+          "created_at": "2018-07-30T14:54:08Z",
+          "body": "@LorenzMeier done",
+          "type": "issue_comment"
+        },
+        {
+          "author": "TSC21",
+          "created_at": "2018-07-30T20:25:34Z",
+          "body": "@LorenzMeier thanks for merging. This does unblock the package development.",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [
+        {
+          "author": "dagar",
+          "created_at": "2018-07-29T21:10:41Z",
+          "body": "@CarlOlsson did you have opinions about the naming of these fields? If so we might as well tackle that here quickly.",
+          "path": "msg/tecs_status.msg",
+          "position": 5,
+          "type": "review_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-07-29T21:11:27Z",
+          "body": "@bresch, @RomanBapst, @tstastny, @philipoe, @acfloria - anyone feel strongly about the naming of these fields?",
+          "path": "msg/tecs_status.msg",
+          "position": 5,
+          "type": "review_comment"
+        }
+      ],
+      "reviews": [
+        {
+          "author": "dagar",
+          "created_at": "",
+          "body": "",
+          "state": "APPROVED",
+          "type": "review"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "",
+          "body": "",
+          "state": "APPROVED",
+          "type": "review"
+        }
+      ]
+    }
+  },
+  {
+    "title": "Land: fix on_active() so mission finishes",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10046",
+    "number": 10046,
+    "created_at": "2018-07-26T00:29:25Z",
+    "merged": true,
+    "merged_at": "2018-07-26T05:45:01Z",
+    "state": "closed",
+    "conversation": {
+      "author": "dakejahl",
+      "body": "**Test data / coverage**\nVerified that the mission can actually finish using a print statement and running a test in gazebo.\n\n**Describe problem solved by the proposed pull request**\nNot a problem per se, but it is indeed a bug with `land` from the perspective of a mission. \n\n**Describe your preferred solution**\nUse the function available to us `_navigator->get_land_detected()` to verify that we have indeed landed. The previous implementation was looking for  `is_mission_item_reached()`, which was unreachable because during land the mission item altitude set point was being set to absolute zero.",
+      "issue_comments": [],
+      "review_comments": [],
+      "reviews": [
+        {
+          "author": "LorenzMeier",
+          "created_at": "",
+          "body": "",
+          "state": "APPROVED",
+          "type": "review"
+        }
+      ]
+    }
+  },
+  {
+    "title": "RTL: If already landing, go straight to RTL_LAND",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10044",
+    "number": 10044,
+    "created_at": "2018-07-25T20:59:44Z",
+    "merged": true,
+    "merged_at": "2018-07-26T05:46:26Z",
+    "state": "closed",
+    "conversation": {
+      "author": "dakejahl",
+      "body": "**Test data / coverage**\nTested issuing a `land` command followed by an `rtl` command in gazebo. Vehicle continues to descend as expected.\n\n**Describe problem solved by the proposed pull request**\nRTL interrupts a land. This is an issue if an operator is trying to land the vehicle and a critically low battery triggers an RTL. We have seen many times the vehicle takeoff back into the air (RTL) when it is about to touch down for landing.\n\n**Describe your preferred solution**\nDo not allow RTL to `CLIMB` if already `position_setpoint_s::SETPOINT_TYPE_LAND`\n\n_I also cleaned up the comments, removed unnecessary includes, and got rid of namepacing_",
+      "issue_comments": [
+        {
+          "author": "dagar",
+          "created_at": "2018-07-25T22:07:54Z",
+          "body": "We actually have to be a little careful here that the current position setpoint is still valid. The other option which might be safer overall is to go straight into RTL land if transitioning from the LAND navigation state.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "LorenzMeier",
+          "created_at": "2018-07-26T05:46:21Z",
+          "body": "Thanks, perfect!",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [
+        {
+          "author": "dagar",
+          "created_at": "2018-07-25T22:05:47Z",
+          "body": "This should be okay if you also check `current.valid`.",
+          "path": "src/modules/navigator/rtl.cpp",
+          "position": 1,
+          "type": "review_comment"
+        }
+      ],
+      "reviews": [
+        {
+          "author": "LorenzMeier",
+          "created_at": "",
+          "body": "",
+          "state": "APPROVED",
+          "type": "review"
+        }
+      ]
+    }
+  },
+  {
+    "title": "Takeoff: Arm occasionally triggers `maybe_landed`",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10043",
+    "number": 10043,
+    "created_at": "2018-07-25T20:02:09Z",
+    "merged": true,
+    "merged_at": "2018-07-26T05:49:15Z",
+    "state": "closed",
+    "conversation": {
+      "author": "dakejahl",
+      "body": "**Test data / coverage**\nhttps://review.px4.io/plot_app?log=42ef1074-1762-4a6d-9861-bb0ec3a9ec38\n![takeoff](https://user-images.githubusercontent.com/37091262/43223873-b4b6c390-9011-11e8-9402-eb6985511e7b.png)\n\n\n**Describe problem solved by the proposed pull request**\nVery rarely (1 out of 20) an `arm` command will kick the **`land_detector`** into the  _`maybe_landed`_ state due to the torque from the props. This will cause the vehicle to fail to takeoff. I added the log statement (RESETTING TAKEOFF TO POSITION) at line 524 in `mission_block.cpp` which confirms that land detector thinks we are no longer `landed`.\n\n**Describe your preferred solution**\nCheck that  the vehicle is not  _`maybe_landed`_ as well as not _`landed`_ upon takeoff.",
+      "issue_comments": [
+        {
+          "author": "LorenzMeier",
+          "created_at": "2018-07-26T05:49:10Z",
+          "body": "Thanks! I believe I have experienced these as well with vehicles with longer legs.",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [],
+      "reviews": [
+        {
+          "author": "LorenzMeier",
+          "created_at": "",
+          "body": "",
+          "state": "APPROVED",
+          "type": "review"
+        }
+      ]
+    }
+  },
+  {
+    "title": "generic position controller status/feedback message",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10037",
+    "number": 10037,
+    "created_at": "2018-07-25T14:34:37Z",
+    "merged": true,
+    "merged_at": "2018-08-31T18:43:53Z",
+    "state": "closed",
+    "conversation": {
+      "author": "dagar",
+      "body": "Not done, but should give you an idea.\n\nTODO\n - yaw acceptance (+ error threshold?)\n - z acceptance could come from the position controller\n - eliminate as much vehicle specific code from navigator as possible\n - consider vtol usage for back transition\n - stopping distance (loiter/rtl/geofence braking)",
+      "issue_comments": [
+        {
+          "author": "dagar",
+          "created_at": "2018-07-26T12:53:34Z",
+          "body": "TODO: vtol implications (multi topic).",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-08-19T16:51:14Z",
+          "body": "Ok I think this is everything we need right now. Needs testing and review.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "mrivi",
+          "created_at": "2018-08-23T18:15:41Z",
+          "body": "@dagar can we get this PR tested?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-08-25T14:46:21Z",
+          "body": "@PX4/testflights could you test this branch on FW or VTOL (must transition to FW)? The test should include at least a couple waypoints. ",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dannyfpv",
+          "created_at": "2018-08-28T23:00:38Z",
+          "body": "pr tested on v3 fw\r\nhttps://review.px4.io/plot_app?log=851676a3-f71a-419f-b253-2d5aa822c350\r\nhttps://review.px4.io/plot_app?log=54f1fa1b-25c3-405d-b673-3ea058310f2a\r\nhttps://review.px4.io/plot_app?log=9586fcb4-e87a-4d51-860d-6ca7b709ef45\r\nhttps://review.px4.io/plot_app?log=aa094d9e-68d5-4c01-bf55-22f6a790d1a0",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-08-29T03:39:52Z",
+          "body": "Thanks @dannyfpv \r\n\r\nI did a little more testing in SITL and everything looks good except for a small regression in FW landing abort behaviour that I'll have fixed shortly.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "mrivi",
+          "created_at": "2018-08-30T18:03:41Z",
+          "body": "@dagar have you made any progress?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-08-30T19:39:53Z",
+          "body": "@mrivi good to go.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "mrivi",
+          "created_at": "2018-08-31T08:53:39Z",
+          "body": "@dagar do we need more tests or can we merge directly?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-08-31T13:24:22Z",
+          "body": "We can merge, but let's wait for master to be unbroken (https://github.com/PX4/Firmware/pull/10379). ",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [
+        {
+          "author": "mrivi",
+          "created_at": "2018-08-21T07:14:55Z",
+          "body": "`yaw_acceptance` should be feedback into navigator, right? From #10240,  dc99bb088ad9c1a1b28a0db22e00a896bc9355d6",
+          "path": "msg/position_controller_status.msg",
+          "position": 14,
+          "type": "review_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-08-25T14:43:37Z",
+          "body": "Yes.",
+          "path": "msg/position_controller_status.msg",
+          "position": 14,
+          "type": "review_comment"
+        }
+      ],
+      "reviews": [
+        {
+          "author": "RomanBapst",
+          "created_at": "",
+          "body": "Looks fine in general. I'd like comments what the items in the message mean and what their units are.",
+          "state": "DISMISSED",
+          "type": "review"
+        }
+      ]
+    }
+  },
+  {
+    "title": "Yaw remove slewrate",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/10003",
+    "number": 10003,
+    "created_at": "2018-07-23T13:37:17Z",
+    "merged": true,
+    "merged_at": "2018-08-03T06:24:35Z",
+    "state": "closed",
+    "conversation": {
+      "author": "Stifael",
+      "body": "Similar to this [PR](https://github.com/PX4/Firmware/pull/9146) but without manual changes. \nThis PR moves the heading computation from navigator to FlightTaskAuto, which will also remove\nthe continuous triplet update due to heading computation.",
+      "issue_comments": [
+        {
+          "author": "Stifael",
+          "created_at": "2018-07-23T13:48:18Z",
+          "body": "it is to note that during any ROI mission without gimbal control/rotation, the heading will still continuously be updated by the navigator",
+          "type": "issue_comment"
+        },
+        {
+          "author": "ChristophTobler",
+          "created_at": "2018-07-24T06:49:45Z",
+          "body": "@Stifael Should we wait for https://github.com/PX4/Firmware/pull/10006 first?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "Stifael",
+          "created_at": "2018-07-24T06:52:45Z",
+          "body": "> @Stifael Should we wait for #10006 first?\r\n\r\nyep, that makes sense. #10006 wasn't there when I created this PR",
+          "type": "issue_comment"
+        },
+        {
+          "author": "ChristophTobler",
+          "created_at": "2018-08-02T09:11:19Z",
+          "body": "@Stifael Do we need additional flight tests?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "Stifael",
+          "created_at": "2018-08-02T09:21:23Z",
+          "body": "@PX4/testflights can you please test this PR with different heading settings? \r\nIt would be great to test this branch with a vtol / fixedwing as well.\r\n\r\nHeading settings are controller with: MPC_YAW_MODE",
+          "type": "issue_comment"
+        },
+        {
+          "author": "Tony3dr",
+          "created_at": "2018-08-02T14:54:19Z",
+          "body": "@Stifael did you mean MIS_YAWMODE to control heading during a mission?\r\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "santiago3dr",
+          "created_at": "2018-08-02T15:01:09Z",
+          "body": "flashed the pr, i see MPC_YAW_MODE appears in 'other' parameters\r\nwould the value be similar to MIS_YAWMODE?\r\nValues:\r\n0: Heading as set by waypoint\r\n1: Heading towards waypoint\r\n2: Heading towards home\r\n3: Heading away from home",
+          "type": "issue_comment"
+        },
+        {
+          "author": "Stifael",
+          "created_at": "2018-08-02T15:21:58Z",
+          "body": "similar: \r\n 0 towards waypoint\r\n 1 towards home\r\n 2 away from home\r\n 3 along trajectory\r\n\r\nSet by waypoint  got removed because if will take precedence over MPC_YAW_MODE. Basically if the mission sends a valid yaw waypoint, then the vehicle will obey that yaw waypoint independent of MPC_YAW_MODE/. ",
+          "type": "issue_comment"
+        },
+        {
+          "author": "santiago3dr",
+          "created_at": "2018-08-02T15:26:40Z",
+          "body": "thanks for the info, will test shortly",
+          "type": "issue_comment"
+        },
+        {
+          "author": "Avysuarez",
+          "created_at": "2018-08-02T17:57:09Z",
+          "body": "**Some flights with pixhawk 4 (V5). Good flights, heading towards waypoint**\r\n\r\nhttps://review.px4.io/plot_app?log=3b1aaa4c-e1df-4a54-811d-1ec7de1270d1\r\nhttps://review.px4.io/plot_app?log=3b1aaa4c-e1df-4a54-811d-1ec7de1270d1\r\nhttps://review.px4.io/plot_app?log=a448d8cb-8654-4596-9d0a-4dae924b78f1\r\n\r\n**Some flights with pixhawk 2.1 (V3). Good flights, heading towards waypoint**\r\nhttps://review.px4.io/plot_app?log=83616e27-9612-4a71-a2a1-f732edf072cb\r\nhttps://review.px4.io/plot_app?log=ea02ff15-43e9-4733-8ff9-f1c92b383257\r\nhttps://review.px4.io/plot_app?log=ea02ff15-43e9-4733-8ff9-f1c92b383257\r\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dannyfpv",
+          "created_at": "2018-08-02T18:12:35Z",
+          "body": "couple flights on a Pixhawk pro (v4):\r\nhttps://review.px4.io/plot_app?log=97f18520-5fd9-4b17-a425-1118e0e051f9\r\nhttps://review.px4.io/plot_app?log=b70f9c01-9a71-4098-943c-98b2862ac486\r\n\r\npixhawk mini:\r\nhttps://review.px4.io/plot_app?log=ef395dc6-785b-4295-97cf-423577d80b74\r\nhttps://review.px4.io/plot_app?log=bafc63ea-e1c2-4b5b-8aa2-e22b7272809b\r\n\r\npixhawk v2\r\nhttps://review.px4.io/plot_app?log=d73899c2-2087-4f62-98fe-0ced68ca7c38\r\nhttps://review.px4.io/plot_app?log=d73899c2-2087-4f62-98fe-0ced68ca7c38\r\nland and rtl working properly\r\n\r\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "santiago3dr",
+          "created_at": "2018-08-02T19:48:02Z",
+          "body": "Few flights on a pixracer (v4)\r\nmcp_yaw_mode set to 0,1,2,3 respectively per flight\r\n\r\nhttps://logs.px4.io/plot_app?log=aec9e42c-94e9-4b3d-ac34-53113de5a712\r\nhttps://logs.px4.io/plot_app?log=a062494e-114c-4024-b42e-0b006afabc1f\r\nhttps://logs.px4.io/plot_app?log=80fd9e14-0219-47ea-8f0d-ae9f97535b0a\r\nhttps://logs.px4.io/plot_app?log=d14d154f-22b3-442e-b06c-b1dbf8290c1f\r\n\r\neverything looks to be working as expected",
+          "type": "issue_comment"
+        },
+        {
+          "author": "Stifael",
+          "created_at": "2018-08-03T06:24:30Z",
+          "body": "great thanks",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [
+        {
+          "author": "ChristophTobler",
+          "created_at": "2018-08-02T09:08:12Z",
+          "body": "typo: points",
+          "path": "src/lib/FlightTasks/tasks/FlightTaskAuto.cpp",
+          "position": 56,
+          "type": "review_comment"
+        }
+      ],
+      "reviews": [
+        {
+          "author": "ChristophTobler",
+          "created_at": "",
+          "body": "",
+          "state": "APPROVED",
+          "type": "review"
+        }
+      ]
+    }
+  },
+  {
+    "title": "Missions: ignore waypoint yaw when avoidance is active",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/9880",
+    "number": 9880,
+    "created_at": "2018-07-11T17:12:51Z",
+    "merged": false,
+    "merged_at": null,
+    "state": "closed",
+    "conversation": {
+      "author": "mrivi",
+      "body": "@dagar  @LorenzMeier @thomasgubler \n\nThis is a sketch of  what we discussed in the dev call. If the avoidance is active and healthy the flag `_waypoint_yaw_reached ` is always set to true.",
+      "issue_comments": [
+        {
+          "author": "mhkabir",
+          "created_at": "2018-07-12T03:56:07Z",
+          "body": "General question - why should we disregard yaw when in avoidance mode? ",
+          "type": "issue_comment"
+        },
+        {
+          "author": "nicovanduijn",
+          "created_at": "2018-07-12T05:54:56Z",
+          "body": "@mhkabir The navigator usually checks whether the aircraft arrives in the direction from the previous mission item. When in avoidance mode, this is not necessarily true, because there may have been a detour that causes it to fly along a path other than the straight line connecting the two mission items",
+          "type": "issue_comment"
+        },
+        {
+          "author": "thomasgubler",
+          "created_at": "2018-07-12T07:22:00Z",
+          "body": "@nicovanduijn Can you test this? I think you were the one that could reproduce the error symptoms most consistently.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "nicovanduijn",
+          "created_at": "2018-07-12T08:07:22Z",
+          "body": "I'll test this, but cherry-picked onto #9270, since anything else doesn't make sense (If you're not flying OA in mission mode, this has no effect)\r\n\r\nEdit: @thomasgubler I've been running it a few times and it looks good so far. Never seen the problem of mission items not getting checked off so far. This is by no means exhaustive testing though",
+          "type": "issue_comment"
+        },
+        {
+          "author": "mrivi",
+          "created_at": "2018-07-12T08:25:54Z",
+          "body": "I didn't put it on top of the avoidance PR because I thought that's going to be merged soon. So it doesn't makes sense to add things and void all the testing done so far.\r\nThe goal was to show what can be achieved easily and discuss the architecture more concretely. I am quite aware that this PR alone doesn't do anything (it doesn't even compile)",
+          "type": "issue_comment"
+        },
+        {
+          "author": "mrivi",
+          "created_at": "2018-07-13T07:01:00Z",
+          "body": "Since #9270 got merged, I have rebased this PR on top of master",
+          "type": "issue_comment"
+        },
+        {
+          "author": "mrivi",
+          "created_at": "2018-07-24T11:41:13Z",
+          "body": "I have added he proposal from last week dev call:\r\nIf the vehicle projected position on the vector previous-current triplet is past the current triplet or if no progress towards the goal is made for 10 seconds, `_waypoint_position_reached` is set to true which forces the triplet update.\r\n\r\nThis is a proposal to start the the discussion.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "mrivi",
+          "created_at": "2018-07-26T11:59:20Z",
+          "body": "Closing this PR, because the final solution will be based on #10037 . The decision to update the triplet will be take in the position controller and feed it back to navigator thorough uORB. ",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [
+        {
+          "author": "thomasgubler",
+          "created_at": "2018-07-12T07:20:34Z",
+          "body": "is it a good pattern to return pointers to private members? I see the same on lines below and above so it might not be something that should be fixed in this PR",
+          "path": "src/modules/navigator/navigator.h",
+          "position": 13,
+          "type": "review_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-07-12T15:49:16Z",
+          "body": "I believe almost all of these can be changed to return const references fairly easily.",
+          "path": "src/modules/navigator/navigator.h",
+          "position": 13,
+          "type": "review_comment"
+        }
+      ],
+      "reviews": []
+    }
+  },
+  {
+    "title": "Navigator: Fix fixed-wing first order altitude hold",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/9850",
+    "number": 9850,
+    "created_at": "2018-07-06T15:52:20Z",
+    "merged": true,
+    "merged_at": "2018-07-16T03:54:09Z",
+    "state": "closed",
+    "conversation": {
+      "author": "philipoe",
+      "body": "**Issue**\r\nNavigator's fixed-wing first-order altitude hold (FOH) is currently causing altitude reference oscillations when in any LOITER mode. See screenshot below. Not only altitude, but also pitch and throttle can thus oscillate significantly. We observed this during a recent test flight.\r\n\r\n![image](https://user-images.githubusercontent.com/2565608/42387985-53c6343e-8144-11e8-86d2-a42aecc4c5c0.png)\r\n\r\n\r\nLog file from SITL where this can be seen: https://review.px4.io/plot_app?log=f18c45ab-622e-4b1d-9819-03cfb06af2b5 . Here, after t=3:20 the true altitude setpoint is still the same as before t=2:20 (i.e. 630m AMSL) but the FOH logic just wrongly sets it to 660m and adds slight oscillations on top. The exact amount of oscillations depends on waypoint distance, altitude difference etc, but i have seen altitude ref oscillations of up to 30m, resulting in full pitch up/down of the aircraft.\r\n\r\n**Analysis**\r\nSee the commit for the location of the code where this is happening. Essentially, every time that the loiter radius of any loiter WP is larger than the acceptance radius calculated from the L1 turn distance, then the Navigator FOH would _not_ consider the waypoint reached and would thus not stop modifying the current altitude setpoint. This leads to the oscillations or offsets in the altitude reference. \r\n\r\n**Solution**\r\nIf in any loiter mode, consider the loiter radius times a factor of 1.2 (same as for the waypoint_reached logic [here](https://github.com/PX4/Firmware/blob/master/src/modules/navigator/mission_block.cpp#L217) as the acceptance radius. Tested in SITL, which should be sufficient for this case.\r\n\r\n@acfloria @ryanjAA @antiheavy FYI\r\n@dagar Made this PR as a quick hotfix independently of your PR at https://github.com/PX4/Firmware/pull/8883/files which supposedly also fixes this but is much larger and where it is more uncertain when this would be merged.",
+      "issue_comments": [
+        {
+          "author": "dagar",
+          "created_at": "2018-07-06T15:55:52Z",
+          "body": "This actually needs a little thought to review. There are a few situations where the position setpoint type and mission_item type are not the same. ",
+          "type": "issue_comment"
+        },
+        {
+          "author": "philipoe",
+          "created_at": "2018-07-06T16:12:36Z",
+          "body": "I can of course also check for `(_mission_item.nav_cmd == NAV_CMD_LOITER_UNLIMITED ||\r\n\t\t\t    _mission_item.nav_cmd == NAV_CMD_LOITER_TIME_LIMIT))` if you prefer that... just let me know.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-07-06T16:53:41Z",
+          "body": "If you can do it entirely from the position setpoint (ignoring mission_item) it should effectively avoid the edge cases (LOITER_TO_ALT, mission work items, etc).",
+          "type": "issue_comment"
+        },
+        {
+          "author": "philipoe",
+          "created_at": "2018-07-06T17:09:20Z",
+          "body": "So you'd also want to use `acc_rad = _navigator->get_acceptance_radius(fabsf(pos_sp_triplet->current.loiter_radius) * 1.2f);` instead of using the mission item loiter radius?",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-07-06T17:29:28Z",
+          "body": "Yes, but drop the mission_item entirely and do a quick skim of the entire altitude_sp_foh_update() to make sure nothing is dependant on the mission item. This is one of the reasons I wanted to move it to the position controller. Multicopter skips this thing entirely.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-07-06T21:19:54Z",
+          "body": "> Yes, but drop the mission_item entirely and do a quick skim of the entire altitude_sp_foh_update() to make sure nothing is dependant on the mission item. This is one of the reasons I wanted to move it to the position controller. Multicopter skips this thing entirely.\r\n\r\nI'll can do this tomorrow if you can't get to it.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "philipoe",
+          "created_at": "2018-07-06T21:58:12Z",
+          "body": "> I'll can do this tomorrow if you can't get to it.\r\n\r\nSure, I guess you know exactly how you'd like to do it. Let me know if i should retest it afterwards then.",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-07-16T01:29:51Z",
+          "body": "> Sure, I guess you know exactly how you'd like to do it.\r\n\r\nNot really, I just see a number of subtle edge cases that make me uncomfortable.\r\n",
+          "type": "issue_comment"
+        },
+        {
+          "author": "dagar",
+          "created_at": "2018-07-16T03:52:19Z",
+          "body": "I played around with this a bit, but there's still another (small) possible hole when the mission item nav_cmd is out of sync with the current position setpoint type.\r\n\r\nLet's merge this now, but work on moving it to the position controller soon. From there it's much easier to safely handle the altitude ramp or hand off between loiter <-> position without fighting to plug numerous holes.",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [],
+      "reviews": [
+        {
+          "author": "LorenzMeier",
+          "created_at": "",
+          "body": "",
+          "state": "APPROVED",
+          "type": "review"
+        },
+        {
+          "author": "dagar",
+          "created_at": "",
+          "body": "Possibly not 100% correct in all situations to mix _mission_item and position_setpoints here.",
+          "state": "CHANGES_REQUESTED",
+          "type": "review"
+        },
+        {
+          "author": "dagar",
+          "created_at": "",
+          "body": "",
+          "state": "APPROVED",
+          "type": "review"
+        }
+      ]
+    }
+  },
+  {
+    "title": "ROI bugfix and improved precision",
+    "url": "https://github.com/PX4/PX4-Autopilot/pull/9781",
+    "number": 9781,
+    "created_at": "2018-06-27T15:00:22Z",
+    "merged": true,
+    "merged_at": "2018-08-06T14:17:12Z",
+    "state": "closed",
+    "conversation": {
+      "author": "potaito",
+      "body": "## The ROI all-zeros bug\r\n\r\nWhen transmitting a mission with QGC, occasionally the ROI waypoints are broken in the sense that the ROI lat/lon is set to `(0.0, 0.0)`. Some digging showed that this only happens when the `MAV_CMD` used to send the mission is in INT mode. The reason is the conversion  from `mavlink_mission` to `mission_item`. In INT mode the latitude and longitude need scaling:\r\n\r\nhttps://github.com/PX4/PX4-Autopilot/blob/bb8e653469e67afb43dbb9ecf3899cf50ef6162f/src/modules/mavlink/mavlink_mission.cpp#L1282-L1294\r\n\r\nHowever, further down when setting the ROI parameters for LAT/LONG/ALT, the conversion is missing and the values are simply copied (cast) regardless of `_int_mode`:\r\n\r\nhttps://github.com/PX4/PX4-Autopilot/blob/bb8e653469e67afb43dbb9ecf3899cf50ef6162f/src/modules/mavlink/mavlink_mission.cpp#L1355-L1363\r\n\r\nA proposed fix is in the first commit.\r\n\r\n### Reproducing the issue:\r\nThe bug occurs only when the vehicle already has a mission loaded, with is removed in QGC, and then a new mission is sent containing the ROI. I am not sure why in one case INT mode is used, and in another case it's not...\r\n\r\n## ROI waypoint floating-point precision\r\nLooking at the situation with @MaEtUgR and @julianoes, we noticed that some precision is lost when using the parameter fields (float) of the vehicle message to store/access the ROI latitude and longitude (param 5 and param6):\r\nhttps://github.com/PX4/PX4-Autopilot/blob/bb8e653469e67afb43dbb9ecf3899cf50ef6162f/src/modules/navigator/mission_block.cpp#L445-L463\r\n\r\nInstead, we can just as well use the mission item's latitude and longitude, which are `double`s instead of `float`s:\r\nhttps://github.com/PX4/PX4-Autopilot/blob/bb8e653469e67afb43dbb9ecf3899cf50ef6162f/src/modules/navigator/navigation.h#L135-L153\r\n\r\nThe proposed fix is in the second commit, making the other commit redundant. \r\n\r\n------\r\n\r\n@julianoes Please take a look :)",
+      "issue_comments": [
+        {
+          "author": "potaito",
+          "created_at": "2018-07-26T07:32:29Z",
+          "body": "@julianoes Could you review the changes? :)",
+          "type": "issue_comment"
+        },
+        {
+          "author": "potaito",
+          "created_at": "2018-07-26T16:06:18Z",
+          "body": "Now there are conflicts :cry: \r\nI'll take care of it. ",
+          "type": "issue_comment"
+        },
+        {
+          "author": "potaito",
+          "created_at": "2018-08-06T09:28:29Z",
+          "body": "@julianoes Conflicts resolved. They were caused by this commit: https://github.com/PX4/Firmware/commit/cf741668018f17cae47180064ebe2cfd2c9de214#diff-7a824e3d1e9a5420071c8c9bbe27b8e7R455\r\n\r\nWith the changes in this PR there is no conversion required, since the `lat` and `lon` fields are already `double` types:\r\nhttps://github.com/PX4/PX4-Autopilot/blob/e989c80205e22d11e5346bda3d11f90cdf294dfc/src/modules/navigator/navigation.h#L135-L137",
+          "type": "issue_comment"
+        },
+        {
+          "author": "julianoes",
+          "created_at": "2018-08-06T09:54:06Z",
+          "body": "```\r\n/usr/local/opt/ccache/libexec/c++  -DCONFIG_ARCH_BOARD_SITL -DMODULE_NAME=\\\"navigator\\\" -DPX4_MAIN=navigator_app_main -D__DF_DARWIN -D__PX4_DARWIN -D__PX4_POSIX -D__STDC_FORMAT_MACROS -Dnoreturn_function=\"__attribute__((noreturn))\" -I. -Isrc -Isrc/lib -Isrc/modules -I../../src -I../../src/drivers/boards/sitl -I../../src/include -I../../src/lib -I../../src/lib/DriverFramework/framework/include -I../../src/lib/matrix -I../../src/modules -I../../src/platforms -I../../platforms/posix/include -Iexternal/Install/include -I../../src/lib/ecl -g -fno-exceptions -fno-rtti -std=gnu++11 -fno-threadsafe-statics -DCONFIG_WCHAR_BUILTIN -D__CUSTOM_FILE_IO__ -Wall -Wextra -Werror -Warray-bounds -Wdisabled-optimization -Wdouble-promotion -Wfatal-errors -Wfloat-equal -Wformat-security -Winit-self -Wlogical-op -Wmissing-declarations -Wpointer-arith -Wshadow -Wuninitialized -Wunknown-pragmas -Wunused-variable -Wno-implicit-fallthrough -Wno-missing-field-initializers -Wno-missing-include-dirs -Wno-unused-parameter -Qunused-arguments -Wno-unused-const-variable -Wno-varargs -Wno-address-of-packed-member -Wno-unknown-warning-option -Wunused-but-set-variable -Wno-overloaded-virtual -Wreorder -fvisibility=hidden -include visibility.h -fno-strict-aliasing -fomit-frame-pointer -fno-math-errno -funsafe-math-optimizations -ffunction-sections -fdata-sections -fcolor-diagnostics -O2 -g -DNDEBUG   -fno-strict-aliasing -fomit-frame-pointer -fno-math-errno -funsafe-math-optimizations -ffunction-sections -fdata-sections -fcolor-diagnostics -std=gnu++11 -MD -MT src/modules/navigator/CMakeFiles/modules__navigator.dir/mission_block.cpp.o -MF src/modules/navigator/CMakeFiles/modules__navigator.dir/mission_block.cpp.o.d -o src/modules/navigator/CMakeFiles/modules__navigator.dir/mission_block.cpp.o -c ../../src/modules/navigator/mission_block.cpp\r\n\r\n../../src/modules/navigator/mission_block.cpp:462:18: fatal error: implicit conversion increases floating-point precision: 'const float' to 'double' [-Wdouble-promotion]\r\n\r\n                        vcmd.param5 = item.params[4];\r\n```",
+          "type": "issue_comment"
+        },
+        {
+          "author": "potaito",
+          "created_at": "2018-08-06T12:43:19Z",
+          "body": "fixed",
+          "type": "issue_comment"
+        }
+      ],
+      "review_comments": [
+        {
+          "author": "julianoes",
+          "created_at": "2018-06-28T06:38:34Z",
+          "body": "I thought here we lose the accuracy yet again but I was wrong.\r\nhttps://github.com/PX4/Firmware/blob/18abeb1118f3db8e4012d290e1b8dc5d0883333a/msg/vehicle_command.msg#L105-L106",
+          "path": "src/modules/navigator/mission_block.cpp",
+          "position": 1,
+          "type": "review_comment"
+        },
+        {
+          "author": "julianoes",
+          "created_at": "2018-06-28T06:41:34Z",
+          "body": "So here we might as well use `item.alt` to be consistent, right?",
+          "path": "src/modules/navigator/mission_block.cpp",
+          "position": 1,
+          "type": "review_comment"
+        },
+        {
+          "author": "potaito",
+          "created_at": "2018-06-28T06:51:54Z",
+          "body": "True, didn't realize that thanks to the `union` the two fields actually occupy the same bytes. ",
+          "path": "src/modules/navigator/mission_block.cpp",
+          "position": 1,
+          "type": "review_comment"
+        },
+        {
+          "author": "potaito",
+          "created_at": "2018-06-28T06:52:05Z",
+          "body": "Right, those two params are the exception. Apparently they are meant for LAT/LON storage :)",
+          "path": "src/modules/navigator/mission_block.cpp",
+          "position": 1,
+          "type": "review_comment"
+        },
+        {
+          "author": "julianoes",
+          "created_at": "2018-06-28T07:51:37Z",
+          "body": "Oh funny.",
+          "path": "src/modules/navigator/mission_block.cpp",
+          "position": 1,
+          "type": "review_comment"
+        },
+        {
+          "author": "julianoes",
+          "created_at": "2018-06-28T07:51:46Z",
+          "body": "Yep.",
+          "path": "src/modules/navigator/mission_block.cpp",
+          "position": 1,
+          "type": "review_comment"
+        },
+        {
+          "author": "potaito",
+          "created_at": "2018-06-28T08:09:29Z",
+          "body": ":heavy_check_mark: ",
+          "path": "src/modules/navigator/mission_block.cpp",
+          "position": 1,
+          "type": "review_comment"
+        }
+      ],
+      "reviews": [
+        {
+          "author": "julianoes",
+          "created_at": "",
+          "body": "",
+          "state": "DISMISSED",
+          "type": "review"
+        },
+        {
+          "author": "julianoes",
+          "created_at": "",
+          "body": "",
+          "state": "APPROVED",
+          "type": "review"
+        }
+      ]
+    }
+  }
+]

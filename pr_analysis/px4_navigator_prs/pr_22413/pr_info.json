@@ -1,0 +1,55 @@
+{
+  "title": "Ignore mission yaw setpoints in `WV_EN` enabled",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22413",
+  "number": 22413,
+  "created_at": "2023-11-20T14:27:31Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "TedObrien",
+    "body": "<!--\r\n\r\nThank you for your contribution!\r\n\r\nGet early feedback through\r\n- Dronecode Discord: https://discord.gg/dronecode\r\n- PX4 Discuss: http://discuss.px4.io/\r\n- opening a draft pr and sharing the link\r\n\r\n-->\r\n\r\n### Solved Problem\r\nIn mission mode or return mode, weather-vaning can cause the drones' heading to change by more than MIS_YAW_ERROR. This causes the drone to remain at its current mission setpoint indefinitely.\r\n\r\nFixes #22355\r\n\r\n### Solution\r\nAdded a conditional to make `_waypoint_yaw_reached = true` if `WV_EN` is enabled and `position_setpoint.disable_weather_vane=false`\r\n\r\n### Test coverage\r\n- Tested in sitl with the windy environment. \r\n- Ran a mission specifying yaw setpoints at each waypoint\r\n- with `WV_EN=1` vehicle ignored yaw setpoints and completed the mission pointing into the wind (https://review.px4.io/plot_app?log=f0720db6-dd2e-486d-8d38-dfa08e58048f)\r\n- with  `WV_EN=0` the vehicle follows yaw setpoints specified in the mission (https://review.px4.io/plot_app?log=f95a52a1-3710-491d-a8d1-3655c709ccb9)\r\n\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "danielhonies",
+        "created_at": "2023-11-21T16:42:07Z",
+        "body": "Thanks for the PR, I would recommend to write this one line a bit cleaner. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TedObrien",
+        "created_at": "2023-11-22T09:54:39Z",
+        "body": "Good call, just modified that line.\r\n\r\nThanks",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-11-28T11:11:47Z",
+        "body": "Can you first make the PR again `main`? And then we can port it to the release branch (1.14) as well. \r\n\r\nI'm curious for the use case: why do you want to specify yaw angles at the waypoints AND enable weather-vane? And shouldn't in that case the right thing be to fix the broken `position_setpoint.disable_weather_vane` reporting (if the waypoint enforces a yaw then this setpoint flag should be set to true )?\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TedObrien",
+        "created_at": "2023-11-28T17:29:15Z",
+        "body": "Hello, I encountered a problem initially (#22355), where the drone would sometimes loiter indefinitely during RTL due to the heading not meeting the acceptable yaw error (caused by weather-vaning). Although my usage doesn't involve setting specific yaw angles at mission waypoints, RTL mode appears to use mission setpoints with specified yaw angles that prevents the drone's progression to the next phase of RTL.\r\n\r\nFor context, my application involves a multi-copter equipped with an anemometer, requiring alignment with the wind direction.  Using `position_setpoint.disable_weather_vane` for landing purposes works well in this scenario. However, for a vehicle with a lifting surface, maintaining the current heading into the wind during RTL might be more appropriate.\r\n\r\nHopefully this makes sense, I'll redo the PR on main.\r\n\r\nThanks\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TedObrien",
+        "created_at": "2023-11-29T10:03:13Z",
+        "body": "Just made a new PR from main #22455",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "danielhonies",
+        "created_at": "",
+        "body": "(_navigator->get_weathervane_enabled() == true) && (pos_sp_triplet->current.disable_weather_vane == false) -> _navigator->get_weathervane_enabled() &&  ! pos_sp_triplet->current.disable_weather_vane ",
+        "state": "CHANGES_REQUESTED",
+        "type": "review"
+      }
+    ]
+  }
+}

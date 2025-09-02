@@ -1,0 +1,24 @@
+{
+  "title": "Avoid unexpected repositions",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22078",
+  "number": 22078,
+  "created_at": "2023-09-13T17:32:25Z",
+  "merged": true,
+  "merged_at": "2023-09-13T19:29:31Z",
+  "state": "closed",
+  "conversation": {
+    "author": "tstastny",
+    "body": "<!--\r\n\r\nThank you for your contribution!\r\n\r\nGet early feedback through\r\n- Dronecode Discord: https://discord.gg/dronecode\r\n- PX4 Discuss: http://discuss.px4.io/\r\n- opening a draft pr and sharing the link\r\n\r\n-->\r\n\r\n### Solved Problem\r\n1. Geofence reposition lifetime: when in RTL, the geofence reposition setpoint is ignored (ok, fine) - however, the reposition struct that holds that geofence position is stored until the next flight. If a manual control loss then engages a hold (during RTL delay time), the reposition setpoint is taken for the hold, which may be anywhere else other than the vehicle's current position.. which would be the desired hold position.\r\n2. External reposition commands without a requested mode switch (flag) are silently accepted and can cause unexpected positioning when hold is engaged.\r\n\r\n### Solution\r\n1. In the loiter activation methods, check the reposition setpoint's timestamp in addition to validity.\r\n3. Don't allow reposition commands without a requested mode switch.\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nBugfix: Don't allow external reposition commands without a mode switch, and ensure old reposition commands are not erroneously set.\r\n```\r\n\r\n### Alternatives\r\nReal solution is not sharing the reposition struct between multiple modes, and not reusing loiter mode for goto and hold.\r\n\r\n### Test coverage\r\n- used libmav to send a reposition command without the modeswitch bit.. it rejects now\r\n- test case:\r\n  - unplug manual control\r\n  - let the multicopter rtl with geo fence boundary set near home\r\n  - geo fence sets reposition struct somewhere along the path towards home (but rtl ignores)\r\n  - vehicle lands, disarms\r\n  - arm and takeoff again in manual\r\n  - unplug manual control\r\n  - rtl ensues\r\n  - the rtl hold delay before returning to home is correctly set to the vehicle's current position (not the previously set reposition struct from last flight)",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "title": "Break down sensor combined",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/4917",
+  "number": 4917,
+  "created_at": "2016-06-27T06:30:10Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "bkueng",
+    "body": "As discussed in https://github.com/PX4/Firmware/issues/4861\n- This reduces the size of `sensor_combined` by a factor of 10 (!) from 790 to 72 bytes.\n- move voting into sensors module. This means that now everyone using `sensor_combined` gets voted data, including ekf2. It also adds voting for the baro.\n- use relative timestamps, necessary for the new logger. Logging `sensor_combined` at full rate now only needs 18KB/s.\n- Memory savings: when using the `q` estimator, we get almost 2kB of additional RAM, with ekf2 it's roughly 0.6kB. This is because ekf2 did not do voting, and voting itself is quite heavy, it requires 1.5kB.\n\nThis introduces a lot of changes at central places, affecting all estimators. Nothing complex, but still, it needs careful review and testing all of the estimators.\n\nI still plan to break up the sensors class into several smaller classes to make things easier to maintain.\n",
+    "issue_comments": [
+      {
+        "author": "bkueng",
+        "created_at": "2016-06-28T18:31:59Z",
+        "body": "This was flight tested with inav and q estimators.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-07-06T07:31:55Z",
+        "body": "@bkueng What is the value of renaming sensor_accel to sensor_accel_raw? Unless there is clear value on top of just naming I would like to avoid that change.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2016-07-06T07:39:50Z",
+        "body": "It makes it more clear that it's the raw sensor data from the driver. Initially I planned to split up sensor_combined into several topics which would have gotten the name `sensor_accel` etc. However as sensor_combined is now really small, it's not necessary to split it, so the topic rename is not strictly necessary either.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-07-06T08:01:52Z",
+        "body": "I don't think that the rename at this point adds significant clarity and I know that a lot of people are using the topics directly. So I think that's a change we shouldn't make at this point.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2016-07-06T08:18:49Z",
+        "body": "Fine with me. I'll drop it when rebasing. Do you plan to merge it now?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-07-06T08:38:18Z",
+        "body": "Yes, I think it makes sense to get these in.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2016-07-06T09:16:23Z",
+        "body": "rebased & dropped sensor topics renaming\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2016-07-06T13:51:18Z",
+        "body": "@julianoes I agree in both cases. I discussed this with @tumbili and he prefered the integral because the estimators use it. But when looking at the overall usage, most places need the value, not the integral. Personally I also prefer the values.\nPlus when thinking about the new logger, the value can be plotted directly.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-07-06T14:11:57Z",
+        "body": "I like the changes overall but I would vote to change the sensor_combined struct and make the API as simple as possible for devs.\n\nTherefore, I'd publish the accel/gyro/mag values without integral plus timestamp. If an estimator really wants integrals, it should just multiply the values with delta_t. I think this would make it cleaner and also better performance-wise because it would lead to less divisions.\nI'm just not sold on the idea of integrals instead of intuitive values.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2016-07-06T14:18:24Z",
+        "body": "just to be clear, you mean like this? sensor_combined.msg:\n\n```\nfloat32[3] gyro_rad\nfloat gyro_integral_dt # in seconds\n\nint32 accelerometer_timestamp_relative\nfloat32[3] accelerometer_m_s\nfloat accelerometer_integral_dt \n\nint32 magnetometer_timestamp_relative\nfloat32[3] magnetometer_ga  \n\nint32 baro_timestamp_relative\nfloat32 baro_alt_meter      \nfloat32 baro_temp_celcius\n```\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-07-06T14:32:39Z",
+        "body": "@bkueng yes that's what I would suggest.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-07-06T14:56:35Z",
+        "body": "Looks sensible to me.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2016-07-06T17:04:41Z",
+        "body": "ok if no one objects, I'll change this.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2016-07-07T08:54:19Z",
+        "body": "refactored to the above format\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-07-07T09:36:17Z",
+        "body": "Rebased and applied.\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "julianoes",
+        "created_at": "2016-07-06T13:18:08Z",
+        "body": "Having to add the division through dt everywhere seems painful. Of course, you've done it already, I'm just thinking of devs that will get confused. Are we sure we want to do this?\n",
+        "path": "src/drivers/frsky_telemetry/frsky_data.c",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-07-06T13:23:46Z",
+        "body": "I would argue this should be a `float32` in seconds. I'm not completely happy that you need to do `/ 1.e6f;` everywhere below.\n",
+        "path": "msg/sensor_combined.msg",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": []
+  }
+}

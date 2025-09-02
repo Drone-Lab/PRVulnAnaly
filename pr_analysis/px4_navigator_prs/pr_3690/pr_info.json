@@ -1,0 +1,23 @@
+{
+  "title": "Remove run-once procedure on check_dist_1wp",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/3690",
+  "number": 3690,
+  "created_at": "2016-02-07T00:40:51Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "sanderux",
+    "body": "Fixes: https://github.com/PX4/Firmware/issues/3688\n\nThe stored mission is checked at system startup. When no mission is loaded the check returns OK and sets a param that it does not need to check again. When a new mission is uploaded this bool is not reset.\n\nIn light of future adjustments to the feasibility checker (soft check on load, hard check on execute) i have chosen to remove the run-once procedure. I will soon add the ability to load a mission on a location far from the first waypoint, it will warn the user but still accept the mission. Upon execution it will run the check again and fail to execute if still too far away.\n",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-07T16:56:24Z",
+        "body": "Thanks! Cherry-picked to master.\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

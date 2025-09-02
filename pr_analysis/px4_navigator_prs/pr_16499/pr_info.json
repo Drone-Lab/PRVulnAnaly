@@ -1,0 +1,216 @@
+{
+  "title": "Navigator: VTOL transition command: make transitions smoother",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/16499",
+  "number": 16499,
+  "created_at": "2021-01-06T14:05:26Z",
+  "merged": true,
+  "merged_at": "2021-05-03T06:40:54Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "**Describe problem solved by this pull request**\r\nThe transition command waypoints, NAV_CMD_DO_VTOL_TRANSITION, are attached to the previous waypoint that contains a location (e.g. normal waypoint). It then triggers a transition as soon as this waypoint is reached, which happens when the vehicle is within L1 distance to it. Is the L1 distance smaller then the needed space for the transition, then the vehicle overshoots. The current logic is that for a transition waypoint, the waypoint has to be reached again in the new VTOL mode (e.g. in hover after a backtransition). Thus, if it overshoots, it turns around to accept it, and only then proceeds to the next waypoint.\r\nI don't really get in which case this would be desired.\r\n\r\nThis can lead to ugly situations like this:\r\n![VTOLtransitionmaster](https://user-images.githubusercontent.com/26798987/103775614-98f76580-502e-11eb-95ef-b0b14f675bba.png)\r\n\r\n\r\n**Describe your solution**\r\nDo not make it accept the waypoint again in the new VTOL mode, but directly proceed to the next:\r\n![vtoltransition_withfixes](https://user-images.githubusercontent.com/26798987/103775628-9e54b000-502e-11eb-860b-d1f55a596d98.png)\r\nThat means that if you don't have the previous, current and next waypoint in one line, it will make a turn while transitioning. I don't think this should be a big issue, and what we on top could do is limiting the max roll angle during the transition.\r\n\r\n**Describe possible alternatives**\r\n\r\n\r\n**Test data / coverage**\r\nBasic SITL testing.\r\n\r\n**Additional context**\r\nhttps://github.com/PX4/PX4-Autopilot/commit/c31d8ce2b6f04c30b2fde6af08040c074e70e762 looks like it only works with this stuff removed. @dagar Am I missing something or could we safely remove it? I don't really get what it was added for.\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-01-06T14:08:12Z",
+        "body": "@ThomasRigi what do you think?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2021-01-06T15:10:06Z",
+        "body": "> c31d8ce looks like it only works with this stuff removed. @dagar Am I missing something or could we safely remove it? I don't really get what it was added for.\r\n\r\nIt certainly looks safe to remove, but it's sometimes hard to tell in here. Let's do a little software archaeology to be sure.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ThomasRigi",
+        "created_at": "2021-01-06T17:30:46Z",
+        "body": "Did some SITL tests, looks good. \r\n\r\n> c31d8ce looks like it only works with this stuff removed. @dagar Am I missing something or could we safely remove it? I don't really get what it was added for.\r\n\r\nSame as you, I don't know why it's there, but I assume that at the time they had a good reason to add it. It may well be obsolete by now though as the way transitions are handled have changed significantly. The code was added almost 5 years ago (https://github.com/PX4/PX4-Autopilot/pull/3598), which is about three years before I started working with PX4. :sweat_smile: ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ghost",
+        "created_at": "2021-01-06T19:29:38Z",
+        "body": "I tested this just now in sitl, went into something like this. what am i doing wrong in this one?\r\nseems like it undershoots now.\r\nhttps://review.px4.io/plot_app?log=5be75d9d-c111-4b91-82d3-03eb544da898\r\n\r\n\r\n\r\nmy mission is as below.\r\n![image](https://user-images.githubusercontent.com/25317204/103811799-7ba0b680-5083-11eb-9ff6-f5a6975662aa.png)\r\n![image](https://user-images.githubusercontent.com/25317204/103811917-aee34580-5083-11eb-8c05-f299b0d28c3b.png)\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-01-06T21:03:48Z",
+        "body": "> I tested this just now in sitl, went into something like this. what am i doing wrong in this one?\r\n\r\nI couldn't reproduce. Could you share your mission file please?\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ghost",
+        "created_at": "2021-01-07T01:43:40Z",
+        "body": "\r\n[undershooting_misssion.zip](https://github.com/PX4/PX4-Autopilot/files/5779025/undershooting_misssion.zip)\r\nhere's the mission file. sorry for the delay",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ThomasRigi",
+        "created_at": "2021-01-07T09:59:58Z",
+        "body": "@yuthikasagarage Your mission is incomplete for this new way of handling transitions. Add a (Land) Waypoint after the VTOL Transition command and it will work better. \r\n[undershooting_misssion_fixed.zip](https://github.com/PX4/PX4-Autopilot/files/5780696/undershooting_misssion_fixed.zip)\r\nAs you can see I placed WP9 a bit after WP7. This is approx. the extra distance that the drone was overshooting before. \r\nFor illustrative purposes, observe what happens when you badly place the waypoint after the back transition: \r\n[undershooting_misssion_badly_fixed.zip](https://github.com/PX4/PX4-Autopilot/files/5780741/undershooting_misssion_badly_fixed.zip)\r\nAs soon as the WP7 is accepted, the drone starts the back transition and heads towards WP9 during transition.\r\n\r\nWhat happens in your case with the incomplete mission is that as soon as WP7 is accepted with the FW acceptance radius it starts the back transition and completes the mission at the same time.\r\n![image](https://user-images.githubusercontent.com/48206725/103875858-37d59d80-50d3-11eb-8106-69e600c842db.png)\r\nAs the mission is considered finished the vehicle goes into Loiter, but as you're still backtransitioning FW L1 logic is still at work, hence the half-circle. What I find interesting is that after BT is complete the drone doesn't stay where it is or goes to where it was at 1:22, but flies to launch position instead. I guess it's how the end-of-mission-loiter is implemented for MC drones.\r\n\r\n\r\nAdmittedly this PR has the potential to make things worse if used in a non-intended way, but if you are aware of it it gives you more flexibility (e.g. when transitioning with tail wind you can move the next WP a bit further). \r\n --> this means we need to document it well.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ghost",
+        "created_at": "2021-01-07T12:29:11Z",
+        "body": "@ThomasRigi thanks for the explanation. i can see the logic now.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ThomasRigi",
+        "created_at": "2021-01-29T16:11:59Z",
+        "body": "I don't like this new commit: https://logs.px4.io/plot_app?log=9eb1719d-eac8-49b7-9617-83b4e1a3354d\r\n\r\nBy enforcing that during transition it has to move to the waypoint where transition was triggered you kind of take away the point of this PR. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-01-29T17:45:31Z",
+        "body": "> By enforcing that during transition it has to move to the waypoint where transition was triggered \r\n\r\nWell it wouldn't have needed to accept the old waypoint anymore like it was prior this PR, but will still keep it as current position setpoint. And after some more SITLing I came to the same conclusion as you, that without the check for the transition_state it's much smoother. Thus removed the last commit again.\r\n\r\n@RomanBapst please approve if you think that it's safe enough like this.\r\n\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mrpollo",
+        "created_at": "2021-02-15T18:09:33Z",
+        "body": "@sfuhrer looks like you are going to need to rebase, the main branch has been moving faster these days 🐇 \r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2021-02-22T11:16:20Z",
+        "body": "@dagar @ThomasRigi Can you guys update your review as well?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ThomasRigi",
+        "created_at": "2021-02-22T13:17:24Z",
+        "body": "I'm fine with the changes too, but I would have preferred the symmetric solution that also aims for the next WP in a front transition. This is much less critical than the back transition though, so I'm also happy if it goes in as it is now.\r\n\r\nI still don't see the potential timing issues clearly. But @dagar certainly has a better knowledge about them than I do. From my understanding of the transition logic nothing should break though if we remove L115ff completely instead of checking the RW/FW state",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2021-03-18T07:35:57Z",
+        "body": "@ThomasRigi Have you seen that for the front transition the fixed wing position controller is generating it's own target setpoint irrelevant of what navigator is saying?\r\n\r\nhttps://github.com/PX4/Firmware/blob/40e6958bd994a29ddf73c5546ab6824dbb2ac6b1/src/modules/fw_pos_control_l1/FixedwingPositionControl.cpp#L687",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ThomasRigi",
+        "created_at": "2021-04-09T10:48:57Z",
+        "body": "Sorry for the slow response. I vaguely recalled something like that, but wasn't aware of the details. ~~Still undeniably there is a difference in how the front transition is handled in the two logs of https://github.com/PX4/PX4-Autopilot/pull/16499#discussion_r553249245... but I have to admit I no longer understand why~~ Ok, it's me who was stupid, the drone was aligned differently before the transition started.\r\n\r\nDo you still think it is better to set this artificial heading hold waypoint for the whole duration of the front transition or could we just have it track the normal waypoints ? And in case it reaches the first FW WP while still in transition move towards the next one.\r\n\r\nI think both ways have advantages and drawbacks. In my dream world the drone can handle any type of turns during transition if needed. But I also see that if you ask for a harsh turn during transition it might not end well - even though so far what I saw looked quite stable in the air with the L1 tracking during transition.\r\n\r\nMy main concern with the \"stubborn\" heading hold is that if you have a tight geofence just flying straight no matter what might get you closer to the geofence than you'd like, e.g. with tail wind. Or also without geofence, if the drone has to do a full bank turn to backtrack just after transition it's not great either. Admittedly, in these cases you can also say badly planned mission.\r\n\r\nOn the other hand we'd have a more reliable planned trajectory if the front transition really tracks the planned WPs (as it now does with the back transition). My main worries are potential hard turns during transition, where again you can say badly planned mission. \r\n\r\nAll in all, I'd have a slight preference to tracking the planned WPs, but it's not something I'd consider blocking for this PR. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "VTOLDavid",
+        "created_at": "2021-04-26T11:16:05Z",
+        "body": "In my opinion, force the transition to end in a waypoint is a bad idea. In real flight you can have wind gusts, thrust assymentry on the frame, bad compass calibration or just constant wind that make the transition to end in a slightly different point that planned. Try to end in such waypoint may require large control imputs in conditions near stall, that in most airframes can generate aerodynamic control inversion (lowering the aileron to generate lift stalls the wing and generates the opposite effect). So I whould like to have the possibility to dissable that or at least limit the bank angle that this tracking can request.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2021-01-06T15:24:37Z",
+        "body": "I think we should keep some form of this, but instead of a timeout explicitly check for the desired VTOL state.",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 9,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-01-06T21:04:39Z",
+        "body": "Alright, done in 81eceb526b931601840268c9ae92ce4bcd2e7637. Doesn't look nice but I guess that would do the trick.",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 9,
+        "type": "review_comment"
+      },
+      {
+        "author": "ThomasRigi",
+        "created_at": "2021-01-07T10:43:26Z",
+        "body": "On second thought I think we should just delete the lines. IMO they go against the spirit of this PR. And https://github.com/PX4/PX4-Autopilot/commit/81eceb526b931601840268c9ae92ce4bcd2e7637 is asymmetric on front and back transitions, which is weird. For front transitions you only consider the mission item reached when the transition is complete, whereas for back transition it's immediate. (During transitions the vehicle type is VEHICLE_TYPE_ROTARY_WING)\r\n\r\n1. With https://github.com/PX4/PX4-Autopilot/commit/81eceb526b931601840268c9ae92ce4bcd2e7637 : https://logs.px4.io/plot_app?log=f0d5dd0a-14be-47cc-9b08-e99fdadca76d on the front transition the drone doesn't track the path.\r\n2. Without these lines: https://logs.px4.io/plot_app?log=dca29fa0-e3ba-45e0-b8b2-e75414c71077 the front transition tracks the (badly or at least specially) planned path much better.\r\n\r\n[too_short_FT.zip](https://github.com/PX4/PX4-Autopilot/files/5781084/too_short_FT.zip)\r\nThe mission has the first FW WP way too close to the transition start to make my point. IMO the second option is better",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 9,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-01-08T12:28:06Z",
+        "body": "Happy to remove the check if we are sure that the command is always correctly propagated (and if not, then better fix that instead).",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 9,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-01-11T13:29:29Z",
+        "body": "@dagar what's your opinion on that? Do you have any safety concerns when removing the check again?",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 9,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2021-01-11T15:45:37Z",
+        "body": "Yes, the potential timing issues on a real vehicle vs SITL lockstep. Let's check the remaining navigator VTOL transition logic to see if it matters (the work item after transition cmd).",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 9,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-01-13T17:17:17Z",
+        "body": "@dagar so we're afraid that the transition waypoint gets accepted before the transition is triggered in the VTOL_attitude_controller? Could we use that ack https://github.com/PX4/PX4-Autopilot/blob/cabb50a67ba1e95069457649f0f8cf1727eea5f5/src/modules/vtol_att_control/vtol_att_control_main.cpp#L187? \r\n@ThomasRigi I think it would actually be okay with these checks, even though they're asymmetric and that's certainly not nice. Reasoning: For backtransition it would immediately accept the waypoint, and that's required for making the back transition smoother (original goal of this PR). For front transition it wasn't an issue so far that it only got accepted once the transition was finished (this could change fast, I know).\r\n",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 9,
+        "type": "review_comment"
+      },
+      {
+        "author": "ThomasRigi",
+        "created_at": "2021-01-13T17:49:09Z",
+        "body": "The PR is called \"make transitions smoother\", so in principle both can be targeted ;) But it's true that the reason for it is the back transition, and this works with the asymmetric behaviour. \r\n\r\nIf there is a reason to be worried that taking this check out might break things on a real drone we should keep the check. If not, I find the symmetric solution more elegant.\r\n\r\nThe way I understand the half a second waiting time is to make sure that `in_transition_mode` was updated so that you can monitor this until the transition is over, and not to make sure that the transition command is actually sent. But to me the recent changes in how transitions are done make it obsolete to wait until the end of the transition (for both ways) to accept the waypoint. It's just that I don't see the danger, but mayhaps that's just my lack of knowledge on some parts of PX4 code. If it helps to bring this PR in, then let's go with the asymmetric behaviour.",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 9,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2021-01-29T12:43:03Z",
+        "body": "```suggestion\r\n\t\t\treturn _navigator->get_vstatus()->vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROTARY_WING && !_navigator->get_vstatus()->in_transition_mode;\r\n```",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 13,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2021-01-29T12:43:24Z",
+        "body": "```suggestion\r\n\t\t\treturn _navigator->get_vstatus()->vehicle_type == vehicle_status_s::VEHICLE_TYPE_FIXED_WING && !_navigator->get_vstatus()->in_transition_mode;\r\n```",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 19,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "@sfuhrer I had a detailed look and I'm good with these changes.\r\n",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

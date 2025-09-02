@@ -1,0 +1,24 @@
+{
+  "title": "geofence: fix altitude change fence check",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21806",
+  "number": 21806,
+  "created_at": "2023-07-05T14:11:45Z",
+  "merged": true,
+  "merged_at": "2023-07-07T02:39:40Z",
+  "state": "closed",
+  "conversation": {
+    "author": "bresch",
+    "body": "\r\n\r\n<!--\r\n\r\nThank you for your contribution!\r\n\r\nGet early feedback through\r\n- Dronecode Discord: https://discord.gg/dronecode\r\n- PX4 Discuss: http://discuss.px4.io/\r\n- opening a draft pr and sharing the link\r\n\r\n-->\r\n\r\n### Solved Problem\r\nWhen asking for an altitude change only, the lat/lon is NAN and that makes the geofence check pass regardless of the change in altitude, allowing the drone to climb above the fence.\r\n\r\n### Solution\r\nSet the lat/lon to the current position if NAN\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nFix geofence when changing altitude through reposition.\r\n```\r\n\r\n### Alternatives\r\n\r\n\r\n### Test coverage\r\nSITL tests\r\n",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

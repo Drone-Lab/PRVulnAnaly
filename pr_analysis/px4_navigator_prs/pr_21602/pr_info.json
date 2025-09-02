@@ -1,0 +1,24 @@
+{
+  "title": "Navigator: MissionFeasibilityCheck: check if items fit to the current vehicle type",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21602",
+  "number": 21602,
+  "created_at": "2023-05-17T13:56:51Z",
+  "merged": true,
+  "merged_at": "2023-05-31T17:27:27Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "### Solved Problem\r\nWhen switching between different vehicle types on the same groundstation, it can happen that by accident a mission that was planned for example for a VTOL gets uploaded to a Multicopter. This is can lead to undesired/unexpected behavior.\r\n\r\n### Solution\r\nAdd `checkItemsFitToVehicleType()` check that checks if the vehicle type is non-VTOL but there are VTOL mission items (VTOL_TAKEOFF, VTOL_LAND, VTOL_TRANSITION). The check can later be extended to handle all kind of vehicle type vs mission item checks.\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nFeature: Mission Feasibility Check: prevent uploading a mission containing VTOL items to non-VTOL vehicles\r\n```\r\n\r\n",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "title": "Better granularity for flight failsafe modes",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/4344",
+  "number": 4344,
+  "created_at": "2016-04-23T14:54:59Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "LorenzMeier",
+    "body": "@kd0aij Testing this with props off would be great. Main documentation:\n\n``` C++\n/**\n * Set data link loss failsafe mode\n *\n * The data link loss failsafe will only be entered after a timeout,\n * set by COM_RC_LOSS_T in seconds.\n *\n * @value 0 Disabled\n * @value 1 Loiter\n * @value 2 Return to Land\n * @value 3 Land at current position\n * @value 4 Outback Challenge (OBC) rules\n *\n * @group Mission\n */\nPARAM_DEFINE_INT32(NAV_DLL_ACT, 0);\n\n/**\n * Set RC loss failsafe mode\n *\n * The RC loss failsafe will only be entered after a timeout,\n * set by COM_RC_LOSS_T in seconds. If the timeout value is smaller than\n * zero it will never be entered. If RC input checks have been disabled\n * by setting the COM_RC_IN_MODE param it will also not be triggered.\n *\n * @value 0 Disabled\n * @value 1 Loiter\n * @value 2 Return to Land\n * @value 3 Land at current position\n * @value 4 Outback Challenge (OBC) rules\n *\n * @group Mission\n */\nPARAM_DEFINE_INT32(NAV_RCL_ACT, 0);\n```\n\n@DonLakeFlyer The comments above should also be enough to re-do the safety screen. I've broken the param system with this change, I need to think how we address that.\n",
+    "issue_comments": [
+      {
+        "author": "kd0aij",
+        "created_at": "2016-04-23T15:09:51Z",
+        "body": "For testing this, can \"datalink\" be wifi connection of QGC to pixracer? \n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-04-23T15:10:30Z",
+        "body": "Yes, that should trigger it.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kd0aij",
+        "created_at": "2016-04-23T15:56:22Z",
+        "body": "first test of RC loss with option 3 gave no feedback on console or QGC and motor speed did not change\n\nalso getting this on the console:\n\n```\nWARN  Failed to open MAVLink log: /fs/microsd/msgs_2016_04_23_15_53_43.txt@� errno=22\nWARN  Failed to open MAVLink log: /fs/microsd/msgs_2016_04_23_15_53_48.txt@� errno=22\nWARN  Failed to open MAVLink log: /fs/microsd/msgs_2016_04_23_15_53_48.txt@� errno=22\n```\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-04-23T16:15:03Z",
+        "body": "@kd0aij If you get these you need to wipe your SD card. File system fail.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-04-23T16:15:58Z",
+        "body": "Its possible that the motor speed is not changing if the system believes it already is landed. But I need to check.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kd0aij",
+        "created_at": "2016-04-23T16:20:20Z",
+        "body": "is there a console or mavlink message indicating failsafe is engaged?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kd0aij",
+        "created_at": "2016-04-23T16:27:51Z",
+        "body": "refetched, cleaned and reflashed. RC loss results in QGC \"Landing\" mode and much later \"failsafe mode on\". No messages on console. Motors sped up and stayed at that speed for several minutes. What is supposed to happen?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-04-23T16:28:59Z",
+        "body": "That sounds about right. It would have landed on-spot.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kd0aij",
+        "created_at": "2016-04-23T16:29:47Z",
+        "body": "motors never stop?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kd0aij",
+        "created_at": "2016-04-23T16:31:31Z",
+        "body": "battery voltage reading in QGC is erratic... critical battery warning with FrSky telemetry showing 11.1V\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kd0aij",
+        "created_at": "2016-04-23T16:32:35Z",
+        "body": "I have an ACSP5 on this PixRacer\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kd0aij",
+        "created_at": "2016-04-23T16:37:33Z",
+        "body": "Why isn't there an RC failsafe option to kill the motors? Is that the OBC mode?\n@LorenzMeier Does the copter disarm after \"land at current position\" when RC is lost?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kd0aij",
+        "created_at": "2016-04-23T17:53:07Z",
+        "body": "Killing the wifi link while armed in manual mode didn't appear to do anything, but I guess there's intentionally no feedback on the console?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kd0aij",
+        "created_at": "2016-05-02T23:05:08Z",
+        "body": "@LorenzMeier I see you merged this with open questions from me... Were there other test results which were more definitive? I tried this again today with the copter tied down, but the \"land at current position\" motor behavior seemed wrong, and it went to high throttle when I turned the TX back on, so I don't trust that option. So as far as I can tell, there's no safe option available to prevent a fly-away on RC loss.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-05-03T07:44:18Z",
+        "body": "You will need to try this on a tether, rather than tied down. If its close to home it will land straight, if it is not close to home it will RTL.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kd0aij",
+        "created_at": "2016-05-03T13:23:06Z",
+        "body": "is a GPS lock required?\n\nOn Tue, May 3, 2016 at 1:44 AM Lorenz Meier notifications@github.com\nwrote:\n\n> You will need to try this on a tether, rather than tied down. If its close\n> to home it will land straight, if it is not close to home it will RTL.\n> \n> —\n> You are receiving this because you were mentioned.\n> Reply to this email directly or view it on GitHub\n> https://github.com/PX4/Firmware/pull/4344#issuecomment-216460164\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kd0aij",
+        "created_at": "2016-05-30T14:37:58Z",
+        "body": "apparently this needs more testing, but I would need more explanation of expected results to be able to test it safely: https://github.com/PX4/Firmware/issues/4674\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "xn365",
+        "created_at": "2016-05-31T13:47:01Z",
+        "body": "https://github.com/PX4/Firmware/blob/master/src/modules/navigator/navigator_main.cpp#L344\nI think navigator will not working When we don't have gps.\nCould AUTOLAND or LANDGPSFAIL mode run in this case?\nhttps://github.com/PX4/Firmware/blob/master/src/modules/commander/state_machine_helper.cpp#L615\nWe will chang to DESCEND mode in the case of  RC lost and have no GPS.\nBut this line will never be reached when we have no GPS :https://github.com/PX4/Firmware/blob/master/src/modules/navigator/navigator_main.cpp#L566\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

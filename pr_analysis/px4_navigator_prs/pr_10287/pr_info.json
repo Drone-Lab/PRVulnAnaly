@@ -1,0 +1,16 @@
+{
+  "title": "Add mission reset",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10287",
+  "number": 10287,
+  "created_at": "2018-08-21T12:06:11Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "jinchengde",
+    "body": "after the vehicle finish mission, change the flight mode to others and back to mission mode, the vehicle will reset the mission, no need to disarm vehicle",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": []
+  }
+}

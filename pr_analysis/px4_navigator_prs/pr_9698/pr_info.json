@@ -1,0 +1,310 @@
+{
+  "title": "Fixed-wing autoland improvements",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/9698",
+  "number": 9698,
+  "created_at": "2018-06-16T11:02:49Z",
+  "merged": true,
+  "merged_at": "2018-08-24T14:13:08Z",
+  "state": "closed",
+  "conversation": {
+    "author": "philipoe",
+    "body": "Fixed-wing autoland seems quite suboptimal at the moment. We have had very mixed results during flight tests so far, i.e. while on small foamy-like platforms or when landing on huge runways you may not have any issues, on short-field landings with larger and more complex (e.g. different flap configurations, wide airspeed range) platforms in challenging environments you will definitely see the shortcomings of the current autoland. This PR therefore introduces some improvements:\n\n### Improvements\n\n1. **Airplane landing configuration activated during loiter down (commit 2448863)**\n_Issue_: The landing configuration (i.e. setting the flaps and changing the airspeed from nominal to landing speed) was previously performed only when entering the final approach, i.e. at relatively low altitude above ground (15m is a good rule). In our flight tests, the flap and airspeed changes caused huge altitude errors (+5m), and the aircraft corrected by pitching down significantly and nearly slamming into the ground (alos because the integrators can wind up). This is extremely unsafe. _Solution_: The mode change (flaps, airspeed) is now performed when approaching the loiter-down WP, i.e. usually at much higher altitude of 50m+. The discontinuity is of course still there, but it happens at an altitude where it is safe and the controller (especially the integrators) still have plenty of time to adapt to this new configuration.\n\n2. **Separate and tigther gains for landing (commit 2448863)**\n_Issue_: To avoid motor wear and to allow a good flight efficiency, one usually wants to somewhat relax the TECS throttle time constant (FW_T_THRO_CONST). However, the alt/airspeed control may then not accurate enough for landings anymore. _Solution_: Introduced a throttle time constant scaling factor which is ONLY activated during landings (and loiter-down-to-landing) and is 100% by default such that it doesnt make a difference by default. Note that I am still debating a bit whether we should introduce even more landing-specific parameters (for example, the pitch setpoint offset FW_PSP_OFF changes quite a lot with flaps on our platform), but tried to reduce the amount of additional parameters in this PR. Any thoughts on that?\n\n3. **Tighter altitude acceptance radius for landings (commit https://github.com/PX4/Firmware/commit/d8cc40c67c521ef35cf74d41ee28b7adb8fe0c11)**\n_Issue_: Currently, the final decision on whether to enter the landing approch or not uses the standard altitude acceptance radius parameter for fixed wings (see [here](https://github.com/PX4/Firmware/blob/master/src/modules/navigator/mission_block.cpp#L255). This parameter is 10m by default, and we often set it to 20m because at higher altitudes it just does not matter. This is however not accurate enough for autolandings: Imagine you want to enter the landing approach at hAGL=15m, then the plane would still initiate the autoland at hAGL=5m...25m. Very unsafe and potentially not even feasible for the plane due to sink/climb rate constraints! _Solution_: A \"relative\" altitude acceptance radius, i.e. we assume a 30% error w.r.t. the remaining altitude difference to the landing waypoint can still be handled by the plane. Assuming hLandingApproach=15m, this means 4.5m of altitude acceptance radius. We of course constrain the altitude acceptance radius (see code).\n\n4. **ALWAYS flare when close to the ground (commit https://github.com/PX4/Firmware/commit/02e380af538ea8ef80a433da8fa63f63ed7601fb)**\n_Issue_: During previous flight testing, we were surprised to _sometimes_ see nice flares from the aircraft and sometimes not (i.e. the aircraft just impacted the ground with nominal sink speed of 0.5-0.8m/s). We always thought it is a tuning issue, but turns out it is also because the airplane _only_ flares when it is horizontally close enough to the landing waypoint. This can a) mean that the aircraft (e.g. simply due to errors in the altitude control) never really flares or b) that it will always flare at different altitudes AGL, so the impact velocity is always different. _Solution_: ALWAYS flare when close to the ground, thus guaranteeing a smooth landing in all cases. Note that the motor still _only_ shuts off when we are close to the land WP such that, e.g. if a downdraft pushed the aircraft too close to the ground, the aircraft still continues to fight that downdraft using the motor.\n\n### Notes\n - These are simple effective fixes that make autoland better without changing its overall structure. I know it can be improved a lot, but I think implementing these improvements as a first-shot solution is very important.\n - This was discussed with @dagar already. @priseborough @tstastny @LorenzMeier I am looking for feedback on why the changes I propose would NOT be suitable/better than the current implementation (or what could be improved quickly and effectively without changing the overall code too much)\n - Tested extensively in HIL already, i.e. that all mode changes and parameter changes work. The final tests (both HIL + flight testing) will be performed after feedback from you guys and the respective code changes.",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2018-06-16T14:52:38Z",
+        "body": "@antiheavy FYI",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2018-06-16T15:14:49Z",
+        "body": "Some great ideas here.  We do a lot of fixed wing landings with our 2kg class flying wing and would be excited to test some of this.  Here are some initial comments:\r\n\r\n\r\n\r\n> Airplane landing configuration activated during loiter down\r\n\r\nI couldn't tell how this works from your code link.  My concern is how are you handling generic landing pattern use cases beyond the QGC built in landing pattern?  For example, people often manually plan a box-type landing pattern with traditional downwind, base, and final approach segments, they might place additional waypoints along the way to control the altitude, and place a DoLandStart command and the front of this to define it as the landing pattern in the mission. \r\n\r\nAlternate approaches to the \"integrators fighting flaps problem\" might include:\r\n- a slew rate parameter to slow down flap deployment allowing time for the integrators to adjust, this has the added benefit of allowing the roll integrator time to adjust to inadvertent differential flap deployment rates too.\r\n- a feed-forward type parameter for the pitch offset similar to what you mentioned.\r\n\r\n\r\n\r\n> Separate and tigther gains for landing\r\n\r\nYes!  I think something along these lines would be of great benefit to manage landing energy.  Might also consider some soft of pitch gain and maybe roll gain scaling. \r\n\r\n\r\n\r\n\r\n> Tighter altitude acceptance radius for landings\r\n\r\nI like the goal here, but I have concerns on the implementation.\r\n\r\nDo I correctly understand that the hard coded 30% value will be constrained to not exceed NAV_FW_ALT_RAD?  I think it is important that the hard coded 30% value doesn't inadvertently exceed the normal waypoint acceptance distances.\r\n\r\nMy bigger concern here is what is the behavior if the altitude is missed?  does the vehicle do a turn-around to try to get back to the waypoint? This could be very bad in the case where someone has placed a waypoint to start the final descent at low altitude very close to the Land waypoint (below trees, etc).  I see that you hard coded a 3m minimum, but even that is very difficult for most fixed wings to actually achieve.  I'm not sure the right answer here, but maybe instead of hard coding 30% there should be a separate parameter for landing approach WP vertical error, different from NAV_FW_ALT_RAD?\r\n\r\n\r\n\r\n> ALWAYS flare when close to the ground\r\n\r\nI agree we should get rid of the distance from land waypoint thing for Flare.  However, I'm unsure about the throttle piece you've added.  There is already a FW_LND_TLALT parameter which I feel should be respected no matter what (e.g. we don't want throttle kicking in when very close to the ground in case of propeller strike, etc).",
+        "type": "issue_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-06-17T00:06:45Z",
+        "body": "@dagar @antiheavy thanks for your feedback! I adapted the code, see the comments. Answers to some remaining questions below.\r\n\r\n>>Airplane landing configuration activated during loiter down\r\n\r\n>I couldn't tell how this works from your code link. My concern is how are you handling generic landing pattern use cases beyond the QGC built in landing pattern? For example, people often manually plan a box-type landing pattern with traditional downwind, base, and final approach segments, they might place additional waypoints along the way to control the altitude, and place a DoLandStart command and the front of this to define it as the landing pattern in the mission.\r\n\r\nGeneric landing patterns which do NOT involve a LOITER_TO_ALT waypoint before the final approach are handled exactly as before. So they still work, but do not profit from improvement 1 (like activating flaps + different airspeed earlier) in this PR. Two potential solutions:\r\n\r\n1. Just check whether the next_wp is a NAV_LAND WP independently of whether the curr_wp is a LOITER_TO_ALT WP. I am a bit concerned about cases like curr_wp=takeoff and next_wp=land however. So one would need to really carefully look for potentially dangerous corner cases.\r\n2. Alternatively, one could use the DO_LAND_START mission item to trigger the landing configuration. However, this is a mission item that is only known to NAVIGATOR (as far as i know), so we cannot handle this in the FixedWingPositionControl. And even _if_ we had the DO_LAND_START information where we need it, the question is still: What happens if a user forgets to set a DO_LAND_START mission item -> The same as if he does not use the LOITER_TO_ALT waypoint, i.e. the landing is still going to work but is not going to benefit from the improvements above.\r\n\r\n_General note:_ I really feel like a loiter-to-alt is _the_ waypoint type to use before an approach because it guarantees that _both_ your altitude _and_ heading are perfectly (within the acceptance tolerances of course) aligned with the landing approach. We also used the \"downwind, base...\" approaches before but always placed a loiter-to-alt (just a semi-circle, which does not even need to involve altitude changes btw.) directly before the landing approach because of the advantages mentioned above. \r\n\r\n>Alternate approaches to the \"integrators fighting flaps problem\" might include: a slew rate parameter to slow down flap deployment allowing time for the integrators to adjust, this has the added benefit of allowing the roll integrator time to adjust to inadvertent differential flap deployment rates too.\r\n\r\nDepends. If you start flap deployment at the same time as before (i.e. when entering the landing approach) but just deploy the flaps slower, then this is actually worse because you are shifting the time when the flaps are fully deployed even closer to the ground. So doing these configuration changes as early as possible is the way to go (unless you have a model-predictive controller or similar feed forwards).\r\n\r\n\r\n>>Tighter altitude acceptance radius for landings\r\n\r\n>I like the goal here, but I have concerns on the implementation. Do I correctly understand that the hard coded 30% value will be constrained to not exceed NAV_FW_ALT_RAD? I think it is important that the hard coded 30% value doesn't inadvertently exceed the normal waypoint acceptance distances.\r\n\r\nCorrect.\r\n\r\n> My bigger concern here is what is the behavior if the altitude is missed? does the vehicle do a turn-around to try to get back to the waypoint? This could be very bad in the case where someone has placed a waypoint to start the final descent at low altitude very close to the Land waypoint (below trees, etc). I see that you hard coded a 3m minimum, but even that is very difficult for most fixed wings to actually achieve. I'm not sure the right answer here, but maybe instead of hard coding 30% there should be a separate parameter for landing approach WP vertical error, different from NAV_FW_ALT_RAD?\r\n\r\nWith the QGC fixed-wing landing pattern (or a manually-set loiter-to-alt WP) the vehicle just does one other turn in the loiter circle. This is perfectly safe. For a standard waypoint, the airplane may turn back to track that WP, yes. But again, standard WPs don't seem optimal for me there: If you don't hit the altitude acceptance, then the airplane will do crazy stuff, so you have to set a large NAV_FW_ALT_RAD to avoid this -> This then however means that the landing approach altitude is potentially very inaccurate, which is again unsafe. So it's _only_ a tradeoff between two potentially dangerous situations! The much cleaner way is to use loiter-to-alt WPs. Still, i could of course also live with using an additional landing-altitude-acceptance-radius parameter (the disadvantage there concerns the _scale_ of your problem: So say for a landing approach from 15m AGL a 5m altitude acceptance radius might be fine, but if you then land from 100m AGL then 5m altitude acceptance radius is overly tight because your vehicle could easily compensate for say up to 30m altitude error during the landing approach -> This is exactly the reason for using the 30% relative acceptance altitude). Maybe @dagar can comment on what general Pixhawk fixed-wing users would prefer?\r\n\r\n>>ALWAYS flare when close to the ground\r\n\r\n> I agree we should get rid of the distance from land waypoint thing for Flare. However, I'm unsure about the throttle piece you've added. There is already a FW_LND_TLALT parameter which I feel should be respected no matter what (e.g. we don't want throttle kicking in when very close to the ground in case of propeller strike, etc).\r\n\r\nI did not change the throttle behavior at all! The limitation that throttle is NOT being cut off by the autoland logic when we are too far way from the waypoint was already there before, and i somewhat understand the reason for having it there: Of course, there is a certain risk of a propeller strike close to the ground, but if you deactivate that throttle too early you might not only loose your propeller but your whole plane. There is the tradeoff again ;) Note that the land-detector will shut down the throttle _after_ landing, so at least that is somewhat safe.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2018-06-18T17:37:45Z",
+        "body": "@philipoe A couple more questions:\r\n\r\n1) what happens if the vehicle flies very high/long past the Land waypoint, but has not yet begun to flare?  Will the flare still happen?  How will throttle behave in this scenario?\r\n\r\n2) Do I understand the following statement correctly? \r\n - \"A tighter exit criteria tolerance of 30% of the landing height applies only in the case when there is a Loiter-to-Alt waypoint followed by a Land waypoint?  This is limited between 3 meters and NAV_FW_ALT_RAD\"\r\nIf so, I think that is okay as long as that special case gets documented appropriately.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-06-18T19:51:22Z",
+        "body": "> what happens if the vehicle flies very high/long past the Land waypoint, but has not yet begun to flare? Will the flare still happen? How will throttle behave in this scenario?\r\n\r\nIf you pass the landing waypoint at an altitude that is much higher than FW_LND_FLALT, then, just as before, it is not going flare above the landing WP but only later should it descend to FW_LND_FLALT. Of course externally there might be some go-around logic that triggers, i'd need to check that later.\r\n\r\n> \"A tighter exit criteria tolerance of 30% of the landing height applies only in the case when there is a Loiter-to-Alt waypoint followed by a Land waypoint? This is limited between 3 meters and NAV_FW_ALT_RAD\"\r\nIf so, I think that is okay as long as that special case gets documented appropriately.\r\n\r\nNo, as it is implemented right now this tighter acceptance radius applies for _every_ waypoint type which is followed by a NAV_LAND waypoint type. This can of course be changed. But where do you see the advantage of using standard WPs instead of loiter-to-alt WPs (or: The QGC standard fixed-wing landing pattern)? I guess the question we had before, i.e. whether to use either the relative \"30% of the remaining descent altitude\" rule or introducing a separate parameter is another question for @dagar .",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2018-06-18T20:56:23Z",
+        "body": "> as it is implemented right now this tighter acceptance radius applies for every waypoint type which is followed by a NAV_LAND waypoint\r\n\r\nAh, well my concern here is exactly what you said previously: \"...If you don't hit the altitude acceptance, then the airplane will do crazy stuff...\".   I like your tighter criteria when using loiter-to-alt waypoints prior to NAV_LAND because, as you pointed out, it we behave predictably and safely.  I'm concerned about the use case when a normal waypoint is used prior to NAV_LAND and the vehicle may not behave predictably and safely.\r\n\r\n\r\n\r\n> where do you see the advantage of using standard WPs instead of loiter-to-alt WPs\r\n\r\nWhen landing in areas that have rows of trees, power lines, or other challenges that do not allow good use of the standard QGC Landing Pattern.  We use the standard QGC landing pattern 95% of the time, but we also need safe and predictable landing behavior for the cases when we need to use Box patterns or custom patterns to avoid trees, etc.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-06-18T21:01:25Z",
+        "body": "> When landing in areas that have rows of trees, power lines, or other challenges that do not allow good use of the standard QGC Landing Pattern. We use the standard QGC landing pattern 95% of the time, but we also need safe and predictable landing behavior for the cases when we need to use Box patterns or custom patterns to avoid trees, etc.\r\n\r\nWhich means that you define safe as \"do not do crazy maneuvers in the horizontal direction\", but you do not care as much (or have a platform that has a lot of robustness) about the vertical direction, right?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2018-06-18T21:05:25Z",
+        "body": "> Which means that you define safe as \"do not do crazy maneuvers in the horizontal direction\", but you do not care as much (or have a platform that has a lot of robustness) about the vertical direction, right?\r\n\r\ncorrect.  I mean, of course I would want both, but horizontal/lateral variability is worse than vertical/longitudinal variability.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-06-18T21:26:06Z",
+        "body": "> correct. I mean, of course I would want both, but horizontal/lateral variability is worse than vertical/longitudinal variability.\r\n\r\nOK, i feel like handling all waypoint types before a NAV_LAND wp the same is more important than saving one parameter and having this \"dynamic\" calculation ... so if @dagar has nothing against that I will introduce a separate land altitude acceptance parameter that is then going to apply to every single landing approach. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2018-06-19T00:50:24Z",
+        "body": "@philipoe is there a thought that maybe loiter-to-alt waypoints could have a tighter altitude acceptance than normal waypoints in general?  I mean they are special in the way that their altitude is a specific part of what they are.\r\n\r\nAlternately, what if you kept the dynamic calculation and improved the fixed wing behavior if the vehicle missed a normal waypoint?  e.g. auto-abort the landing?  I generally dislike auto-aborted landings, but that would be better than \"do crazy things\" in this case.\r\n\r\nI really like your goal here, and I would totally use a dynamic tighter acceptance criteria for our loiter-to-alt landings if the safe behavior problem with other waypoints could be solved.\r\n\r\nEven if you make a separate vertical tolerance parameter for the waypoint before the NAV_LAND, we will need to set that tolerance large because the behavior will still be bad if a normal waypoint is used and it misses.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ryanjAA",
+        "created_at": "2018-06-19T04:23:04Z",
+        "body": "What happens in instances where the setup is for flaps trigger airbrakes (ailerons)? That’s how we have it set up and my concern would be if you are not able segregate only the flaps (which I believe is currently the case), you’d inadvertently end up with crow being deployed which would be a problem at any altitude given the added drag. Ran into this on full wing flaps (which also could be something great for landing very slowly [or heavy]). \r\n\r\nReally like what you’ve done here. We have planes flying autoland flights daily and while it works well as is, more granularity to tune further or even more so having something more robust is great. We’ll get testing on this soon and we definitely see the pitch up when flaps are deployed. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-06-20T17:50:52Z",
+        "body": "> Alternately, what if you kept the dynamic calculation and improved the fixed wing behavior if the vehicle missed a normal waypoint? e.g. auto-abort the landing? I generally dislike auto-aborted landings, but that would be better than \"do crazy things\" in this case. I really like your goal here, and I would totally use a dynamic tighter acceptance criteria for our loiter-to-alt landings if the safe behavior problem with other waypoints could be solved.\r\n\r\nOptimizing the behavior after the waypoint was reached can be quite involved. I therefore disabled the dynamic acceptance radius calculation again and introduced a separate altitude-acceptance-before-landing parameter (NAV_FW_ALTL_RAD). This should solve your issues as it gives you full configurability for your autolands.\r\n\r\n>What happens in instances where the setup is for flaps trigger airbrakes (ailerons)? That’s how we have it set up and my concern would be if you are not able segregate only the flaps (which I believe is currently the case), you’d inadvertently end up with crow being deployed which would be a problem at any altitude given the added drag. Ran into this on full wing flaps (which also could be something great for landing very slowly [or heavy]).\r\n\r\nThe flaps (and thus your drag-producing airbrakes) will _only_ trigger earlier with this PR _if_ you use a loiter-to-alt WP before the landing. Given that loiter-to-alt is effectively used to burn your excess altitude the additional drag should not matter. Standard WPs before a landing will not trigger your airbrakes, so you won't have a problem.\r\n\r\n@Antiheavy @ryanjAA @dagar Is this OK with the last fixes/commits that I made or is there any concerns left on your side? If so, then i will do extensive testing tomorrow, you guys could then also test if you like and we can then merge afterwards.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ryanjAA",
+        "created_at": "2018-06-20T18:17:10Z",
+        "body": "@philipoe just so i'm clear, loiter to alt would also include (or basically also is) fixed wing landing pattern? We have to enable airbrakes and keep them quite highly engaged (lots of drag) to simply slow down so we cant fly with them on, full throttle I suppose might keep it there in calm conditions but it really is like throwing a drag chute out the back when they activate. Maybe we are an edge case scenario but any high aspect ratio wing that inherently will tip stall makes me worry about inducing that much drag while banking. I am worried about either that or having tecs have to near full throttle it to keep it in the air to then shut it back down quickly (ramp up and down). Again, might work in calm conditions but we'd essentially be eliminating the available power overhead budget for windy situations if near full throttle due to airbrakes out. Yesterday comes to mind, we were flying in 12-15 m/s winds and on the landing pattern, there was plenty of overhead to speed up in a hurry during pattern land but remove that ability and now we're close to the ground and going to have a much higher probability of not being able to avoid a stall.\r\n\r\nDon't get me wrong, i really like this since we spend the vast majority of the time setting and testing autolanding up under different scenarios, I'm just trying to highlight some issues I can see. I think we need to simply segregate the _att_sp.apply_flaps = true flag from putting on the airbrakes which will also take some thought on the mixer side of things but overall, if people are always stuck with flaps and airbrakes then more creative things like you're doing are going to have potential unforeseen flaws.\r\n\r\n\r\n\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-06-20T19:43:56Z",
+        "body": "> @philipoe just so i'm clear, loiter to alt would also include (or basically also is) fixed wing landing pattern? \r\n\r\nWhen we talk about QGC, then fixed-wing landing pattern = 1) loiter-to-alt + 2)landing waypoint.\r\n\r\n> We have to enable airbrakes and keep them quite highly engaged (lots of drag) to simply slow down so we cant fly with them on, full throttle I suppose might keep it there in calm conditions but it really is like throwing a drag chute out the back when they activate. Maybe we are an edge case scenario but any high aspect ratio wing that inherently will tip stall makes me worry about inducing that much drag while banking.\r\n\r\nI am not sure i completely understand what the problem is: You are saying that in straight level flight (i.e. during the landing approach) you are not afraid of stalling, right? But then you are saying that you are afraid to bank. You are aware that the fixed-wing controller automatically increases the airspeed reference depending on your bank angle, see [this code](https://github.com/PX4/Firmware/blob/master/src/modules/fw_pos_control_l1/FixedwingPositionControl.cpp#L853) ? You are also saying you would need throttle to keep your airspeed when the airbrakes are out due to the drag, but the great thing in the loiter-to-alt (=down) mode is that you don't even need throttle but will keep your airspeed because you are descending anyways (and the sink rate can be configured of course). With all that said, maybe a video from your exact landing sequence would better help me to understand your approach/issues?\r\n\r\n> Don't get me wrong, i really like this since we spend the vast majority of the time setting and testing autolanding up under different scenarios, I'm just trying to highlight some issues I can see. I think we need to simply segregate the _att_sp.apply_flaps = true flag from putting on the airbrakes which will also take some thought on the mixer side of things but overall, if people are always stuck with flaps and airbrakes then more creative things like you're doing are going to have potential unforeseen flaws.\r\n\r\nOf course we can talk about separating flaps and airbrakes, but i personally wouldnt do this in this PR. Still, i dont fully understand _why_ you'd like to separate them right now, given that until now (i.e. during the landing approach) you have also always used them together, right? And as mentioned, flaps+airbrakes would then _only_ deploy in a loiter-to-alt waypoint, but in no other type of waypoint (apart from NAV_LAND as before).\r\n\r\nIf it helps, feel free to write me on slack...",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ryanjAA",
+        "created_at": "2018-06-20T20:16:31Z",
+        "body": "I can write you on slack but essentially we have a high aspect ratio wing and the characteristics of any high aspect ratio wing are that they are prone to tip stalling (as you probably know) so during bank at reduced speeds (near stall/landing speed) that concern or even issue becomes very pronounced, ie less room for error. Slowing down in a straight line with even the hint of a stall is easily managed by tecs and pitch but the concern is not the code to increase speed, that works great, it's that when you're creating so much more drag, the true ability to quickly increase speed is diminished and you are close to the ground. Recovering is potentially not an option at that point. As for why to separate the flaps, because anything that forces on flaps and in many cases airbrakes as well is not ideal. I wouldn't deploy airbrakes ever until I have exited my loiter tangent to the landing waypoint. \r\n\r\nLanding sequence is pretty standard, fixed wing pattern then once exited flaps and airbrakes come on and we see nose up for a moment if pitch correction isnt set and then glide down. This is more about forcing one action actually forces two (flaps and airbrakes) and anything to hinder the ability to stay in the air is a concern and when that limit is power overhead which we are reduced due to increased drag essentially just limits what can be flown in safely or in edge cases if can even be used at all. The more I think about it the more it makes me think that the power system needs to be able to easily overcome drag forces but also raises the questions of what do having airbrakes out do aerodynamically when trying to bank which would be a concern since ailerons will already be deployed. Airbrakes really shouldn't come on until we are in a straight line.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-06-20T20:22:27Z",
+        "body": "Gentlemen, to make this more efficient and fun how about you all join the next PX4 dev call and we will schedule time for this - yes?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ryanjAA",
+        "created_at": "2018-06-20T20:23:53Z",
+        "body": "Sounds good!",
+        "type": "issue_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-06-20T20:25:44Z",
+        "body": "> Gentlemen, to make this more efficient and fun how about you all join the next PX4 dev call and we will schedule time for this - yes?\r\n\r\nI honestly think this is too much of a corner case to be of concern for the PX4 dev call. Also, this is in one week, right? I think we should solve this faster than that. Or am i misunderstanding anything? Skype or slack would be an alternative...",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ryanjAA",
+        "created_at": "2018-06-20T20:38:29Z",
+        "body": "I think maybe my comment regarding high aspect ratio wings limits the scope and pushes things more specific to wings of that type but realistically even in the case of non high aspect ratio wings I wouldnt deploy airbrakes until lined up with the landing waypoint which I believe is the same in most full size planes (not all). I suppose the best fix is to either to be able to turn off the functionality or separate the flaps and airbrake call.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-06-21T14:09:31Z",
+        "body": "> Gentlemen, to make this more efficient and fun how about you all join the next PX4 dev call and we will schedule time for this - yes?\r\n\r\nRyan and myself discussed on slack yesterday, and we concluded that fixed-wing landings are so heavily aircraft configuration dependend that we basically need parameters to let the (pro-)user configure the landing process. \r\n\r\n@ryanjAA @Antiheavy I have included the parameter FW_LND_EARLYCFG which enables/disables the early use of the landing configuration (flaps+airspeed change) during the loiter down. Does anyone of you want to test this? Another testing feedback i'd be extremely interested in is whether choosing a different FW_PSP_OFF increases altitude tracking accuracy for your platforms during landing! Could you try to test this too? Of course the FW_INTEG_GAIN needs to be zero such that one can see the differences. For me, in our HIL model, having a different FW_PSP_OFF helps a lot during loiter down and landing (reduction of steady-state altitude tracking error by >50%, i.e. from 6m to <2m). I will also test this on our planes in the next days.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ryanjAA",
+        "created_at": "2018-06-22T16:41:18Z",
+        "body": "Yep - sounds great. Cool feature, will definitely try it out. We keep FW_PSP_OFF at 1 as knowing the true offset does help quite a lot (we could probably calculate for people/airframes that don't know it if set to 0, fly level and see if we are pitching up/down at cruise). FW_T_INTEG_GAIN is at 0.1 but will try at 0 and see.  ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-06-27T13:30:01Z",
+        "body": "Tested in flight, no issues. Also tested in HIL. GTM from my side.\r\n\r\n@ryanjAA @Antiheavy Tested on your side too and/or are you OK with merging this?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "ryanjAA",
+        "created_at": "2018-06-28T03:37:08Z",
+        "body": "Good to know no issues on your end. I haven’t tested yet. Enabled crow the other day and couldn’t climb with full power so still a bit reluctant to rely on TECS stall code with our crow setting deployed. I know we wouldn’t be ascending but still concerned some. I’ll try as soon as possible though. Will do it when we have some lower winds. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2018-06-28T08:18:01Z",
+        "body": "I’m interested in testing either in SITL or flight test or both. Unfortunately I probably cannot get to it until after the 4th of July holiday as I’m out of the office until then.   The flare always and setting a slightly tighter altitude tolerance for the landing pattern are both of interest to us.  I also want to verify no change to landings speeds or other vehicle settings since we don’t use flaps.  ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2018-06-28T08:18:53Z",
+        "body": "FYI @kjkinney",
+        "type": "issue_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-07-08T20:45:06Z",
+        "body": "@Antiheavy Tested? We should merge relatively quickly if this is OK because other PRs relating to flap configuration are coming up (e.g. https://github.com/PX4/Firmware/pull/9858/files).",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2018-07-09T15:40:20Z",
+        "body": "@philipoe I just returned from vacation today.  I will see if we can make a firmware build with this pulled in to flight test tomorrow.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2018-07-11T13:38:55Z",
+        "body": "@philipoe We test flew a build with this PR on our fixed wing (elevons+rudder) and didn't notice any negative effects.  I'll post logs later today once we've had a chance to review them in detail.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2018-07-11T19:32:40Z",
+        "body": "Here is our flight testing log.  It is a short flight with two landing approaches with an abort in-between.  Everything looks nominal as far as I can tell.  We didn't excercise any of the new parameters.  Mostly just wanted to ensure the default settings didn't negatively impact our use case.  Take a look at let me know what you think.  Thanks!\r\n\r\nhttps://review.px4.io/plot_app?log=cb831133-4e76-4be7-806f-facac345cdb9",
+        "type": "issue_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-07-11T22:28:36Z",
+        "body": "Looks good/nominal! Thanks for testing! Seems like your airspeed sensor is still a bit off, and i also did not see any \"[Landing] Flaring\" and \"[Landing]: Killing throttle\" messages in your logged messages, but it might be that this is fine (did you see a flare+truttle cut off?) and these are only transmitted via telemetry... So overall good to merge @dagar  ?",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2018-06-16T14:46:30Z",
+        "body": "Maybe we should be doing this within TECS entirely? TECS internally already has modes which could be expanded as needed for LANDING. We shouldn't have to be continuously setting TECS parameters outside of normal parameter changes.",
+        "path": "src/modules/fw_pos_control_l1/FixedwingPositionControl.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-06-16T14:51:26Z",
+        "body": "Keep in mind that you might be outside of an actual loiter while still in the SETPOINT_TYPE_LOITER handling. \r\n\r\nWhat do you think about waiting to enter the actual loiter (requiring `_l1_control.circle_mode()` here).",
+        "path": "src/modules/fw_pos_control_l1/FixedwingPositionControl.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-06-16T14:54:21Z",
+        "body": "Fine for debugging, but can you drop these messages before merge? PX4_INFO isn't even logged.",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-06-16T14:58:24Z",
+        "body": "This is a copy (extra work), use a const reference instead. In c++ you also don't need the \"struct\".\r\n`struct position_setpoint_s next_sp` -> `const position_setpoint_s& next_sp`",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-06-16T15:05:26Z",
+        "body": "Looking at how navigator overall works it would be cleaner to move this into a new `MissionBlock::get_altitude_acceptance()` that checks the vehicle type and setpoint triplet. All callers except for one (feasibility) are MissionBlocks.\r\n\r\n`Navigator::get_altitude_acceptance_radius()` could become `Navigator::get_default_altitude_acceptance_radius()` for grabbing the param values.\r\n\r\nThat would also give us a good mechanism for tightening the altitude acceptance during takeoff.",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2018-06-16T15:15:41Z",
+        "body": "> Maybe we should be doing this within TECS entirely?\r\n\r\nThat was my thought as well.",
+        "path": "src/modules/fw_pos_control_l1/FixedwingPositionControl.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2018-06-16T15:18:06Z",
+        "body": "I don't think it is valid to assume that all FW landings are preceded by a loiter.",
+        "path": "src/modules/fw_pos_control_l1/FixedwingPositionControl.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-06-16T23:18:43Z",
+        "body": "With \"modes\" you mean these guys https://github.com/PX4/ecl/blob/1a1106878d6ab1cc48565bef9b25b07d626c5d0b/tecs/tecs.h#L94 ? Yes, this does not contain any LANDING state yet, so that would need to be extended, and i did not want to change @priseborough 's TECS too much here. I agree that if one changes multiple parameters for the landing then TECS should handle this, but i think for a single parameter the current solution would work. ",
+        "path": "src/modules/fw_pos_control_l1/FixedwingPositionControl.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-06-16T23:18:56Z",
+        "body": "Changed.",
+        "path": "src/modules/fw_pos_control_l1/FixedwingPositionControl.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-06-16T23:19:09Z",
+        "body": "Changed, must have slipped through somehow...",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-06-16T23:19:14Z",
+        "body": "Changed.",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-06-16T23:19:43Z",
+        "body": "Changed, but a bit differently than you proposed: I put everything into the respective `Navigator::get_altitude_acceptance_radius()` and `Navigator::get_default_altitude_acceptance_radius()` functions because the \"sister\" functions (`get_acceptance_radius()` and `get_default_acceptance_radius()` ) are also located in Navigator, and i don't think we should have one of them in MissionBlock and one in Navigator. But you could now easily integrate all take-off altitude acceptance radius related checks into `Navigator::get_altitude_acceptance_radius()`.\r\n\r\nBtw: This current implementation means that for _every_ waypoint type (not only loiter-to-alt) we enter the function that checks whether the next WP is a land WP. I quickly looked through the whole code and think this is fine however. ",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "philipoe",
+        "created_at": "2018-06-18T09:02:52Z",
+        "body": "See reply in my big comment.",
+        "path": "src/modules/fw_pos_control_l1/FixedwingPositionControl.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "title": "more follow target updates",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/4649",
+  "number": 4649,
+  "created_at": "2016-05-26T18:47:23Z",
+  "merged": true,
+  "merged_at": "2016-05-27T20:28:31Z",
+  "state": "closed",
+  "conversation": {
+    "author": "catch-twenty-two",
+    "body": "Testing completed ready to merge.  Refactor of follow target module for readability and complexity.  Fixed yaw smoothing.\n",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-05-27T20:28:35Z",
+        "body": "Rebased and applied, thanks!\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

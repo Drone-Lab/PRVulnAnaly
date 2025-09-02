@@ -1,0 +1,49 @@
+{
+  "title": "Precland fixes",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/9668",
+  "number": 9668,
+  "created_at": "2018-06-13T21:36:33Z",
+  "merged": true,
+  "merged_at": "2018-06-14T03:32:52Z",
+  "state": "closed",
+  "conversation": {
+    "author": "okalachev",
+    "body": "This PR addresses two precland-related isses:\n\n1. When the copter switches to the horizontal approach state, the check of landing target pose validity is not fully correct: an old message (when the landing target is seen the last time) can switch the state.\n\n2. When downloading mission with a precision landing waypoint from the copter, the precision land parameter is lost.\n\n@ndepal",
+    "issue_comments": [],
+    "review_comments": [
+      {
+        "author": "ndepal",
+        "created_at": "2018-06-14T07:53:01Z",
+        "body": "Why is this necessary? `_target_pose_updated` is only true if we got a new message in this `on_active()` call. In this case, the timestamp of the message is recent, so `_target_pose_valid` is always true if `_target_pose_updated` is true.\r\n\r\nIt's only possible for `_target_pose_valid` to be true and `_target_pose_updated` false (due to `_param_timeout`), but not the other way around.",
+        "path": "src/modules/navigator/precland.cpp",
+        "position": 5,
+        "type": "review_comment"
+      },
+      {
+        "author": "okalachev",
+        "created_at": "2018-06-14T12:01:29Z",
+        "body": "Unfortunately, no. When testing we have met situations, when the copter sees the landing marker, when not in Precland mode (so Precland's `on_active` is not called). Then, for example, the copter flies from another point to the landing point. And then, \"sees\" the marker (actually just gets and old message).",
+        "path": "src/modules/navigator/precland.cpp",
+        "position": 5,
+        "type": "review_comment"
+      },
+      {
+        "author": "ndepal",
+        "created_at": "2018-06-14T12:08:31Z",
+        "body": "Ah I see. Thanks for the fix!",
+        "path": "src/modules/navigator/precland.cpp",
+        "position": 5,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "mhkabir",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

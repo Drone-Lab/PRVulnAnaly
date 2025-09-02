@@ -1,0 +1,29 @@
+{
+  "title": "Reject mission when starting with LAND and vehicle is landed",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/3571",
+  "number": 3571,
+  "created_at": "2016-01-23T16:01:21Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "sanderux",
+    "body": "This will reject a mission that starts with a LAND command if the vehicle is not airborn\n",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-01-23T16:06:08Z",
+        "body": "Nice!\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-01-24T10:19:29Z",
+        "body": "Applied on master, thanks!\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

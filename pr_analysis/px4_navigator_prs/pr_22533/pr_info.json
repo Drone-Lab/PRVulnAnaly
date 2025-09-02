@@ -1,0 +1,79 @@
+{
+  "title": "Double storage for rally points and geofence",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22533",
+  "number": 22533,
+  "created_at": "2023-12-13T13:50:03Z",
+  "merged": true,
+  "merged_at": "2024-01-30T16:25:37Z",
+  "state": "closed",
+  "conversation": {
+    "author": "KonradRudin",
+    "body": "<!--\r\n\r\nThank you for your contribution!\r\n\r\nGet early feedback through\r\n- Dronecode Discord: https://discord.gg/dronecode\r\n- PX4 Discuss: http://discuss.px4.io/\r\n- opening a draft pr and sharing the link\r\n\r\n-->\r\n\r\n### Solved Problem\r\nIf there is an error during uploading of the rally points or geofence, the old fence points get overwritten and are not accessible anymore.\r\n\r\n### Solution\r\n- Extend dataman to have double storage for rally points and geofence the same way as is already done for missions\r\n- On upload write the uploaded points t othe inactive slot and switch at the end when upload was successful.\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nFeature: Enable double storage slots for rally points and geofence\r\n```\r\n\r\n### Test coverage\r\n- Tested in SITL while observing the mission topic when uploading rally points and missions.\r\n",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2023-12-14T01:31:39Z",
+        "body": "What's the memory cost?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-12-14T14:41:16Z",
+        "body": "@dagar I tested on the fmu_v5x with SYS_AUTOSTART 1100 in SIH:\r\nWhen using the SDCard:\r\nmain:\r\n![Screenshot from 2023-12-14 10-40-24](https://github.com/PX4/PX4-Autopilot/assets/98741601/2355db04-bfd0-42c1-bd70-eae9986f22c8)\r\nPR:\r\n![Screenshot from 2023-12-14 15-20-01](https://github.com/PX4/PX4-Autopilot/assets/98741601/ec3c4da8-c492-43d4-a95a-501e07f1910d)\r\n\r\nWhen writing mission on RAM:\r\nmain:\r\n![Screenshot from 2023-12-14 15-33-26](https://github.com/PX4/PX4-Autopilot/assets/98741601/ec337a76-8ff1-447d-a0c9-b03fd07f445b)\r\n\r\n\r\nPR:\r\n![Screenshot from 2023-12-14 15-26-16](https://github.com/PX4/PX4-Autopilot/assets/98741601/a52f8aa6-2be2-41a9-9ff8-25d1cc1aec0f)\r\n\r\nSo around 200 Bytes for SD Card, an around 4.5 KBytes when mission is in RAM. Do you think this is an issue?\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mcsauder",
+        "created_at": "2023-12-14T14:44:19Z",
+        "body": "The memory cost goes up with each point on the polygon, correct? Factor of N?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2023-12-14T15:40:54Z",
+        "body": "> Do you think this is an issue?\r\n\r\nNope, just wanted to make sure we're keeping an eye on it (memory is very tight on older STM32F4 boards).",
+        "type": "issue_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-12-18T07:50:55Z",
+        "body": "> The memory cost goes up with each point on the polygon, correct? Factor of N?\r\n\r\nSorry for the late reply @mcsauder depends on what you mean. For the mission in RAM the memory for the maximum mission/geofence/rally points is already reserved, so there wont be any additional memory cost there (and that is the reason for the difference between this PR and main, since we need to reserve double the storage in memory for geofence and rally points). When the mission is written on the SDcard, the dataman module does not need more memory depending on the mission. The only thing that is taking currently more memory when you upload bigger geofences and rally points is that the geofence and RTL mode cache all the points in memory (mission only caches the next 10 points irrespecitve of length). But that is the same both for the PR and main. So the memory difference is still the same.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mcsauder",
+        "created_at": "2023-12-18T08:17:32Z",
+        "body": "That makes sense to me. Are you able to demonstrate that a high degree polynomial geofence doesn't create a RAM problem? I haven't tried lately, but that was an issue I ran into.\r\n\r\n-Mark",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mcsauder",
+        "created_at": "2023-12-18T08:20:11Z",
+        "body": "Sorry. NM, you've already addressed that.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-12-18T08:25:45Z",
+        "body": "> That makes sense to me. Are you able to demonstrate that a high degree polynomial geofence doesn't create a RAM problem? I haven't tried lately, but that was an issue I ran into.\r\n> \r\n> -Mark\r\n\r\nWell not completely but it is hard to check for all the different hardware and configs (the v5x i am testing on has still some margins at least for MC). That's why i checked the relative RAM difference but i do not know how close we already are for the other hardware and configs. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2024-01-23T08:14:56Z",
+        "body": "rebased on main",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "bkueng",
+        "created_at": "",
+        "body": "Looks good, I did not spot anything.",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

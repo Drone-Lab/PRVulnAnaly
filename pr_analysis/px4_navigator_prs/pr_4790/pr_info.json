@@ -1,0 +1,118 @@
+{
+  "title": "Implement throttle setting for MAV_CMD_DO_CHANGE_SPEED",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/4790",
+  "number": 4790,
+  "created_at": "2016-06-09T23:19:56Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "sanderux",
+    "body": "Fixes https://github.com/PX4/Firmware/issues/4786\n\nThis implements the throttle value of the mission command \"Change speed\"\nAttaching this to the no-airspeed PR as it only has (serious) effect when disabling airspeed sensor\n",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-06-10T07:03:14Z",
+        "body": "@tumbili Can you review? Looks good for me.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-06-10T15:58:39Z",
+        "body": "Have you flown this outside @sanderux? I'm just curious how consistently you actually keep the desired throttle? If the commanded throttle isn't sufficient for the altitude setpoint it's going to be ignored anyway.\nhttps://github.com/PX4/Firmware/blob/master/src/lib/external_lgpl/tecs/tecs.cpp#L312\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-06-10T21:56:51Z",
+        "body": "@dagar i havent flown it outside yet. it's true that tecs will balance the throttle with the altitude but there does seem to be a limit to that.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-06-21T08:23:43Z",
+        "body": "@sanderux Will merge once flown\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-06-21T13:10:53Z",
+        "body": "@LorenzMeier @sanderux @dagar Did a review and it looks good (did a minor comment on variable naming). So next thing here is a log from a flight test.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-06-21T14:04:36Z",
+        "body": "@sanderux Personally I think this change will not change much. TECS will adjust its throttle integrator until it's back at the old desired value. You can verify this in SITL by the way.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-06-21T14:55:29Z",
+        "body": "Right, it's the same as just changing FW_THR_CRUISE.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-06-21T19:24:23Z",
+        "body": "@tumbili ready to go\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-06-21T19:31:00Z",
+        "body": "@dagar applying this will only make sense when airspeed sensor is disabled. at that point tecs will disregard airspeed and only change throttle if required for altitude. This will enable vtol's with no airspeed sensor to decrease speed before backtransition or increase speed when climbing significantly. a typical mission would be:\n- vtol takeoff 20m\n- throttle to 80%\n- climb to 150m\n- throttle to 40%\n- cruise towards destination\n- descend to 20m\n- throttle to 20%\n- vtol_land \n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-06-21T20:59:58Z",
+        "body": "Closing in favour of #4770\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-06-21T12:49:13Z",
+        "body": "@sanderux Why is the argument called 'percent'? Aren't you passing a throttle value?\n",
+        "path": "src/modules/navigator/navigator.h",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-06-21T12:57:27Z",
+        "body": "@tumbili no, QGC asks for a percentage. mavlink also specs this: https://pixhawk.ethz.ch/mavlink/#MAV_CMD_DO_CHANGE_SPEED\n\nFW_THR_CRUISE is also a percentage and tecs expects a percentage here\n",
+        "path": "src/modules/navigator/navigator.h",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-06-21T13:09:42Z",
+        "body": "@sanderux Yeah, the mission item holds a throttle percentage but the function 'set_cruising_throttle' takes as argument a throttle value between 0 and 1.\n",
+        "path": "src/modules/navigator/navigator.h",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-06-21T13:11:31Z",
+        "body": "Ok, shall i just call it throttle, or value then?\n",
+        "path": "src/modules/navigator/navigator.h",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-06-21T13:12:57Z",
+        "body": "@sanderux throttle is good.\n",
+        "path": "src/modules/navigator/navigator.h",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": []
+  }
+}

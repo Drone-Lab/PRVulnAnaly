@@ -1,0 +1,125 @@
+{
+  "title": "Navigator/FlightTaskAuto yaw handling improvements/simplifications",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22532",
+  "number": 22532,
+  "created_at": "2023-12-13T13:32:42Z",
+  "merged": true,
+  "merged_at": "2023-12-21T15:50:13Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "### Solved Problem\r\nFixes https://github.com/PX4/PX4-Autopilot/pull/22413\r\nAlternative to https://github.com/PX4/PX4-Autopilot/pull/22455\r\n\r\nBeside it's also a proposal to make the logic around yaw setpoints in the Navigator vs FlightTasks simpler and cleaner.\r\n\r\n### Solution\r\nStrictly use the following concept: If Navigator publishes a finite yaw setpoint (`position_setpoint_tripplet.current.yaw`), then disable weather vane. This should be used if waypoints have an associated yaw setpoint (eg landings, VTOL transitions or waypoint mission items with the yaw field set). Otherwise leave authority over yaw to the FlightTask - it can then set it e.g. to direction of the next waypoint, to current yaw, or point the vehicle into the wind with the use of weather vane. \r\n\r\nThat allows us to remove the `disable_weather_vane` field from the position_setpoint.\r\n\r\nAdditionally I propose to thin out the position_setpoint topic and remove unnecessary fields: \r\n- `yaw_valid` (yaw is declared valid when `yaw` field is finite) --> we should init the yaw field to NAN ideally\r\n- `yawspeed` (doesn't seem to be used)\r\n- `yawspeed_valid`\r\n\r\nThere's also some other small cleanup proposal, check commits. \r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nBugfix: FlightTaskAuto: disable wather vane if position setpoint contains yaw setpoint.\r\n```\r\n\r\n### Alternatives\r\n\r\n\r\n### Test coverage\r\nSITL tested for MC and VTOL. \r\nMC test:\r\n- Start the windy gazebo environment: `make px4_sitl gazebo_iris__windy`\r\n- Enable parameter `WV_EN`\r\n- Takeoff and RTL --> on current main it is stuck, doesn't RTL. With the fix here sets the yaw to the home_position.yaw, disables weather vane because the yaw field is finite, aligns yaw and descends. \r\n\r\n\r\n### Context\r\nWe should remove the yaw field of the Takeoff mission item in QGC, it has no effect (already previously to this PR).  Conceptionally I don't see the need of a yaw attribute to a MC takeoff, and wouldn't know what to expect (yaw once takeoff altitude achieved? Or already when climbing?)\r\n![image](https://github.com/PX4/PX4-Autopilot/assets/26798987/971572b0-f998-42fd-9547-192d3e4d8b69)\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-12-14T12:19:13Z",
+        "body": "@MaEtUgR addressed your comments and additionally fixed the init of the triplet.yaw to NAN.\r\nThe mission_item should already be correctly initialized through `MissionBlock::initialize()`.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TedObrien",
+        "created_at": "2023-12-15T11:52:46Z",
+        "body": "Hi @sfuhrer, thanks for taking the time to look at this issue, I just tested it and it solves the problem I was having (#22413). I did have one thought regarding this solution:\r\n\r\nIf weather vane is disabled when a finite yaw setpoint is given, it will always be disabled during RTL, as there is currently always a yaw setpoint given. This may be a problem in the case of an asymetric airframe or a vehicle with a lifting surface, where it may be desirable to point into the direction of the wind the entire time. A parameter to not provide a yaw setpoint (enable weather vane) during RTL might be useful in some use cases. Hope this makes sence.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-12-15T13:21:19Z",
+        "body": "\r\n> If weather vane is disabled when a finite yaw setpoint is given, it will always be disabled during RTL, as there is currently always a yaw setpoint given. \r\n\r\nValid input! I already kicked off the discussion about removing the special yaw handling for RTL, see https://github.com/PX4/PX4-Autopilot/pull/18170#issuecomment-1852019861. Though maybe we should remove it, but instead add a new option for RTL_HDG_MD, \"no yaw setpoint\"? Then the FlightTask would decide on the yaw setpoint, and if WV is enabled it would keep working.\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TedObrien",
+        "created_at": "2023-12-18T09:47:10Z",
+        "body": "A new \"no yaw setpoint\" option for RTL_HDG_MD  sounds good to me. \r\nAs for removing the current yaw handling, using the home heading for RTL can be useful as its much easier/safer take over control during take off and landing when the vehicle is facing away from you. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-12-21T15:54:09Z",
+        "body": "> A new \"no yaw setpoint\" option for RTL_HDG_MD sounds good to me.\r\n\r\n@TedObrien could you take over the implementation?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TedObrien",
+        "created_at": "2023-12-21T16:29:19Z",
+        "body": "@sfuhrer Happy to give it a go, should have some time in the new year.\r\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "MaEtUgR",
+        "created_at": "2023-12-13T15:44:13Z",
+        "body": "```suggestion\r\nfloat32 yaw\t\t\t# yaw (only in hover), in rad [-PI..PI), NaN = leave to flight task\r\n```",
+        "path": "msg/PositionSetpoint.msg",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "2023-12-13T15:52:15Z",
+        "body": "```suggestion\r\n```\r\n\r\nGot obsolete.",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "2023-12-13T15:56:09Z",
+        "body": "Also remove `yaw = get_local_position()->heading;` from `calculate_breaking_stop()`",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "2023-12-13T16:05:04Z",
+        "body": "```suggestion\r\n\t\t\t\trep->current.yaw = NAN;\r\n```",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-12-14T12:17:04Z",
+        "body": "done in 7c9aebe0497f504ae8a7afa1c06d0f578bdc70a8",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-12-14T12:17:35Z",
+        "body": "done in 83f23912bf7fa37859b92f28d66100bca756eb93, and made sure it's set to NAN instead in 81e2662fea71d1f95f113de51c8f381472310a05",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-12-14T12:17:49Z",
+        "body": "done in 81e2662fea71d1f95f113de51c8f381472310a05",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "MaEtUgR",
+        "created_at": "",
+        "body": "Really nice cleanup. Instead of hardcoding a heading for each waypoint from the current vehicle state (ignoring resets) let the trajectory handle the yaw if there's no specific absolute desired heading 👍 \r\n\r\nLet's make sure it gets reset to NAN in all those cases otherwise it takes the previous heading.",
+        "state": "COMMENTED",
+        "type": "review"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "",
+        "body": "Thanks, everything I saw in my review was addressed.\r\nIt's a good step forward allowing to have the controller handle yaw if it's not explicitly set to a certain angle.",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

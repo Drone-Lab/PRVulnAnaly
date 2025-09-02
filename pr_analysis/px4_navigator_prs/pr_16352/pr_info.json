@@ -1,0 +1,77 @@
+{
+  "title": "Fix Return issue to landing pattern",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/16352",
+  "number": 16352,
+  "created_at": "2020-12-08T17:38:36Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "moreba1",
+    "body": "fix this issue:\r\nhttps://github.com/PX4/PX4-Autopilot/issues/16299\r\n\r\nwhen we have \"land start\" after a survey drone can not return to landing pattern.\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2020-12-08T22:44:05Z",
+        "body": "I don't quite follow. Did you see within the if statement it's accessing missionitem_prev.lat, etc? What is the missionitem_prev in your case?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "moreba1",
+        "created_at": "2020-12-09T06:43:28Z",
+        "body": "missionitem_prev is MAV_CMD_DO_SET_CAM_TRIGG_DIST 0 . (take photos distance 0 in QGC)",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2020-12-15T14:56:52Z",
+        "body": "Can you share your mission (image or .mission file)? `DO_LAND_START` is only a marker, it needs to have a position waypoint before it.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "moreba1",
+        "created_at": "2020-12-16T05:16:42Z",
+        "body": "https://docs.qgroundcontrol.com/master/en/PlanView/pattern_fixed_wing_landing.html\r\nfor fixedwing:\r\nThis pattern creates three mission items:\r\n    DO_LAND_START - If you abort a landing it sends DO_GO_AROUND to the vehicle, which then causes the mission to return to this point and try to land again.\r\n    NAV_LOITER_TO_ALT - Start point for landing\r\n    NAV_LAND - End point for landing\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "moreba1",
+        "created_at": "2020-12-18T18:30:57Z",
+        "body": "created by daily build QGC version :\r\n[plan.zip](https://github.com/PX4/PX4-Autopilot/files/5717482/plan.zip)\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "moreba1",
+        "created_at": "2021-01-01T06:54:06Z",
+        "body": "> Can you share your mission (image or .mission file)? `DO_LAND_START` is only a marker, it needs to have a position waypoint before it.\r\n\r\nIf this pull request merged, the landing pattern doesn't need to waypoint before DO_LAND_START. \r\n@DonLakeFlyer what is your opinion?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "DonLakeFlyer",
+        "created_at": "2021-01-01T19:05:54Z",
+        "body": "Seems pretty broken to me. DO_LAND_START should work wherever you place it and whatever is in front of it in mission commands.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2021-01-01T19:16:46Z",
+        "body": "> Can you share your mission (image or .mission file)? `DO_LAND_START` is only a marker, it needs to have a position waypoint before it.\r\n\r\nwhy does it need a position waypoint BEFORE it?  It's the position waypoint(s) AFTER the Do_Land_Start that is import.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "moreba1",
+        "created_at": "2021-01-29T11:28:28Z",
+        "body": "can this PR be reviewed?\r\n@dagar  @sfuhrer ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "moreba1",
+        "created_at": "2021-01-31T20:09:46Z",
+        "body": "fixed here https://github.com/PX4/PX4-Autopilot/commit/12875f7869ac547116119ba0fcad7fe3251ae27a",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

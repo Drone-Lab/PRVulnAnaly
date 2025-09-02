@@ -1,0 +1,41 @@
+{
+  "title": "[WIP] Use gps data with increased precision",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/16645",
+  "number": 16645,
+  "created_at": "2021-01-25T18:31:11Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "lukegluke",
+    "body": "double for lat and lon in degrees, float for alt in meters.\r\n\r\n1. 1e7 deg precision for lat and long can be not enough in several specific cases (for example RTK)\r\n2. In most calculations (especially in ekf) px4 internally already uses lat, lon as doubles converting them on input and output every time back and forward from deg/1e-7deg (and m/mm for alt).\r\n3. 1e7 deg precision is still used as output in legacy things, like current gps mavlink messages.\r\n\r\ntodo: gps drives need to be updated\r\n\r\nAlso dgps_age field added to sensor_gps.msg and vehicle_gps_position.msg  (and filled for MavlinkStreamGPS2Raw). It should be parsed it gps drivers where available. But probably this change should go to separate PR.",
+    "issue_comments": [
+      {
+        "author": "lukegluke",
+        "created_at": "2021-01-25T18:32:20Z",
+        "body": "Hi @dagar ,\r\n\r\nI made this patch as I mentioned in https://github.com/PX4/PX4-ECL/issues/951#issuecomment-757468006\r\n\r\nIn our project we use only one modified gps nmea driver and have tested only ekf core, we don't use many modules/drivers and don't fly, so in PR I modified several files only theoretical without testing, just by searching strings like: gps.lat, gps.alt, 1.0e7, 1.e7, 1e7, 1.0e-7, 1.e-7, 1e-7. I could easily missed something, especially regarding altitude. It is definitely needs accurately checking and testing.\r\n\r\nThis is the reference point for you. We don't use px4 boards. **I can't maintain and test this PR further**. Please free to edit, move, close this as you wish. Hopes it may help you somehow a little.\r\nThanks for all you work.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2021-01-25T20:06:55Z",
+        "body": "Thanks @lukegluke, it wasn't clear to me there's any readily available equipment where int32 is limiting.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mrpollo",
+        "created_at": "2021-02-01T18:16:59Z",
+        "body": "@lukegluke could you kindly give us an update on the status of this PR? it looks like it's failing on CI and needs a rebase.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "lukegluke",
+        "created_at": "2021-02-05T16:56:42Z",
+        "body": "@mrpollo sorry for the late reply. As I mentioned this is the kind of aid for Daniel if he is going to increased gps data precision someday. I can't maintain and test this PR, so I'm closing it to not disturb you anyway.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

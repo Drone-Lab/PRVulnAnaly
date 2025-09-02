@@ -1,0 +1,24 @@
+{
+  "title": "ecl: update submodule",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/9685",
+  "number": 9685,
+  "created_at": "2018-06-15T09:24:54Z",
+  "merged": true,
+  "merged_at": "2018-06-15T13:53:29Z",
+  "state": "closed",
+  "conversation": {
+    "author": "bkueng",
+    "body": "contains:\n- https://github.com/PX4/ecl/pull/460\n- https://github.com/PX4/ecl/pull/462\n\nAlso changes a critical RTL message that does not need to be critical to an info.\n\nFixes  #9527",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "title": "Format strings",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10773",
+  "number": 10773,
+  "created_at": "2018-10-27T09:00:27Z",
+  "merged": true,
+  "merged_at": "2018-10-27T10:44:52Z",
+  "state": "closed",
+  "conversation": {
+    "author": "m-ou-se",
+    "body": "In #10766, I forgot a `%s` in a format string. Surprisingly to me, the compiler didn't warn me.\n\nThis PR enables GCC's `__attribute__((format))` which will make it validate the format strings, to prevent this kind of bugs.\n\nBy enabling it, I found (and fixed) many simliar bugs already in the code:\n\n- A `%d` for a pointer (replaced it by `%p`)\n- 2 cases of `%d` for a `ssize_t` (replaced it by `%zi`)\n- 18 cases of `%d`, `%u` or `%i` for a `size_t` (replaced it by `%zu`)\n- An unused formatting argument (removed it)\n- A missing `%d` (added it)\n- 2 cases of `%llu` for a `uint64_t` (replaced it by `\"%\" PRIu64`)\n- 6 cases of giving a string directly as format string, which would break if the string would contain any `%` signs. (replaced it by `(\"%s\", string)`)",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-10-27T09:11:24Z",
+        "body": "One more required (uncovered by this PR): ```\r\nsrc/modules/uORB/CMakeFiles/modules__uORB.dir/uORBDeviceMaster.cpp.obj -c ../../src/modules/uORB/uORBDeviceMaster.cpp\r\nIn file included from ../../src/platforms/px4_defines.h:42:0,\r\n                 from ../../src/drivers/drv_orb_dev.h:43,\r\n                 from ../../src/modules/uORB/uORBCommon.hpp:37,\r\n                 from ../../src/modules/uORB/uORBDeviceMaster.hpp:38,\r\n                 from ../../src/modules/uORB/uORBDeviceMaster.cpp:34:\r\n../../src/modules/uORB/uORBDeviceMaster.cpp: In member function 'void uORB::DeviceMaster::showTop(char**, int)':\r\n../../src/platforms/px4_log.h:282:40: error: unknown conversion type character '-' in format [-Werror=format=]\r\n   px4_log_raw(level, fmt, ##__VA_ARGS__); \\\r\n                                        ^\r\n../../src/platforms/px4_log.h:429:33: note: in expansion of macro '__px4_log_raw'\r\n #define PX4_INFO_RAW(FMT, ...)  __px4_log_raw(_PX4_LOG_LEVEL_INFO, FMT, ##__VA_ARGS__)\r\n                                 ^~~~~~~~~~~~~\r\n../../src/modules/uORB/uORBDeviceMaster.cpp:371:4: note: in expansion of macro 'PX4_INFO_RAW'\r\n    PX4_INFO_RAW(CLEAR_LINE \"%*-s INST #SUB #MSG #LOST #QSIZE\\n\", (int)max_topic_name_length - 2, \"TOPIC NAME\");\r\n    ^~~~~~~~~~~~\r\ncompilation terminated due to -Wfatal-errors.\r\n```\r\n\r\nSee CI output for more. Thanks!",
+        "type": "issue_comment"
+      },
+      {
+        "author": "m-ou-se",
+        "created_at": "2018-10-27T09:15:38Z",
+        "body": "Interesting. That file uses `%*-s`, but `#ifdef`ed to only do that on NuttX. On other platforms, it uses `%*s`.\r\n\r\n`%*-s`, however, is invalid. I guess `%-*s` was meant? My best guess is that NuttX accepts this invalid specifier too, but other platforms don't, and that's why the `#ifdef` is there to begin with. If this is the case, we can just remove the `#ifdef`s completely, and use `%-*s`. I'm now trying to find the history of when those `#ifdef`s were added to check if there's another reason i'm missing.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "m-ou-se",
+        "created_at": "2018-10-27T09:20:09Z",
+        "body": "Found the commit: f601428e821bcc781e1ae3a858035fc804e2027a adds those `#ifdef __PX4_NUTTX`'s, but the commit is rather large, and the message doesn't say anything specific about the format specifier:\r\n\r\n> add ifdef's where necessary to mitigate diffs between nuttx & posix\r\n\r\nI'll just assume `%-*s` was meant, and remove the `#ifdef __PX4_NUTTX` there.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "m-ou-se",
+        "created_at": "2018-10-27T09:28:17Z",
+        "body": "Looks like there are many more of them, which are not found by a simple build on/for Linux.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-10-27T09:35:10Z",
+        "body": "```make px4fmu-v5_default``` will likely uncover many of them. But I don't want to put that burden on you - we can distribute the effort. If you want to continue using that build command feel free to patch all of them.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "m-ou-se",
+        "created_at": "2018-10-27T09:55:50Z",
+        "body": "That target doesn't build on my computer right now, so I'll just stay on the Posix target. Do you want to fix it for all other platforms before merging this? Or should we merge the fixes, but not the `__attribute__` yet? Or should we only enable the attribute, or enable/disable the `-Wformat` warning, on some specific targets?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-10-27T10:30:03Z",
+        "body": "The fmuv5 target is building successfully on my machine with your latest commit - I haven't checked out the attributes you set in detail, but you haven't disabled the checks, have you?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "m-ou-se",
+        "created_at": "2018-10-27T10:31:49Z",
+        "body": "Nothing disabled. Just fixed a few more of them. Maybe those were the last?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-10-27T10:35:38Z",
+        "body": "This is looking pretty good now.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "Awesome, thanks for these fixes!",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

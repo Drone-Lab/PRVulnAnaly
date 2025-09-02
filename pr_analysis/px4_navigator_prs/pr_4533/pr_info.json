@@ -1,0 +1,89 @@
+{
+  "title": "Bring SITL back to life",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/4533",
+  "number": 4533,
+  "created_at": "2016-05-13T16:38:30Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "julianoes",
+    "body": "Reverted the evil commit, works again.\n",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-05-13T18:46:13Z",
+        "body": "I'll try to fix it proper. I have flown dozens of times in jMAVSim without any regression - can you explain the steps to repro?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-05-13T18:48:44Z",
+        "body": "```\ngit checkout master\ngit submodule update\nmake clean\nmake posix gazebo\n```\n\nThen wait for home, and do `commander takeoff` and it slides along, flips and the estimator goes towards Rapperswil. :smiley: \n\nAnd for jMAVSim, the same, it just doesn't crash as bad but it kinda slides along.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-05-13T18:50:08Z",
+        "body": "Can you get me a screenshot of the Accel Z measurements of your fixed state? I'd like to see how they look when its idle on the ground.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-05-13T18:54:37Z",
+        "body": "![terrible_accel](https://cloud.githubusercontent.com/assets/1419688/15258621/e2477eb4-194c-11e6-9ed2-05ac0de5641e.png)\nYer that looks pretty terrible.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-05-13T18:56:30Z",
+        "body": "That would explain the bad flight performance with lots of slow oscillations in gazebo but that's another issue.\n\nThis is a general takeoff issue that affects definitely both jMAVSim and gazebo.\n\nSome setpoint is not set correctly, because it does the takeoff jump but then just slides along without proper setpoints.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-05-13T19:38:58Z",
+        "body": "What are the steps with jMAVsim to repro?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-05-13T19:47:21Z",
+        "body": "Same thing.\n\n```\ngit checkout master\ngit submodule update\nmake clean\nmake posix jmavsim\n```\n\n```\ncommander takeoff\n```\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-05-13T19:51:23Z",
+        "body": "Got it. This must actually be much more recent than the commit you bisected. Because I tested that commit that way.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-05-13T20:01:58Z",
+        "body": "Well I did a bisect and that's what I got.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-05-13T20:03:58Z",
+        "body": "I was inaccurate. I did fire the takeoff command via QGC, not shell. And it turns out the shell version did not stick to the API. I just fixed that and now things behave.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-05-13T20:06:26Z",
+        "body": "I also replaced EKF2 with LPE in SITL. You should find your workflow to be back to bearable. Still looking into speeding up boot time.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-05-13T20:09:43Z",
+        "body": "Aha, nice catch!\n\nThanks.\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

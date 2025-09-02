@@ -1,0 +1,24 @@
+{
+  "title": "navigator: fix LOITER_TO_ALT",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/16371",
+  "number": 16371,
+  "created_at": "2020-12-10T18:53:31Z",
+  "merged": true,
+  "merged_at": "2020-12-11T15:28:09Z",
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": " - this was overzealously removed in https://github.com/PX4/PX4-Autopilot/pull/15677\r\n",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "sfuhrer",
+        "created_at": "",
+        "body": "Looks good to me and works in SITL.",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

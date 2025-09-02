@@ -1,0 +1,24 @@
+{
+  "title": "Add NAV_CMD_DO_SET_ACTUATOR to mission commands",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21446",
+  "number": 21446,
+  "created_at": "2023-04-07T10:00:30Z",
+  "merged": true,
+  "merged_at": "2023-04-11T06:12:19Z",
+  "state": "closed",
+  "conversation": {
+    "author": "cruise-control",
+    "body": "### Solved Problem\r\nWhen  I tried to setup offboard actuator set  (with dynamic control allocation) and enable a mission item triggered/driven offboard actuator set, I found that the mission feasibility checker rejects the commands but the mission block supports them.\r\n\r\n\r\n### Solution\r\n- Add the `NAV_CMD_DO_SET_ACTUATOR` to the supported commands\r\n\r\n### Test Setup\r\n1. Setup `offboard actuator outputs` in QGC configuration page\r\n2. Create a mission with a \"Set Servo\" mission item and save it\r\n3. Manually  edit \"Set Servo\" mission item to change command to 187 (NAV_CMD_DO_SET_ACTUATOR)\r\n4. Alternatively use the development build of QGC and create \"Set Actuator\" mission item\r\n5. Upload to PX4\r\n6. Inspection of `actuator_outputs` and `vehicle_command`  uorb messages\r\n7. Using Iris Model\r\n\r\n### Test coverage\r\n- SITL\r\n  - Mission uploading working\r\n  - Mission item working\r\n- HITL\r\n  - Mission uploading working\r\n  - Mission item working\r\n\r\n",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "bkueng",
+        "created_at": "",
+        "body": "Thanks",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

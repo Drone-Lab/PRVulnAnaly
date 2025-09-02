@@ -1,0 +1,197 @@
+{
+  "title": "FW airspeed mode",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/3861",
+  "number": 3861,
+  "created_at": "2016-02-25T22:54:46Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "This pull request introduces fixed wing airspeed mode. Airspeed mode is the minimum manual mode that's appropriate (safe) for an operator without RC experience.\nIt's a stabilized mode with manual throttle and airspeed controlled with the pitchstick. It feels similar to STAB, but you can't stall the plane.\n\n**Questions**\n- ~~where should this fit in with the existing modes and switches?~~\n- ~~this mode is much better with the TECS time constant significantly reduced, could it scale automatically?~~ You just need to properly tune TECS\n- ~~this doesn't currently work with mTecs, does anyone use it?~~\n- ~~should this mode respect FW_THR_MIN/FW_THR_MAX?~~\n",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2016-02-26T21:46:05Z",
+        "body": "I tested most combinations of mode transitions to and from airspeed mode HIL today and didn't see any obvious problems.\nLog muncher might be broken: http://logs.uaventure.com/view/GcnQdeGGB4qgMJDwX8HQng\n\nReinitializing TECS between airspeed mode and any other TECS mode is a bit abrupt, I'm going to try just resetting speed weight and the underspeed check instead.\n\nI'll try an actual flight next week.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "SimonWilks",
+        "created_at": "2016-02-26T22:36:31Z",
+        "body": "Logmuncher is working again for this log. Something odd happened with it.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-02-26T23:04:18Z",
+        "body": "The throttle transition from airspeed mode full throttle to altctl is pretty bad. Rethinking the way I'm abusing TECS.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-02-27T19:35:36Z",
+        "body": "Ok, back to where I started. TECS is completely reset between AIRSPEED and ALTCTL/POSCTL/AUTO. It's no worse than switching from MAN/STAB to those modes.\n\nI still want to think about automatically reducing the TECS time constant just in this mode, but I'm otherwise happy with the state of this during HIL testing and ready for an actual flight test.\n\n@LorenzMeier would you recommend flying master as of today, or should I cherry-pick this to stable?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-02-28T20:39:41Z",
+        "body": "I've cherry-picked to stable for flight testing. https://github.com/PX4/Firmware/compare/stable...dagar:fw_airspeed_mode-stable?expand=1\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-03-01T01:59:31Z",
+        "body": "@SimonWilks is this new mode killing logmuncher? http://logs.uaventure.com/view/tNysut35PRAqfF8qe2xhr7\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-03-02T19:38:08Z",
+        "body": "Here's a plot from a successful flight of airspeed mode (ported to stable). The plot shows airspeed setpoint changing with elevator input, and manual throttle. This section of the flight was ALTCLT -> AIRSPEED -> ALTCTL with no problems. Altitude is scaled by 0.1.\n\n![airspeed_1](https://cloud.githubusercontent.com/assets/84712/13472651/da1750cc-e083-11e5-8311-97aa4b797d38.png)\n\n@LorenzMeier what are the next steps? What testing would you like to see?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-03-02T20:15:34Z",
+        "body": "This confused me a bit so I hope you don't mind my questions. I had to look in the code to understand how this is supposed to work ;).\n\nHow is this different from altitude control from the users perspective? Maybe you could explain a bit where the need for this mode is coming from?\n\nDon't you have 2 inputs that have an effect on altitude now? So I'm assuming thrust is your main altitude control now (with speed-weight 2). But also if you change the airspeed setpoint TECS will have to dive/climb (because it has no other means anymore of matching the speed)?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-03-02T20:56:18Z",
+        "body": "Think of it as a safe manual mode. Similar to stabilized mode, but the autopilot maintains a safe airspeed [FW_AIRSPEED_MIN, FW_AIRSPEED_MAX] at all times to prevent the vehicle from stalling. It's very useful for manually landing a UAV. In a locked down configuration for a user this would be their manual mode (which they wouldn't expect to hold altitude).\n\nThis airspeed mode is actually what several commercial UAVs and autopilots refer to as manual mode.\n\nYou should try it in a simulator with appropriate min, trim, and max airspeeds and possibly reducing the TECS time constant. It feels like flying in stabilize mode, but the pitch responds a bit slower.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-03-02T21:39:04Z",
+        "body": "Landing, that's interesting. I mean, you have the same problem here as in alt/posctl: you cannot flare. How does the stick movement look for a landing? Wouldn't you want to reduce airspeed AND throttle for a landing?\n\nNaive question: have you tried plain altitude control with a reduced TECS time constant? I know you don't have manual throttle there, just wondering if the control feeling would already be better then.\n\n> This airspeed mode is actually what several commercial UAVs and autopilots refer to as manual mode.\n\nCould you give me an example? (because I'm curious, not because I don't believe you :))\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-03-04T16:45:49Z",
+        "body": "Actually you can flare by pulling the pitch stick completely back, assuming you approach above min airspeed. Having direct control over throttle makes this mode much safer than ALTCTL for handling on the ground at launch or landing.\n\nI haven't tried ALTCTL with a reduced TECS time constant, but I generally use it when I want to just stay at the same altitude and not think about it.\n\nThe Procerus Kestrel autopilot (acquired by Lockheed) and fixed wing UAVs from AeroVironment refer to this as manual mode.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-03-09T20:52:36Z",
+        "body": "@LorenzMeier @AndreasAntener do you have any other questions? What's the path forward for getting this merged? \n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-03-15T01:13:55Z",
+        "body": "Rebased and resolved conflict.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-03-20T18:36:48Z",
+        "body": "<a href=\"https:&#x2F;&#x2F;trello.com&#x2F;c&#x2F;IvXjv34B&#x2F;723-px4-airspeed-mode-test\"><img src=\"https:&#x2F;&#x2F;github.trello.services&#x2F;images&#x2F;trello-icon.png\" width=\"12\" height=\"12\"> PX4 airspeed mode test</a>\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-24T15:24:59Z",
+        "body": "@dagar I can't access that Trello card.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-03-24T15:29:02Z",
+        "body": "Whoops, sorry that's my personal todo list that I had no idea was posting on my behalf.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-24T15:29:07Z",
+        "body": "Another rebase would be great, and more clarity on testing - would it be possible for you to test this, position control, altitude control and an auto mission? I would also love to understand the time constant change you mentioned.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-04-02T16:16:37Z",
+        "body": "I've flown this a couple times and it works as intended with no problems, but the airspeed response isn't great. I've been having a hard time tuning TECS to respond nicely for this mode, but still work well normally.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-04-04T07:36:58Z",
+        "body": "@dagar What about leaving airspeed control away if within min/max? There is a lot of talk about stall prevention ATM. I believe your reasoning behind this \"airspeed\" mode is not different from people simply requesting stall prevention methods. Maybe it could be more of a mix, having manual throttle/pitch/roll control, but start limiting pitch/roll when airspeed gets borderline, and use TECS to pitch down if airspeed falls below min.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "tubeme",
+        "created_at": "2016-04-04T22:16:18Z",
+        "body": "@dagar Sounds very promising.\n\n@AndersonRayner Here is what the APM is doing about stall:\n\n> when in roll controlled modes the autopilot will monitor your demanded bank angle and airspeed and work out if you have sufficient margin above the stall speed to turn at the demanded bank angle. If you don’t then the turn will be limited to the safe limit, but it will always allow a bank of at least 25 degrees (to ensure you can still maneuver if your airspeed estimate is badly off).\n\nWe've seen this technique in other two more simpler controllers and it works.\n\n> when in auto-throttle modes the autopilot will also raise the minimum airspeed in the TECS system to the level at which the current demanded bank angle can be safely achieved. So it will add more engine power or lower the nose to raise the airspeed so that the bank angle that the navigation controller is demanding can be achieved without a stall\n\nThey use these two parameters:\n\n> The **STALL_PREVENTION** parameter. If this is set to zero then no stall prevention is done. This may be useful if you have no airspeed sensor and the synthetic airspeed estimate is not good \n> enough\n> \n> The **ARSPD_FBW_MIN** parameter, which is the configured minimum airspeed for level flight. It is this value that is scaled with the bank angle to calculate the safe airspeed for any demanded bank angle\n\nI'm not saying we have to copy, but there is not a big choice of approaches toward stall. It is classical physics.  \n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-04-05T03:01:31Z",
+        "body": "@AndreasAntener how would we keep TECS happy/initialized in between?\n\nHopefully I'll have some time to play around again later this week. I'll provide some plots of pitch input and response. It should be possible to get it to respond nicely when you're within the airspeed limits. Worst case I'll try doing airspeed control with only pitch outside of TECS.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-04-13T22:28:47Z",
+        "body": "Rebased on master. I've been trying to gain a better understanding of TECS so that I can figure out how to make this mode work nicely. Update coming soon.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-05-22T10:35:10Z",
+        "body": "@dagar Where is this standing?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-05-22T18:35:47Z",
+        "body": "Waiting for me to actually go to the field and fly.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "jcooper21",
+        "created_at": "2016-05-27T05:29:49Z",
+        "body": "This looks like a great mode. I may have some spare time coming up to test this mode and provide feedback. Is it in PX4 beta or master build and in the daily build of QGC?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-05-28T18:24:03Z",
+        "body": "TODO - only allow transition to this mode for fixed wing\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-05-28T18:27:35Z",
+        "body": "@jcooper21 this hasn't been tested since a large rebase so I need to spend some time at the field.\n\nIf you haven't already I'd suggest you thoroughly tune TECS.\n\nhttps://pixhawk.org/users/fixedwing_pid_tuning#tecs_tuning_altitude\n\nThe ArduPlane documentation is good, but many of the params are named differently.\nhttp://ardupilot.org/plane/docs/tecs-total-energy-control-system-for-speed-height-tuning-guide.html\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "jcooper21",
+        "created_at": "2016-05-28T19:05:13Z",
+        "body": "My tuning should be good. I'll test this when I get back from my vacation in a while. I'd this going to be the new stabalize mode? Also if it controls min air speed how do I land?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "jcooper21",
+        "created_at": "2016-05-28T19:58:53Z",
+        "body": "Is this in QGC daily and px4 matter so I can set it up to test?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-06-05T23:03:57Z",
+        "body": "I'll reopen this once I've had a few thorough flight tests with data and it's ready to be merged immediately.\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

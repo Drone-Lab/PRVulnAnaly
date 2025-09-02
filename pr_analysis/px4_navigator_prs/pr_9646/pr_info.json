@@ -1,0 +1,50 @@
+{
+  "title": "Do not set the closest mission item in normal mission mode",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/9646",
+  "number": 9646,
+  "created_at": "2018-06-12T08:34:45Z",
+  "merged": true,
+  "merged_at": "2018-06-12T16:11:14Z",
+  "state": "closed",
+  "conversation": {
+    "author": "acfloria",
+    "body": "As requested in [#9606](https://github.com/PX4/Firmware/issues/9606).\n\nTested in SITL for normal mission flight and RTL.\n\n@potaito can you confirm that now it works as you expect?",
+    "issue_comments": [
+      {
+        "author": "potaito",
+        "created_at": "2018-06-12T09:33:54Z",
+        "body": "Tested in HITL and it works as expected:\r\n\r\n![1](https://user-images.githubusercontent.com/3762382/41282367-2ec80694-6e34-11e8-8ed0-8c1ea1e87f1c.png)\r\nTakeoff performed and then created mission.\r\n\r\n----\r\n\r\n![2](https://user-images.githubusercontent.com/3762382/41282359-266e6af6-6e34-11e8-85d3-ea1f04a04698.png)\r\nStarted the mission, flying towards the first waypoint.\r\n\r\n----\r\n\r\n![3](https://user-images.githubusercontent.com/3762382/41282374-30f090a8-6e34-11e8-9d45-73d275d789be.png)\r\nAll waypoints passed in correct order :+1: ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-06-12T14:55:30Z",
+        "body": " - fixes https://github.com/PX4/Firmware/issues/9606",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-06-12T16:11:20Z",
+        "body": "Thanks!",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "potaito",
+        "created_at": "",
+        "body": "LGTM, thanks @acfloria ",
+        "state": "APPROVED",
+        "type": "review"
+      },
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

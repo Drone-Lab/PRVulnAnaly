@@ -1,0 +1,158 @@
+{
+  "title": "Accept onboard computer heartbeats as telemetry",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10194",
+  "number": 10194,
+  "created_at": "2018-08-08T15:37:33Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "okalachev",
+    "body": "This PR solves #10042 problem, that `STATUSTEXT` messages are not passed, when there is no GCS.\nAlso, this is a partial implementation of #7985.\n\nI pass `telemetry_status`, when OBC heartbeats received, but I changed the commander logic, for not considering OBC as a datalink.\n\nSo `NAV_DLL_ACT`, `COM_DL_LOSS_T`, `COM_DL_REG_T` are only about GCS link, not OBC (not renaming for backwards compatibility).\n\nThe OBC failsafe params, like `NAV_OBC_DLL_ACT`, `COM_OBC_DL_LOSS_T`, `COM_OBC_DL_REG_T` can be added later.\n\n@LorenzMeier , @TSC21 .",
+    "issue_comments": [
+      {
+        "author": "TSC21",
+        "created_at": "2018-08-08T15:42:07Z",
+        "body": "This looks reasonable and can be extended for an OBC datalink failsafe after. Can you please rebase?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-08-08T16:02:03Z",
+        "body": "@okalachev: http://ci.px4.io:8080/blue/organizations/jenkins/PX4%2FFirmware/detail/PR-10194/2/pipeline#step-205-log-1111",
+        "type": "issue_comment"
+      },
+      {
+        "author": "okalachev",
+        "created_at": "2018-08-08T16:22:55Z",
+        "body": "@TSC21 , thanks, I'll look.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-08-08T18:20:06Z",
+        "body": "A few minor comments, but overall looks good.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "okalachev",
+        "created_at": "2018-08-09T14:20:56Z",
+        "body": "@TSC21 , I found the bug.\r\n\r\nThe problem starts, when multiple telemetry \"sources\" are on the same Mavlink instance, so this is the same `telemetry_status` topic instance, and the same \"telemetry\" in commander's `telemetry_data` array.\r\n\r\nSo, I don's see an easy solution yet, looks like a lot of telemetry logic should be changed.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-08-09T14:24:24Z",
+        "body": "@okalachev that probably means we need a different `telemetry_status` topic instance for each of the telemetry sources. Probably multitopic is required.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "okalachev",
+        "created_at": "2018-08-09T14:36:01Z",
+        "body": "I guess the maximum number of topic instances are `ORB_MULTI_MAX_INSTANCES`, which is 4. But the number of telemetry \"sources\" that way would be something like 255 (systems) * 255 (systems' components).\r\n\r\nSo, maybe not to use multitopic for that. Instead, to add system and component ids to `telemetry_status`? ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-08-09T14:39:52Z",
+        "body": "> I guess the maximum number of topic instances are `ORB_MULTI_MAX_INSTANCES`, which is 4. But the number of telemetry \"sources\" that way would be something like 255 (systems) * 255 (systems' components).\r\n\r\nWell I was thinking on limit the telemetry sources based on type and not on sys+comp id. But I guess that would make more sense yes. Can you propose that in a new issue as a RFC? Probably better to have a discussion about it first before one commits to it.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "okalachev",
+        "created_at": "2018-08-09T14:58:37Z",
+        "body": "You mean to write an RFC for adding sys and comp ids to `telemetry_status`?\r\n\r\nI'm not sure this is so large change to make an RFC.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-08-09T15:00:39Z",
+        "body": "> I'm not sure this is so large change to make an RFC.\r\n\r\nIt's a conceptual/structural change/feature that needs to be discussed.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-08-16T16:35:59Z",
+        "body": "Could you please rebase? Thanks!",
+        "type": "issue_comment"
+      },
+      {
+        "author": "okalachev",
+        "created_at": "2018-08-16T16:45:27Z",
+        "body": "Unfortunately, it doesn't make sense for now, because this change introduces a new bug, that I described in previous messages.\r\n\r\nI don't see an easy solution yet, without rewriting `telemetry_status` logic.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-11-25T21:07:19Z",
+        "body": "@okalachev what's the status of this? Have you thought of a way of bringing this into a state that does work?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "okalachev",
+        "created_at": "2018-11-25T21:18:52Z",
+        "body": "@TSC21, sorry, unfortunately I haven't worked at this yet. The easy workaround is to send fake GCS heartbeats from ROS code. The conversation can be continued at https://github.com/PX4/Firmware/issues/10042.\r\n\r\nThis PR can be closed I guess, as the implementation is incorrect.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-11-25T21:25:52Z",
+        "body": "The PR is not totally incorrect. It's rather incomplete. But I accept that we can bring a more complete solution in a new PR. Please fill free to close it or maybe we can iterate from here.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-11-28T14:53:20Z",
+        "body": "Revisiting this idea - https://github.com/PX4/Firmware/pull/10933",
+        "type": "issue_comment"
+      },
+      {
+        "author": "stale[bot]",
+        "created_at": "2019-02-26T15:27:57Z",
+        "body": "This issue has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs. Thank you for your contributions.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "stale[bot]",
+        "created_at": "2019-03-12T16:13:01Z",
+        "body": "Closing as stale.\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2018-08-08T18:18:31Z",
+        "body": "Is there any reason we can't drop this check entirely now?",
+        "path": "src/modules/mavlink/mavlink_receiver.cpp",
+        "position": 8,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-08-08T18:19:25Z",
+        "body": "How about ground control instead of GCS?",
+        "path": "src/modules/commander/state_machine_helper.cpp",
+        "position": 5,
+        "type": "review_comment"
+      },
+      {
+        "author": "okalachev",
+        "created_at": "2018-08-08T21:15:23Z",
+        "body": "What if there is a heartbeat from another drone (in a swarm network), charging station, or any other device? Should it be considered as a telemetry link?\r\nI don't think so.",
+        "path": "src/modules/mavlink/mavlink_receiver.cpp",
+        "position": 8,
+        "type": "review_comment"
+      },
+      {
+        "author": "okalachev",
+        "created_at": "2018-08-08T21:15:59Z",
+        "body": "I don't see a huge difference, but I can change it.",
+        "path": "src/modules/commander/state_machine_helper.cpp",
+        "position": 5,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": []
+  }
+}

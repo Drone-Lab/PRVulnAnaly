@@ -1,0 +1,116 @@
+{
+  "title": "Remaining flight range based RTL trigger",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/16399",
+  "number": 16399,
+  "created_at": "2020-12-16T11:15:07Z",
+  "merged": true,
+  "merged_at": "2021-01-18T15:26:54Z",
+  "state": "closed",
+  "conversation": {
+    "author": "jkflying",
+    "body": "**Describe problem solved by this pull request**\r\nCurrently the RTL is triggered by a fixed battery level, irrespective of the distance to home, wind conditions, vehicle flight speed etc. This means that the vehicle could run out of battery during a long RTL, or arrive home with still a large fraction of battery remaining during a short RTL.\r\n\r\n**Describe your solution**\r\nTake into account the flight time home during the RTL. From the RTL viability checks in navigator publish this information saying how long the RTL will take (taking into account vehicle speeds, wind speed and destination distance/direction), and what fraction of the total battery would be used by the RTL. In Commander, subscribe to this and trigger RTL if the current battery level less the battery used on RTL will take the vehicle below the existing low battery thresholds.\r\n\r\n**Describe possible alternatives**\r\nA parameter was used for \"total flight time in RTL\". This could have been taken from the power module / smart battery telemetry of the current and battery capacity values. However, for multirotor that is risky because power usage in forward flight is higher than hover, so a vehicle hovering far away would RTL too late. The parameter approach also lets users set a hard upper limit on the amount of time they would be happy with the vehicle spending in RTL, which might be useful for regulatory or safety reasons.\r\n\r\n**Test data / coverage**\r\nThis was tested extensively in Auterion, but I haven't tested it yet since upstreaming. It should get some SITL time to make sure nothing broke in the transplant, but the concept is quite solid.\r\n\r\nNote: it might be better to squash this on merge",
+    "issue_comments": [
+      {
+        "author": "moreba1",
+        "created_at": "2021-01-06T07:18:52Z",
+        "body": "> A parameter was used for \"total flight time in RTL\". This could have been taken from the power module\r\n\r\nI think using \"average power consumption\" (mah/km) + \"distance to home\" is better than \"flight time in RTL\".\r\n\r\nhttps://github.com/PX4/PX4-Autopilot/pull/14819",
+        "type": "issue_comment"
+      },
+      {
+        "author": "jkflying",
+        "created_at": "2021-01-12T13:55:22Z",
+        "body": "> I think uisng \"average power consumption\" (mah/km) + \"distance to home\" is better than \"flight time in RTL\". #14819\r\n\r\nThat would be a nice improvement, I agree. However, I'd prefer to get this in with the current feature set, and we can work on improving it once people can already use it.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "jkflying",
+        "created_at": "2021-01-13T12:51:56Z",
+        "body": "Out of flash again on V2 :cry: ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2021-01-18T13:01:46Z",
+        "body": "Re-running CI",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2021-01-18T15:31:35Z",
+        "body": "> > I think uisng \"average power consumption\" (mah/km) + \"distance to home\" is better than \"flight time in RTL\". #14819\r\n> \r\n> That would be a nice improvement, I agree. However, I'd prefer to get this in with the current feature set, and we can work on improving it once people can already use it.\r\n\r\nanother potential future future improvement could take into account the wind speed and direction estimate for vehicles that can estimate wind (e.g. those that have airspeed sensors).\r\n\r\nHowever, this PR is a great improvement as a first step as-is.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "jkflying",
+        "created_at": "2021-01-18T16:08:07Z",
+        "body": "> take into account the wind speed and direction estimate\r\n\r\nIt does that already :smile: \r\n\r\nEdit: and it can also use the drag fusion wind speed estimate for multirotors without an airspeed sensor.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "hamishwillee",
+        "created_at": "2021-04-14T23:16:29Z",
+        "body": "@jkflying You wouldn't create a PR without making it possible for people to use it - so can you point me to the docs?\r\n\r\nAssuming not a few questions:\r\n- Does this work on all vehicle types?\r\n- How do you enable/disable this feature? Is it supported in QGC - how?\r\n- How does this work? My guess is that you set low battery action to RTL. Then you set RTL_FLT_TIME to indicate max time expected for RTL. The low battery RTL will then trigger early based on the systems calculation that time taken to get home at cruise speed will trigger low battery RTL within RTL_FLT_TIME. Is that correct? And presumably you can set this to 0 just to ignore it.\r\n\r\nPlaces that might be impacted:\r\n- [Safety > Return mode settings](https://docs.px4.io/master/en/config/safety.html#return-mode-settings)\r\n- [Safety > Low battery setup](https://docs.px4.io/master/en/config/safety.html#low-battery-failsafe)\r\n- [Return mode](https://docs.px4.io/master/en/flight_modes/return.html)\r\n- Maybe some more but ^^^ are the key ones.\r\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2020-12-16T16:52:50Z",
+        "body": "units",
+        "path": "src/modules/navigator/rtl_params.c",
+        "position": 11,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2020-12-17T00:05:21Z",
+        "body": "vehicle_status_s::VEHICLE_TYPE_UNKNOWN = 0",
+        "path": "src/modules/navigator/rtl.h",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2020-12-17T00:08:16Z",
+        "body": "```suggestion\r\n\tparam_t _rtl_xy_speed{PARAM_INVALID};\r\n```",
+        "path": "src/modules/navigator/rtl.h",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2020-12-17T00:08:28Z",
+        "body": "```suggestion\r\n\tparam_t _rtl_descent_speed{PARAM_INVALID};\r\n```",
+        "path": "src/modules/navigator/rtl.h",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "jkflying",
+        "created_at": "2021-01-13T12:19:13Z",
+        "body": "Is minutes a problem? It is documented in the string. It's just that a number like 15 or 30 is much easier to understand for users than 900 or 1800 if I used seconds instead.",
+        "path": "src/modules/navigator/rtl_params.c",
+        "position": 11,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2021-01-13T15:07:27Z",
+        "body": "Minutes is fine, I mean add the unit metadata (@unit).",
+        "path": "src/modules/navigator/rtl_params.c",
+        "position": 11,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "Good to go!",
+        "state": "COMMENTED",
+        "type": "review"
+      }
+    ]
+  }
+}

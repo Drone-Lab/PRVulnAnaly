@@ -1,0 +1,57 @@
+{
+  "title": "params: ensure short description is only a single line",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/17209",
+  "number": 17209,
+  "created_at": "2021-03-23T13:41:39Z",
+  "merged": true,
+  "merged_at": "2021-03-23T16:55:12Z",
+  "state": "closed",
+  "conversation": {
+    "author": "bkueng",
+    "body": "So a UI can display it properly\r\n\r\nThis is less relevant with xml, as QGC is currently showing as long single line, but for json parameter metadata, it messes up the UI.",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2021-03-23T14:37:28Z",
+        "body": "I'm also wondering if we should try to get the length under control.\r\n\r\nMaybe cap it at the worst case today and gradually ratchet it up until we hit something reasonable?\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2021-03-23T15:22:16Z",
+        "body": "Yup, I added a limit of 150 for existing and 70 to the yaml, so we can shorten when transitioning.\r\n\r\nThese are the worst cases:\r\n```\r\n80 Minimum landing target standard covariance, uses reported covariance if greater.\r\n81 Airspeed sensor tube diameter. Only used for the Tube Pressure Drop Compensation.\r\n81 Maximum absolute altitude (height above ground level) allowed for range aid mode.\r\n81 Time in seconds we wait on reaching target heading at a waypoint if it is forced.\r\n82 Enable yaw control of the mount. (Only affects multicopters and ROI mission items)\r\n83 Boolean to allow moving into directions where there is no sensor data (outside FOV)\r\n84 Maximum allowed angle the vehicle is allowed to pitch down to generate forward force\r\n84 Terrain altitude process noise - accounts for instability in vehicle height estimate\r\n84 Terrain maximum percent grade, hilly/outdoor (100 = 45 deg), flat/Indoor (0 = 0 deg)\r\n85 Horizontal radius from return point within which special rules for return mode apply.\r\n85 Maximum vertical velocity for which position hold is enabled (use 0 to disable check)\r\n86 Enable publishing of a fake global position (e.g for AUTO missions using Optical Flow)\r\n86 Magnitude of maximum angular flow rate reliably measurable by the optical flow sensor.\r\n86 Minimum time of arrival delta between non-IMU observations before data is downsampled.\r\n87 Maximum horizontal velocity for which position hold is enabled (use 0 to disable check)\r\n89 Time-out to wait when offboard connection is lost before triggering offboard lost action.\r\n90 Auxillary Velocity Estimate (e.g from a landing target) delay relative to IMU measurements\r\n90 Enable PWM input on for engaging failsafe from an external automatic trigger system (ATS).\r\n91 Optical Flow data will only be used if the sensor reports a quality metric >= EKF2_OF_QMIN.\r\n92 Horizontal acceleration threshold used by automatic selection of magnetometer fusion method.\r\n93 Tilt actuator control value commanded when disarmed and during the first second after arming.\r\n93 Upper limit on airspeed along individual axes used to correct baro for position error effects\r\n93 Z position of IMU in body frame (down axis with origin relative to vehicle centre of gravity)\r\n94 Whether to set the external vision observation noise from the parameter or from vision message\r\n94 Y position of IMU in body frame (right axis with origin relative to vehicle centre of gravity)\r\n96 X position of IMU in body frame (forward axis with origin relative to vehicle centre of gravity)\r\n97 Measurement noise for the optical flow sensor when it's reported quality metric is at the maximum\r\n97 Specific drag force observation noise variance used by the multi-rotor specific drag force model.\r\n101 Z position of GPS antenna in body frame (down axis with origin relative to vehicle centre of gravity)\r\n102 Y position of GPS antenna in body frame (right axis with origin relative to vehicle centre of gravity)\r\n103 Average delay of the range sensor message plus the tracking delay of the position controller in seconds\r\n104 X position of GPS antenna in body frame (forward axis with origin relative to vehicle centre of gravity)\r\n107 Enable/disable usage of fixed-wing actuators in hover to generate forward force (instead of pitching down).\r\n109 Z position of range finder origin in body frame (down axis with origin relative to vehicle centre of gravity)\r\n110 Y position of range finder origin in body frame (right axis with origin relative to vehicle centre of gravity)\r\n111 Z position of VI sensor focal point in body frame (down axis with origin relative to vehicle centre of gravity)\r\n112 X position of range finder origin in body frame (forward axis with origin relative to vehicle centre of gravity)\r\n112 Y position of VI sensor focal point in body frame (right axis with origin relative to vehicle centre of gravity)\r\n114 Time constant used by acceleration and angular rate magnitude checks used to inhibit delta velocity bias learning.\r\n114 X position of VI sensor focal point in body frame (forward axis with origin relative to vehicle centre of gravity)\r\n114 Z position of optical flow focal point in body frame (down axis with origin relative to vehicle centre of gravity)\r\n115 Y position of optical flow focal point in body frame (right axis with origin relative to vehicle centre of gravity)\r\n117 X position of optical flow focal point in body frame (forward axis with origin relative to vehicle centre of gravity)\r\n118 Measurement noise for vision angle observations used to lower bound or replace the uncertainty included in the message\r\n121 Measurement noise for vision position observations used to lower bound or replace the uncertainty included in the message\r\n121 Measurement noise for vision velocity observations used to lower bound or replace the uncertainty included in the message\r\n123 Time constant of the position output prediction and smoothing filter. Controls how tightly the output track the EKF states.\r\n125 Minimum duration during which the reported range finder signal quality needs to be non-zero in order to be declared valid (s)\r\n132 Angle left/right from the commanded setpoint by which the collision prevention algorithm can choose to change the setpoint direction\r\n144 Differential gain for horizontal velocity error. Small values help reduce fast oscillations. If value is too big oscillations will appear again.\r\n149 Maximum lapsed time from last fusion of measurements that constrain velocity drift before the EKF will report the horizontal nav solution as invalid.\r\n```",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2021-03-23T16:04:47Z",
+        "body": "Rebased on master, let's see what CI says.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "bresch",
+        "created_at": "",
+        "body": "",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "",
+        "state": "DISMISSED",
+        "type": "review"
+      }
+    ]
+  }
+}

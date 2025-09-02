@@ -1,0 +1,92 @@
+{
+  "title": "Comply with altitude for VTOL_LAND mission item",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/4785",
+  "number": 4785,
+  "created_at": "2016-06-09T09:26:19Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "sanderux",
+    "body": "fixes https://github.com/PX4/Firmware/issues/4784\n",
+    "issue_comments": [
+      {
+        "author": "sanderux",
+        "created_at": "2016-06-30T20:59:16Z",
+        "body": "@LorenzMeier AFAIK ready to merge\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-07-10T10:52:13Z",
+        "body": "Doesn't look ready. It changes the logic entirely and it makes assumptions about magic values.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-07-10T10:55:15Z",
+        "body": "The magic value is in QGC, it defaults the mission_item altitude to 0.\nBut you're right, it should check if it is different from 0, not just below zero.\nor do you think we should ignore the mission_item's altitude all together?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-07-23T23:18:53Z",
+        "body": "@LorenzMeier i addressed your comment, can you review bearing in mind that QGC defaults the altitude parameter to 0 on a VTOL_LAND command?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-08-01T06:56:48Z",
+        "body": "@LorenzMeier is this ready to merge?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "PX4BuildBot",
+        "created_at": "2016-10-19T19:53:03Z",
+        "body": "Can one of the admins verify this patch?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-10-27T00:10:48Z",
+        "body": "It seems like MAV_CMD_NAV_VTOL_LAND needs a separate transition altitude and landing altitude.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-10-27T09:04:00Z",
+        "body": "@LorenzMeier can you review this again? (note that stable QGC sets altitude to 0 by default for VTOL_LAND)\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-11-08T03:46:52Z",
+        "body": "@sanderux does it make sense now that VTOL_LAND specifies the landing coordinates (lat, lon, alt) just like regular LAND? The QGC default is 0 relative to home. Could we add an additional optional param to VTOL_LAND that also specifics the back transition altitude?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-11-08T08:27:57Z",
+        "body": "I think we need a different discussion on the meaning of altitude in a land command as it does not seem to perform what i would expect.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-12-20T00:53:13Z",
+        "body": "closing in favor of changes pending from https://github.com/PX4/Firmware/issues/5824",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-07-10T10:51:46Z",
+        "body": "So if I fly at sea level an altitude request of 0 meters will be rejected? This doesn't look completely thought out.\n",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": []
+  }
+}

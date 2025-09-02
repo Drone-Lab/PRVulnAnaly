@@ -1,0 +1,35 @@
+{
+  "title": "Fix incorrect _rtl_alt if RTL_TYPE param is RTL_TYPE_MISSION_LANDING_…",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21620",
+  "number": 21620,
+  "created_at": "2023-05-20T20:05:36Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "s-lisovenko",
+    "body": "<!--\r\n\r\nThank you for your contribution!\r\n\r\nGet early feedback through\r\n- Dronecode Discord: https://discord.gg/dronecode\r\n- PX4 Discuss: http://discuss.px4.io/\r\n- opening a draft pr and sharing the link\r\n\r\n-->\r\n\r\n### Solved Problem\r\nPrevent aircraft crashing during return home mode if RTL_TYPE is 2 (RTL_TYPE_MISSION_LANDING_REVERSED)\r\nWhen RTL_TYPE==2 the **find_RTL_destination** function returns before **_rtl_alt** is calculated. Thus **_rtl_alt** == 0 which causes the aircraft to immediately descend during the activation of the return home and as a consequence of its crash.\r\n\r\n### Solution\r\nCalculate **_rtl_alt** before return from function\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-09-18T15:09:26Z",
+        "body": "@KonradRudin I guess this is something you also fix through https://github.com/PX4/PX4-Autopilot/pull/20903? ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-09-18T18:02:23Z",
+        "body": "@sfuhrer, yes this should not happen anymore in the mentioned PR",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2023-09-19T08:34:36Z",
+        "body": "@s-lisovenko would you be able to test https://github.com/PX4/PX4-Autopilot/pull/20903 and check if it indeed acts the same as you indented here? And then close this PR? Thanks!",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

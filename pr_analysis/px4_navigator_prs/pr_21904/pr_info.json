@@ -1,0 +1,35 @@
+{
+  "title": "Remove checkIfBelowHomeAltitude in Navigator",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21904",
+  "number": 21904,
+  "created_at": "2023-07-28T06:57:43Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "potaito",
+    "body": "### Solved Problem\r\nWhen taking off an elevated location (hill, mountain) and planning a mission in a valley relative to the take off location, PX4 will throw warnings for each single waypoint whose altitude is below the home location's altitude. This warning was most likely added to protect the user from mistakes, but flying below the home altitude with a drone is not so uncommon and the warnings are therefore too excessive.\r\n\r\n\r\n### Solution\r\nThe check for the waypoint altitude being below home has been completely removed. \r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nFeature: Don't print warnings for waypoints with altitudes below the home position\r\n```\r\n\r\n### Alternatives\r\nWe could also limit to one warning per mission that contains waypoints below home, instead of one warning per waypoint. But I'd rather not have any unnecessary warnings during nominal operation of the drone.\r\n\r\n### Test coverage\r\nTested in simulation.\r\n\r\n#### Prior to this PR\r\n```\r\nINFO  [mavlink] mode: Onboard, data rate: 4000000 B/s on udp port 14580 remote port 14540\r\n[Msg] Connected to gazebo master @ http://127.0.0.1:11345\r\n[Msg] Publicized address: 192.168.0.30\r\nINFO  [mavlink] mode: Onboard, data rate: 4000 B/s on udp port 14280 remote port 14030\r\nINFO  [mavlink] mode: Gimbal, data rate: 400000 B/s on udp port 13030 remote port 13280\r\nINFO  [logger] logger started (mode=all)\r\nINFO  [logger] Start file log (type: full)\r\nINFO  [logger] [logger] ./log/2023-07-28/06_55_16.ulg\t\r\nINFO  [logger] Opened full log file: ./log/2023-07-28/06_55_16.ulg\r\nINFO  [mavlink] MAVLink only on localhost (set param MAV_{i}_BROADCAST = 1 to enable network)\r\nINFO  [mavlink] MAVLink only on localhost (set param MAV_{i}_BROADCAST = 1 to enable network)\r\nINFO  [px4] Startup script returned successfully\r\npxh> INFO  [tone_alarm] home set\r\nWARN  [mission_feasibility_checker] Warning: Waypoint 2 below home\t\r\nWARN  [mission_feasibility_checker] Warning: Waypoint 3 below home\t\r\nWARN  [mission_feasibility_checker] Warning: Waypoint 4 below home\t\r\n[Wrn] [Event.cc:61] Warning: Deleting a connection right after creation. Make sure to save the ConnectionPtr from a Connect call\r\nINFO  [tone_alarm] notify positive\r\nINFO  [commander] Ready for takeoff!\r\nINFO  [commander] Armed by external command\t\r\nINFO  [tone_alarm] arming warning\r\nINFO  [navigator] Executing Mission\t\r\nINFO  [navigator] Takeoff to 2.5 meters above home\t\r\nINFO  [commander] Takeoff detected\t\r\nINFO  [navigator] Mission finished, loitering\r\n```\r\nhttps://logs.px4.io/plot_app?log=b91adbc1-f7e4-448d-aa3b-5194d4fb407f\r\n\r\n#### After this PR\r\nNo warnings:\r\n```\r\nINFO  [mavlink] mode: Onboard, data rate: 4000000 B/s on udp port 14580 remote port 14540\r\n[Msg] Connected to gazebo master @ http://127.0.0.1:11345\r\n[Msg] Publicized address: 192.168.0.30\r\nINFO  [mavlink] mode: Onboard, data rate: 4000 B/s on udp port 14280 remote port 14030\r\nINFO  [mavlink] mode: Gimbal, data rate: 400000 B/s on udp port 13030 remote port 13280\r\nINFO  [logger] logger started (mode=all)\r\nINFO  [logger] Start file log (type: full)\r\nINFO  [logger] [logger] ./log/2023-07-28/06_53_28.ulg\t\r\nINFO  [logger] Opened full log file: ./log/2023-07-28/06_53_28.ulg\r\nINFO  [mavlink] MAVLink only on localhost (set param MAV_{i}_BROADCAST = 1 to enable network)\r\nINFO  [mavlink] MAVLink only on localhost (set param MAV_{i}_BROADCAST = 1 to enable network)\r\nINFO  [px4] Startup script returned successfully\r\npxh> INFO  [tone_alarm] home set\r\n[Wrn] [Event.cc:61] Warning: Deleting a connection right after creation. Make sure to save the ConnectionPtr from a Connect call\r\nINFO  [tone_alarm] notify positive\r\nINFO  [commander] Ready for takeoff!\r\nINFO  [commander] Armed by external command\t\r\nINFO  [tone_alarm] arming warning\r\nINFO  [navigator] Executing Mission\t\r\nINFO  [navigator] Takeoff to 2.5 meters above home\t\r\nINFO  [commander] Takeoff detected\t\r\nINFO  [navigator] Mission finished, loitering\r\n```\r\nhttps://logs.px4.io/plot_app?log=330407db-73a0-4fc5-8203-09a3a94da4c6\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "potaito",
+        "created_at": "2023-07-28T08:22:54Z",
+        "body": "I would also have to remove the event `\"navigator_mis_wp_below_home\"` if the intent of this PR is accepted",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2023-07-31T08:12:15Z",
+        "body": "@potaito Maybe we should issue the warning once when the altitude mode is relative to home point. In that case it's quite likely that the user does not intend to fly lower than home. But we can remove the warning when altitude mode is set to global. In that case the user has either specified AMSL altitudes or altitudes above terrain (which are converted to AMSL by QGC)",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2024-09-17T12:29:23Z",
+        "body": "Done in https://github.com/PX4/PX4-Autopilot/pull/22624",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

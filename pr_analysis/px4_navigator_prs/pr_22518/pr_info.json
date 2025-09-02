@@ -1,0 +1,24 @@
+{
+  "title": "Navigator: Avoid attitude stepoint resets by not going into Takeoff mode if VTOL_Takeoff is selected in-air",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22518",
+  "number": 22518,
+  "created_at": "2023-12-11T10:33:40Z",
+  "merged": true,
+  "merged_at": "2023-12-11T13:18:22Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "### Solved Problem\r\nAttitude resets happening when switching to Mission mode with VTOL_Takeoff selected in-air.\r\n\r\nChain:\r\n- Navigator sets the type to SETPOINT_TYPE_TAKEOFF for one sample\r\n- FW position controller goes into _control_mode_current= FW_POSCTRL_MODE_AUTO_TAKEOFF\r\n- FW position controller executes control_auto_takeoff() --> resets integrals [here](https://github.com/PX4/PX4-Autopilot/blob/main/src/modules/fw_pos_control/FixedwingPositionControl.cpp#L1552)\r\n\r\n### Solution\r\nNavigator: Avoid attitude stepoint resets by not going into Takeoff mode if VTOL_Takeoff is selected in-air\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nBugfix: Navigator: Avoid attitude stepoint resets by not going into Takeoff mode if VTOL_Takeoff is selected in-air.\r\n```\r\n\r\n### Test coverage\r\nSITL\r\n\r\n### Context\r\nReproducible in SITL (start mission with VTOL_Takeoff, change mission in-air, re-upload, start mission again).\r\n\r\nWithout the fix: \r\n![image](https://github.com/Auterion/PX4_firmware_private/assets/26798987/30ae797d-3aff-4e5b-b89c-2e8cb82cd929)\r\n\r\nWith the fix:\r\n\r\n![image](https://github.com/Auterion/PX4_firmware_private/assets/26798987/cc97cc83-bbfd-46d9-b5d3-cefe0bd1b7ad)\r\n\r\n",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

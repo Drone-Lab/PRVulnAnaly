@@ -1,0 +1,24 @@
+{
+  "title": "fix reposition: set acceptance radius",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10760",
+  "number": 10760,
+  "created_at": "2018-10-25T15:02:47Z",
+  "merged": true,
+  "merged_at": "2018-10-25T15:05:28Z",
+  "state": "closed",
+  "conversation": {
+    "author": "bkueng",
+    "body": "Previously the acceptance radius was 0, so the FlightTaskAutoLine was\r\nrandomly changing yaw and sometimes going into a random direction (see  #10757).\r\n\r\nThere is still something else wrong in there, but this patch avoids the reposition bug. I see 2 problems:\r\n- The FlightTaskAuto contains states and resets certain attributes when switching (https://github.com/PX4/Firmware/blob/master/src/lib/FlightTasks/tasks/Auto/FlightTaskAuto.cpp#L468). In case of the reposition, the switches were random due to numerical inaccuracies. If possible we should avoid these states.\r\n- FlightTaskAutoLine uses _target and _prev_wp to determine the velocity direction (https://github.com/PX4/Firmware/blob/master/src/lib/FlightTasks/tasks/AutoLine/FlightTaskAutoLine.cpp#L79). However this might not reflect where the vehicle currently is (I guess the states are meant to prevent this, but it doesn't seem to work).\r\n\r\nThe combination of all these led to the unexpected behavior.\r\n\r\nFixes #10757\r\n",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

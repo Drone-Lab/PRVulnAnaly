@@ -1,0 +1,35 @@
+{
+  "title": "Reset current setpoint when entering RTL",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/4012",
+  "number": 4012,
+  "created_at": "2016-03-14T21:53:11Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "AndreasAntener",
+    "body": "Fixes #3844 \nSITL tested\n",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-14T22:08:12Z",
+        "body": "Sounds like we should merge this once Travis passes.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-03-14T22:38:15Z",
+        "body": "Rebased, I was a bit out of date..\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-19T15:30:39Z",
+        "body": "Rebased and applied.\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

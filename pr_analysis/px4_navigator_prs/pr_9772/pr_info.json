@@ -1,0 +1,90 @@
+{
+  "title": "Land enhancement",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/9772",
+  "number": 9772,
+  "created_at": "2018-06-26T19:07:03Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "dakejahl",
+    "body": "This PR fixes two problems with _Land_. See #9691 & #9768\n\n**Problems**\n1. _Land_ can cause vehicle to flip upon land if the command was issued while the vehicle was moving quickly. \n\n2. _Land_ descent velocity was only **MPC_LAND_SPEED**. \n\n\n**Solutions**\n1. Vehicle will return to LAT/LON location where the _Land_ command was issued and begin descending from there. In the future, I want to implement a **_BRAKE_** setpoint type, but this is a good fix until that work is done.\n\n2. The vehicle now respects MPC_LAND_ALT1 and MPC_LAND_ALT2 to control descent velocities.\n\nI have simulation tested and physically flight tested this on our quadcopter and have seen no problems. I would love if someone could please test this with a fixed wing aircraft to verify. \n\nPlease let me know if you have any questions, thanks!\nJake",
+    "issue_comments": [
+      {
+        "author": "Stifael",
+        "created_at": "2018-06-27T15:27:06Z",
+        "body": "Have you checked that `land` still works during failsafe and no local position available?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dakejahl",
+        "created_at": "2018-06-27T16:47:03Z",
+        "body": "@Stifael Behavior in **_mc_pos_control_main.cpp_** remains the same if there is no local position.\r\n```\r\n\t\tif (abs(_local_pos.z) > _slow_land_alt1.get()) {\r\n\t\t\t_vel_sp(2) = _vel_max_down.get();\r\n\r\n\t\t} else if (abs(_local_pos.z) > _slow_land_alt2.get()) {\r\n\t\t\tfloat velocity_scaling = (abs(_local_pos.z) - _slow_land_alt2.get()) / (_slow_land_alt1.get() - _slow_land_alt2.get());\r\n\t\t\t_vel_sp(2) = _land_speed.get() + velocity_scaling * (_vel_max_down.get() - _land_speed.get());\r\n\r\n\t\t} else {\r\n\t\t\t_vel_sp(2) = _land_speed.get();\r\n\t\t}\r\n```\r\n\r\nDoes a failsafe event override navigator modes?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dakejahl",
+        "created_at": "2018-06-27T16:50:53Z",
+        "body": "Actually, the way the code is _currently_ it seems like if local position was lost it would never make it into the first `if` statement for `land`\r\n\r\n```\r\n\tif (_pos_sp_triplet.current.valid\r\n\t    && _pos_sp_triplet.current.type == position_setpoint_s::SETPOINT_TYPE_LAND) {\r\n```",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dakejahl",
+        "created_at": "2018-06-27T22:43:57Z",
+        "body": "@dagar ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Stifael",
+        "created_at": "2018-06-28T05:53:06Z",
+        "body": "@dakejahl with your changes, the first stages are not of type `SETPOINT_TYPE_LAND`, they are of type `SETPOINT_TYPE_POSITION` (https://github.com/PX4/Firmware/pull/9772/files#diff-7a824e3d1e9a5420071c8c9bbe27b8e7R643). \r\nHave you tried in SITL to do fast forward flight and then turn of GPS?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dakejahl",
+        "created_at": "2018-06-28T17:26:43Z",
+        "body": "@Stifael _\"Have you tried in SITL to do fast forward flight and then turn of GPS?\"_\r\n\r\nJust tested this, does not work. Thanks for the advice! Let me see what I can do. I am going to try to implement the braking feature in `mc_pos_control`. If I can't get this to work I will try to make it work from `navigator`. I'll report back once I have something. :grin:\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Stifael",
+        "created_at": "2018-06-29T05:54:18Z",
+        "body": "a break would also be helpful for this \"feature\" request: https://github.com/PX4/Firmware/issues/9741#issuecomment-399912835",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dakejahl",
+        "created_at": "2018-06-29T18:10:29Z",
+        "body": "Please see #9804",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "MaEtUgR",
+        "created_at": "2018-06-27T11:52:06Z",
+        "body": "This whole block is duplicating the existing functionality: https://github.com/PX4/Firmware/blob/master/src/modules/mc_pos_control/mc_pos_control_main.cpp#L2439-L2443\r\nDid it not work correctly for you?",
+        "path": "src/modules/mc_pos_control/mc_pos_control_main.cpp",
+        "position": 6,
+        "type": "review_comment"
+      },
+      {
+        "author": "dakejahl",
+        "created_at": "2018-06-27T14:57:02Z",
+        "body": "Look at the one liner that I removed.\r\n\r\n _vel_sp(2) = _land_speed.get();\r\n\r\nClearly this is overriding the current Z vel setpoint when the setpoint type is LAND.\r\n\r\nAlso, always limiting veritial velocity based upon height does not seem right. Those parameters are specified with the word 'LAND' and thus should only affect flight characteristics while in the LAND mode (this is my opinion).",
+        "path": "src/modules/mc_pos_control/mc_pos_control_main.cpp",
+        "position": 6,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "MaEtUgR",
+        "created_at": "",
+        "body": "The position controller changes are in my eyes duplicate.",
+        "state": "CHANGES_REQUESTED",
+        "type": "review"
+      }
+    ]
+  }
+}

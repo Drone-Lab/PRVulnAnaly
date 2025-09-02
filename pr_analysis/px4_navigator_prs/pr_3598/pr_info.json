@@ -1,0 +1,230 @@
+{
+  "title": "VTOL mission item handling",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/3598",
+  "number": 3598,
+  "created_at": "2016-01-26T02:10:05Z",
+  "merged": true,
+  "merged_at": "2016-02-08T23:11:44Z",
+  "state": "closed",
+  "conversation": {
+    "author": "AndreasAntener",
+    "body": "In general this will fix handling for 2 part mission items (takeoff, landing, transitions)\nFixes #3583\nFixes #3581\nFixes #3501\nFixes #3414\n\nShould handle the following cases consistently:\n- [x] transition: yaw into direction of next wp then transition\n- [x] back transition: transition then move to wp\n- [x] back transition yaw issue\n- [x] takeoff: climb then move to wp\n- [x] land: move to wp then descend (fixes #3388)\n- [x] back transition: yaw north when flying south\n",
+    "issue_comments": [
+      {
+        "author": "julianoes",
+        "created_at": "2016-01-26T07:05:20Z",
+        "body": "@AndreasAntener ready for review?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-01-26T07:19:39Z",
+        "body": "Only conceptual, see the comment here: https://github.com/PX4/Firmware/issues/3583#issuecomment-174783402\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-01-28T08:09:40Z",
+        "body": "@sanderux This is now working in STIL. Please take extra care when testing, I haven't thoroughly tested it yet, so please to a SITL test first. Forward transition now aligns towards next waypoint:\n\n<img width=\"819\" alt=\"screen shot 2016-01-28 at 08 57 03\" src=\"https://cloud.githubusercontent.com/assets/5750020/12638564/7e9d981e-c59e-11e5-9974-1bca814a5505.png\">\n\nhttp://logs.uaventure.com/view/iMh8rPQvEyiCWGfNUTtq2C\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-01-28T08:35:13Z",
+        "body": "@AndreasAntener mission_block.cpp:195 \nPX4_WARN(\"yaw err: %.3f\", (float)yaw_err);\n\ngives me a compilation error (double to float). disabled it\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-01-28T23:57:44Z",
+        "body": "@AndreasAntener I have a commit ready that fixes an IO hog because the mission feasibility checker was constantly running. Now only running before entering a mission. If you give me access i can attach to your PR to save a lot of merging.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-01-29T06:41:56Z",
+        "body": "Nice! Is it independent from this functionality and my changes? If yes we should treat it as such, so it's traceable and documented on a PR.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-01-29T08:50:00Z",
+        "body": "On further inspection it seems although it loops it's only executed when a new home position is set. There does seem to be an issue of accepting invalid missions. see https://github.com/PX4/Firmware/issues/3627\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-01-29T16:30:13Z",
+        "body": "Quick update, here is the log from our last flight: http://logs.uaventure.com/view/4G7pGXVjfMSttAmqPTCDkP\n\nWe had some issues with loading the mission back from QGC, which messed up the transition waypoints (lost the \"frame\"). So this flight http://logs.uaventure.com/view/BCMa7QKdCMgakcGdKFUSSg is actually also good but there was probably something wrong with the forward transition waypoint.\n\nOne or two more checks with latest QGC would be good and I need to go through the rest of the command handling to make sure nothing got lost during the refactoring.\n\nAnd the fix on the position controller is still to be verified further.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-01-29T17:51:05Z",
+        "body": "I think the mission feasablity checker needs to run when a mission is uploaded, not just before it gets executed. Otherwise the user doesn't get the feedback in time.\nOr, is this already the case?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-01-29T18:04:21Z",
+        "body": "@julianoes I think both should happen in a different way. I could be loading a mission from home, 10km away from my intended takeoff point. The FC could warn about the location but it should accept the mission. When switching to mission mode it should fail 10km away from the takeoff point. So i think both answers are correct but the feasibility checker should consider it's frame of reference (store or execute)\n\n@AndreasAntener I have a flight window saturday and/or sunday, I will update to the latest QGC. is there anything specific i could test for you?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-01-30T09:10:44Z",
+        "body": "@sanderux Nothing specific. Would be cool to see this branch working for you as well. Still need to find some setpoint irregularities, curious if they show up in one of your logs as well.\n\nOn the feasibility checker, I think it already works like that. Or somewhat at leas. I was able to load a mission indoors (no position lock) and then go out and fly it. Maybe if you already have a lock it doesn't accept it then. Could you check these cases and open an issue for it? And describe how it should work.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-01-31T16:25:55Z",
+        "body": "Full autonomous mission flown.\nLog: http://logs.uaventure.com/view/5e9jP3aSS7Y4UaUyfqaYR9\nVideo: https://drive.google.com/open?id=0B27AvDmVit4KRVlpYkFMNVpTLWM\n\nSaturation occurred at back transition, likely because the next waypoint commanded decent and the angle placed the vehicle sideways on fair wind. I don't know why the rotations before land occurred.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-01-31T19:37:02Z",
+        "body": "I had a quick look through the changes, mostly looking at comments and trying to spot stupid mistakes (without success which is good :smile:)\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-01T07:52:35Z",
+        "body": "@AndreasAntener Could you give this another pass? When is the next opportunity to test-fly the final state for you and / or @sanderux? If not today I would prefer to merge as-is to avoid branch drift.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-01T09:16:07Z",
+        "body": "Wind conditions will make further testing hard for me this week. I have noticed several irregularities that i can reproduce in sitl. I will create mission files for this and share them with analysis and confirmation of such behavior in actual flight\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-01T10:50:55Z",
+        "body": "@julianoes thanks!\n\n@LorenzMeier I cannot test today, but let me correct a few things, also pushing default VTOL acceptance radius to 3m here as it seems that's what hits people currently the most.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-01T19:13:43Z",
+        "body": "@AndreasAntener \nWith reference to https://github.com/mavlink/qgroundcontrol/issues/3390 perhaps we could add the info log of the current waypoint as shown here: https://github.com/sanderux/Firmware/commit/c0f0d883eb9f20202708c9ba82ed90cdedcff1ee#diff-9b5a77642a641b107c8f8a966de34acdR821\n\nOr shall i put this in a separate PR after merging this to master? \n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-02T01:25:22Z",
+        "body": "@AndreasAntener please review https://github.com/UAVenture/Firmware/pull/2\nthis implements a general failsafe for most corner cases i encountered.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-02T13:15:36Z",
+        "body": "Corner case in which the plane continues flight forever.\n\nSITL waypoint file:\n[land-and-then-backtransition.txt](https://github.com/PX4/Firmware/files/113944/land-and-then-backtransition.txt)\n\nThe sequence of mission items may seem unlikely but i will try to motivate my concern.\nA user will experience that the transition command is executed at the start of the next waypoint (it might even seem as if it is executed before this point). The user could therefor attempt what might seem like a shortcut (set land and then transition) to have the plane land in VTOL.\n\nThe current result of this is a plane that continues forward on it's heading until it runs out of power or in to something. \n\nMy suggestion is to have the feasibility checker validate that there will always be a waypoint before a transition command.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-02T20:18:29Z",
+        "body": "I'm just tracking down the yawing issues on takeoff/landing and @sanderux FW fly-away, should have an update soon.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-02T23:03:08Z",
+        "body": "@sanderux didn't yet find the cause of your landing/transition issue. The fixed wing landing already kicks in there.\n\nFixed a bunch of yawing issues, should be good to merge after another flight test.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-03T06:27:24Z",
+        "body": "@AndreasAntener I have created a new PR for the front transition timeout (https://github.com/UAVenture/Firmware/pull/3) where i have integrated your and @LorenzMeier 's comments. \n\nThe weather is very unstable but i will try to get some test flights done soon.\n\nAs soon as things have been tested and merged with master i will start work on mission failsafe (RTH) on failed transitions, improved mission navigation feedback and  i could have a look at MAV_CMD_NAV_VTOL_TAKEOFF / LAND support.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-03T09:07:13Z",
+        "body": "I updated the task list for 2 more issues. test can be done by flying this mission in sitl: \n[mission south.txt](https://github.com/PX4/Firmware/files/115354/mission.south.txt)\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-03T17:47:27Z",
+        "body": "I added the back transition fix. For corner cases regarding missions \"invalid\" missions we should open new issues.\n\n@sanderux could you give this another SITL test with valid missions?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-03T18:09:28Z",
+        "body": "Tested. SITL normal mission looks great, no more unneeded yawing\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "CornerOfSkyline",
+        "created_at": "2016-02-05T15:32:47Z",
+        "body": "@AndreasAntener \n![2016-02-05 23 34 13](https://cloud.githubusercontent.com/assets/12220448/12850697/077b8ce0-cc61-11e5-96c8-dd385c39d2ea.png)\nI think we should make the velocity commander smooth. When the vtol translate back to the mc, the velocity can not decelerate smaller than the mc max velocity in the several translate back seconds, there will be a huge velocity commander to control the vtol in the mc mode. It cause a big pitch commander and the vtol respond the pitch commander , it looks danger when the vtol translate back.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-05T15:48:43Z",
+        "body": "The question is what velocity you commanded - if you command position hold (pitch stick zero) and trigger the velocity you get what you ask for - deceleration with the maximum braking moment. I haven't seen so far anything in real flight or in videos that I would consider extreme.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-05T18:20:06Z",
+        "body": "Two flights with the current state:\nhttp://logs.uaventure.com/view/VxcqqMHj6cNiuqXDjcA9C7\nhttp://logs.uaventure.com/view/GiVxcx93DbU3W5jFgXZ6Qc\n\nApart from the last bit they went great, there was a waypoint missing on the mission at the end, the climbing I cannot reproduce in SITL\n\n@CornerOfSkyline yes I see pitching as well. Maybe something changed on master, I have a feeling this was better a while back.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "CornerOfSkyline",
+        "created_at": "2016-02-06T02:14:12Z",
+        "body": "@LorenzMeier  I test the VTOL auto mission in the gazebo_sitl , the whole fly is in mission mode. There is no manual control.\n\nHere is the log file.\n\nhttp://logs.uaventure.com/view/YNQ9bgD4XmUwt2srbo6whQ\n\n![2016-02-06 10 21 20](https://cloud.githubusercontent.com/assets/12220448/12864038/73d7e73a-ccbb-11e5-8b7e-8102c3d3933b.png)\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-06T09:37:24Z",
+        "body": "@andreasantener does your last commit fully replace\nhttps://github.com/PX4/Firmware/pull/3660 ?\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "julianoes",
+        "created_at": "2016-01-31T19:21:30Z",
+        "body": "Please add a comment for why this condition is how it is. A reader has no clue what's going on here.\n",
+        "path": "src/modules/mc_pos_control/mc_pos_control_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2016-01-31T19:22:10Z",
+        "body": "Also, this comment is out of sync because it seems it's not just about AUTO.\n",
+        "path": "src/modules/mc_pos_control/mc_pos_control_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-01T07:50:39Z",
+        "body": "This is not a critical message.\n",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-01T07:50:57Z",
+        "body": "This is not a critical message.\n",
+        "path": "src/modules/navigator/mission.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": []
+  }
+}

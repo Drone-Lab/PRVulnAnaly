@@ -1,0 +1,75 @@
+{
+  "title": "Predict and use braking distance when Pausing auto modes (for multicopters)",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/17269",
+  "number": 17269,
+  "created_at": "2021-03-30T10:08:47Z",
+  "merged": true,
+  "merged_at": "2021-06-18T08:45:04Z",
+  "state": "closed",
+  "conversation": {
+    "author": "cmic0",
+    "body": "**Describe problem solved by this pull request**\r\nCurrently, when pausing a vehicle during a mission/RTL/Orbit navigator will take the current position of the vehicle as loiter point. This makes the vehicle overshoot the loiter position and then bounce back to the desired setpoint as the braking distance is not taken into account.\r\n\r\n**Describe your solution**\r\nThis PR takes into account the vehicle braking distance to predict and set as loiter point the position where the vehicle will actually be able to stop.\r\n\r\n\r\n**Describe possible alternatives**\r\nIf we had motion primitives in place we could have used those to predict the braking trajectory, but still this implementation is an enhancement compared to the current state.\r\n\r\n**Test data / coverage**\r\nTested in SITL\r\n\r\n**Additional context**\r\nAdd any other related context or media.\r\n",
+    "issue_comments": [
+      {
+        "author": "cmic0",
+        "created_at": "2021-03-30T10:09:33Z",
+        "body": "FYI @BazookaJoe1900 ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "BazookaJoe1900",
+        "created_at": "2021-03-30T15:51:52Z",
+        "body": "Does the new Break option is documented on mavlink?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Kim-zhi-jiang",
+        "created_at": "2021-07-13T03:12:42Z",
+        "body": "1.11.3  with Geofence it's work okay ,but 1.20 not work \r\n\r\nGF_ACTION 2 #Default 1 0None 1Warning 2Hold mode 3Return mode 4Terminate\r\nGF_MAX_HOR_DIST 10\r\nGF_MAX_VER_DIST 10",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "bresch",
+        "created_at": "2021-03-30T13:30:29Z",
+        "body": "The jerk parameter used in auto modes is [MPC_JERK_AUTO](https://dev.px4.io/master/en/advanced/parameter_reference.html#MPC_JERK_AUTO)",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "garfieldG",
+        "created_at": "2021-05-09T13:05:58Z",
+        "body": "@cmic0 it seems that if you want to just move in the yaw axis while in place you can't do it due to this line",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 77,
+        "type": "review_comment"
+      },
+      {
+        "author": "cmic0",
+        "created_at": "2021-06-17T09:16:23Z",
+        "body": "@garfieldG in hold mode you can't control vehicle orientation/attitude, by default we have RC_OVERRIDE enabled which would switch you to Position in case you move the yaw with a stick, or maybe i am not getting your use case :thinking: ?",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 77,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "bresch",
+        "created_at": "",
+        "body": "Overall looks good. Just need to change the jerk parameter.",
+        "state": "CHANGES_REQUESTED",
+        "type": "review"
+      },
+      {
+        "author": "bresch",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

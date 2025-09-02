@@ -1,0 +1,96 @@
+{
+  "title": "WIP: VTOL weathervane",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/3706",
+  "number": 3706,
+  "created_at": "2016-02-09T01:37:03Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "sanderux",
+    "body": "Fixes https://github.com/PX4/Firmware/issues/3679\ncherry-picked all commits onto new branch\n\nTo enable weathervane mode set param VT_OPT_WV_LND to 1\nThe VT_OPT_WV_RATE_D param defines the yaw dampening during landing\n\ntodo:\n- [x] Rename param to vtol_wv_yawrate_scale\n- [x] Disable MC_YAWRATE_I when weathervaning\n- [x] Add option to weathervane in loiter\n- [ ] Implement weathervane strategy when yaw is over-demanded during MC auto flight\n- [ ] flight test\n",
+    "issue_comments": [
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-02-10T13:54:40Z",
+        "body": "@sanderux I fixed the naming. I guess you need to flight test this now.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-10T14:11:47Z",
+        "body": "Thanks, i have a flight window saturday (as it is predicted now).\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-10T14:50:43Z",
+        "body": "Looking forward to the testing. I think we should try to de-risk branches in SITL before and turn them into 2-3 test branches so the flight testing becomes tractable.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-11T14:22:01Z",
+        "body": "@tumbili where did your commit go renaming the scale param?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-11T19:24:53Z",
+        "body": "@AndreasAntener @sanderux sounds like we need this now to fix #3728. So should probably focus on this.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-02-12T08:23:07Z",
+        "body": "@sanderux Seems like somebody forced pushed to this branch. I will need to push again from my private laptop.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-12T08:25:27Z",
+        "body": "A force push would be visible in the timeline. Rather looks like they were not pushed at all, or to a different branch.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-12T08:26:21Z",
+        "body": "@tumbili Since the commits are trivial please just quickly re-do them. Don't wait for tonight, as we miss a test window for @AndreasAntener. I want this to move faster now that you're back.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-02-12T11:43:16Z",
+        "body": "Closing in favour of #3736\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-02-09T10:41:35Z",
+        "body": "@sanderux you can zero the third component of the rates integral here.\n",
+        "path": "src/modules/mc_att_control/mc_att_control_main.cpp",
+        "position": 53,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-02-09T10:43:57Z",
+        "body": "@sanderux how about changing the name to vtol_wv_yawrate__max? It's not really damping anyway.\n",
+        "path": "src/modules/mc_att_control/mc_att_control_main.cpp",
+        "position": 4,
+        "type": "review_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-11T20:03:51Z",
+        "body": "We should add this to is_reached() in the mission if the command is a normal waypoint and a 1-2 second timeout occurred.\n",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 31,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": []
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "title": "replace geo _wrap_pi with matrix::wrap_pi",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/9630",
+  "number": 9630,
+  "created_at": "2018-06-09T21:24:21Z",
+  "merged": true,
+  "merged_at": "2018-06-12T07:00:54Z",
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "Requires https://github.com/PX4/Matrix/pull/68 and https://github.com/PX4/ecl/pull/456 to be merged first.",
+    "issue_comments": [],
+    "review_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-06-10T21:12:37Z",
+        "body": "This looks wrong.",
+        "path": "src/modules/mavlink/mavlink_receiver.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-06-11T00:52:14Z",
+        "body": "Good catch, fixed.",
+        "path": "src/modules/mavlink/mavlink_receiver.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "Looked good except for the one line. Given how critical these are I would like to have another review pass tomorrow.",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

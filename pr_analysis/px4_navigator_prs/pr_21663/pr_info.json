@@ -1,0 +1,177 @@
+{
+  "title": "Adsb warnings fixes",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21663",
+  "number": 21663,
+  "created_at": "2023-05-31T12:39:32Z",
+  "merged": true,
+  "merged_at": "2024-04-22T08:14:39Z",
+  "state": "closed",
+  "conversation": {
+    "author": "asimopunov",
+    "body": "- warn about full traffic conflict buffer at 1/60hz.\r\n- add conflict expiry for buffer.\r\n- use only events for buffer full warning. mavlink_log_critical no longer needed.\r\n- use icao address for conflict warnings id, stop using uas_id. UTM_GLOBAL_POSITION assumed deprecated.\r\n- remove mavlink_log_critical warnings. Replaced with events.\r\n- stop spamming when buffer is full. log using px4_info and px4_warn for ulog since events don't show up on flight review or plotjuggler.\r\n- fix warning wording if buffer is full.\r\n- fix missing {1}, {2} etc. from events\r\n\r\n\r\nfollow up on https://github.com/PX4/PX4-Autopilot/pull/21283",
+    "issue_comments": [
+      {
+        "author": "asimopunov",
+        "created_at": "2023-09-29T01:05:33Z",
+        "body": "@dakejahl Could you please fetch the adsb changes over to your next release? I was asked about this by Will. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "asimopunov",
+        "created_at": "2024-04-11T20:13:24Z",
+        "body": "> The CI failure happens on main already, but would be a good opportunity to quickly have a look.\r\n\r\n@bkueng hmm\r\nthey pass locally when I run `make tests TESTFILTER=functional-AdsbConflict`\r\nThe build step also passed when the tests were merged here - https://github.com/PX4/PX4-Autopilot/actions/runs/4431457384/job/12034874013\r\n\r\nMaybe it's unrelated - need to look more\r\n\r\nDoes that work-queue error directly point to anything for you?\r\n\r\n```\r\n[1277/1278] Running tests\r\n   Site: c36612c519c7\r\n   Build name: Linux-c++\r\nCreate new tag: 20240411-1954 - Experimental\r\nTest project /__w/PX4-Autopilot/PX4-Autopilot/build/px4_sitl_test\r\n        Start   1: functional-AdsbConflict\r\n  1/140 Test   #1: functional-AdsbConflict ..............................***Failed    0.01 sec\r\nERROR [px4_work_queue] not running\r\nERROR [px4_work_queue] wq:lp_default not available\r\nERROR [px4_work_queue] init failed\r\n[==========] Running 3 tests from 1 test suite.\r\n[----------] Global test environment set-up.\r\n[----------] 3 tests from AdsbConflictTest\r\n[ RUN      ] AdsbConflictTest.detectTrafficConflict\r\n```",
+        "type": "issue_comment"
+      },
+      {
+        "author": "asimopunov",
+        "created_at": "2024-04-17T14:46:03Z",
+        "body": "> The following tests FAILED:\r\n> \t  1 - functional-AdsbConflict (Failed)\r\n\r\n@bkueng It's passing now",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "bkueng",
+        "created_at": "2024-04-11T06:40:25Z",
+        "body": "This removes it but then accesses it in the next lines.\r\nWhy not directly remove them without the extra `expired_conflicts`?",
+        "path": "src/lib/adsb/AdsbConflict.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2024-04-11T06:41:48Z",
+        "body": "they're displayed now in flight review",
+        "path": "src/lib/adsb/AdsbConflict.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2024-04-11T06:42:56Z",
+        "body": "`events::send(events::ID(\"buffer_full\"), events::Log::Notice, \"Too much traffic! Showing all messages from now on\");` (remove the space)",
+        "path": "src/lib/adsb/AdsbConflict.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2024-04-11T06:45:47Z",
+        "body": "The `@description` above contains the details. If you want to add them here as well, please make it more readable. hdg -> heading",
+        "path": "src/lib/adsb/AdsbConflict.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2024-04-11T06:46:10Z",
+        "body": "Same here and below",
+        "path": "src/lib/adsb/AdsbConflict.cpp",
+        "position": 199,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2024-04-11T06:46:49Z",
+        "body": "Can you remove this?",
+        "path": "src/lib/adsb/AdsbConflict.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2024-04-11T06:47:21Z",
+        "body": "It is 120",
+        "path": "src/lib/adsb/AdsbConflict.h",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "asimopunov",
+        "created_at": "2024-04-11T19:33:24Z",
+        "body": "Thanks, doesn't look like there was a good reason.\r\nfixed",
+        "path": "src/lib/adsb/AdsbConflict.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "asimopunov",
+        "created_at": "2024-04-11T19:33:56Z",
+        "body": "yup, better?",
+        "path": "src/lib/adsb/AdsbConflict.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2024-04-17T06:15:29Z",
+        "body": "After removing you must ensure the index does not increase otherwise an element is skipped.",
+        "path": "src/lib/adsb/AdsbConflict.cpp",
+        "position": 34,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2024-04-17T07:14:49Z",
+        "body": "Yes, thanks",
+        "path": "src/lib/adsb/AdsbConflict.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2024-04-18T14:10:30Z",
+        "body": "Did you mean to add this?",
+        "path": "src/lib/adsb/AdsbConflict.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "asimopunov",
+        "created_at": "2024-04-18T16:03:49Z",
+        "body": "Of course, we don't need it. I'm just being lazy so I don't need to add another time if this CI fails again. I can remove.",
+        "path": "src/lib/adsb/AdsbConflict.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "asimopunov",
+        "created_at": "2024-04-18T22:22:34Z",
+        "body": "removed",
+        "path": "src/lib/adsb/AdsbConflict.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "bkueng",
+        "created_at": "",
+        "body": "The CI failure happens on main already, but would be a good opportunity to quickly have a look.\r\n```\r\nThe following tests FAILED:\r\n\t  1 - functional-AdsbConflict (Failed)\r\n```",
+        "state": "COMMENTED",
+        "type": "review"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "",
+        "body": "> Does that work-queue error directly point to anything for you?\r\n\r\nIt's probably unrelated unless the test accesses params.",
+        "state": "COMMENTED",
+        "type": "review"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "",
+        "body": ">  @bkueng It's passing now\r\n\r\nNice, thanks",
+        "state": "COMMENTED",
+        "type": "review"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

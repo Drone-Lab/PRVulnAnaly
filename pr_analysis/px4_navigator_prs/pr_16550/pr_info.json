@@ -1,0 +1,56 @@
+{
+  "title": "RTL_LAND_DELAY default to 0 and MIS_DIST_WPS to 5km for VTOL",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/16550",
+  "number": 16550,
+  "created_at": "2021-01-13T19:03:10Z",
+  "merged": true,
+  "merged_at": "2021-01-17T11:05:31Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "**Describe problem solved by this pull request**\r\n- find it annoying that RTL_LAND_DELAY is by default at -1 (do not land but loiter), even though for most applications that's not the default (only for FW usually). For FW, RTL_LAND_DELAY is already set to -1 in the defaults.\r\n- the max distance between waypoints is too low with 900m for VTOLs\r\n\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "Antiheavy",
+        "created_at": "2021-01-13T23:50:41Z",
+        "body": "> the max distance between waypoints is too low with 900m for VTOLs\r\n\r\nhow much real world testing do you have on 5000 meter default for this?  I've had conversations with @priseborough in the past about concerns of gyro stability and EKF covariance tracking over long periods of straight and level flight.  There is a lack of \"system observability\" during straight and level flight which allows the gyros to wander without good correction from the accelerometers and other sensors measuring turns.  I know from experience with other systems  (non-px4, non-pixhawk) that this is a well understood concern in the world of kalman filtering.  So, this distance limit is driven as much by the quality of your hardware system (gryos usually) as it is the quality of your EKF and flight software.\r\n\r\nHaving said that we have slowly been increasing MIS_DIST_WPS on our fixed wing aircraft over the years, we make incremental and conservative increase a few hundred meters at a time, then spend months of testing, then eventually release to our users, then we increase again, test, release, repeat.  We are currently at 2500 meters for MIS_DIST_WPS using a FMUv4 based autopilot hardware.  No issues with 1000's of flights.\r\n\r\nIf 5000 meters is super well tested and understood then hooray!",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mcsauder",
+        "created_at": "2021-01-14T01:27:50Z",
+        "body": "Hi @Antiheavy !  I flew a 4kg quad 12km straight-line from takeoff on v1.11.2 a few weeks ago on an exceptionally low wind day, (lack of system disturbance), and I have a handful of hexas that have flown straight line range test flights in the past two months beyond 5km.  From a limited number of flights that I have observed this change seems fairly reasonable to me, but I don't doubt the rationale behind your comment in the least.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-01-14T14:39:03Z",
+        "body": "@Antiheavy thanks for the input! I actually wasn't aware of this restriction, and seldom have flown with more than 1km between WP. I'll make sure to include that in our testing more regularly. When was the last time you experienced issues on a PX4 based vehicle, and with which release was that?\r\n@priseborough how do you assess the current EKF capabilities, should we be concerned? ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Antiheavy",
+        "created_at": "2021-01-17T16:15:08Z",
+        "body": ">  I flew a 4kg quad 12km straight-line from takeoff on v1.11.2 a few weeks ago on an exceptionally low wind day, (lack of system disturbance), and I have a handful of hexas that have flown straight line range test flights in the past two months beyond 5km.\r\n\r\n@mcsauder are you able to share what gyro parts were running on your flight controller for these flights?  Just curious.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

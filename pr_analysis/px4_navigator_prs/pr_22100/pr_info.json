@@ -1,0 +1,24 @@
+{
+  "title": "[BACKPORT] Avoid unexpected repositions",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22100",
+  "number": 22100,
+  "created_at": "2023-09-19T15:40:58Z",
+  "merged": true,
+  "merged_at": "2023-09-19T23:16:03Z",
+  "state": "closed",
+  "conversation": {
+    "author": "tstastny",
+    "body": "backport of https://github.com/PX4/PX4-Autopilot/pull/22078\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nBugfix: Don't allow external reposition commands without a mode switch, and ensure old reposition commands are not erroneously set.\r\n```",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

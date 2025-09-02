@@ -1,0 +1,40 @@
+{
+  "title": "Navigator: loiter: remove unnecessary _loiter_pos_set",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21776",
+  "number": 21776,
+  "created_at": "2023-06-29T12:50:08Z",
+  "merged": true,
+  "merged_at": "2023-06-30T13:40:21Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "### Solved Problem\r\nWhile working on https://github.com/PX4/PX4-Autopilot/pull/21775 I noticed this seemingly unnecessary class variable `_loiter_pos_set`, that was set to false in `on_inactive()` or in `on_active`, and then though only ever checked in `on_activation` (through `set_loiter_position()`). I don't see how it could be false when entering on_activation(), and thus can just be removed, or am I missing something?\r\n\r\n### Solution\r\nRemove it!\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nRefactor: remove unnecessary variable\r\n```\r\n\r\n### Test coverage\r\nBit of SITL testing.\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "junwoo091400",
+        "created_at": "2023-06-30T14:39:16Z",
+        "body": "![image](https://github.com/PX4/PX4-Autopilot/assets/23277211/50c94e3d-b230-4dd2-946f-cea632b8088c)\r\n\r\nIdk why but the merge commit in main branch itself doesn't show these build failures, any clue why in this PR page itself it shows so many build errors? @MaEtUgR ",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "MaEtUgR",
+        "created_at": "2023-06-30T12:03:23Z",
+        "body": "```suggestion\r\n```",
+        "path": "src/modules/navigator/loiter.h",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "MaEtUgR",
+        "created_at": "",
+        "body": "It was introduced here: https://github.com/PX4/PX4-Autopilot/commit/8960ab3402a87b182d17ab1b3cb165115e0f4bad\r\nBut I cannot possibly understand what for. Maybe an unfinished thought about setting the loiter position once armed when already being in hold mode but I'm pretty sure it never worked correctly since as you mention the loiter point is never set again once hold mode is engaged 🤷‍♂️\r\n\r\nMaybe a draft implementation contained a second call to `set_loiter_position()` and that's where it had an effect.\r\n\r\nI also did some tests and I cannot find a case to enter the loiter's `on_activation()` with the flag true.",
+        "state": "DISMISSED",
+        "type": "review"
+      }
+    ]
+  }
+}

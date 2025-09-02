@@ -1,0 +1,122 @@
+{
+  "title": "Mission Log",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10738",
+  "number": 10738,
+  "created_at": "2018-10-22T11:09:20Z",
+  "merged": true,
+  "merged_at": "2018-10-26T06:02:43Z",
+  "state": "closed",
+  "conversation": {
+    "author": "bkueng",
+    "body": "This adds a new log file to the SD card configurable via `SDLOG_MISSION` parameter.\n\n### Use-cases\nIt's also a ULog file, but only contains minimal information for the following use-cases:\n- geotagging/survey (more generally: extract data collected by the pixhawk during a mission and needed for post-processing)\n- cloud upload & statistics: keeping track of where and how long a vehicle has flown, and if there were problems.\n- regulation: keeping a small log to show where a drone was flown, what failures happened etc.\n\nIt is stored in another directory (`mission_log`) to keep the logs separate from the normal flight logs.\n\n@dogmaphobic This will need an interface update on the QGC side, and maybe changes/extensions to the log download. I have not looked into that yet.\n\n### Implementation\n- the general structure of the logger is the same, but the mission logs use a separate independent write buffer.\n- optimization to reduce the header size: now only the message formats are written for messages that are actually logged. Reduces the header size by about 13KB for a normal log.\n- due to other optimizations, RAM usage does not increase if the mission log is disabled.\n  If enabled, only the additional buffer of 300 bytes is required.\n\n### Testing\nI ran a stress-test on a low-quality SD card for 1h:30min with 90KB/s normal logging rate and enabled mission log with 5Hz camera capture publication. There were no drops for the mission log, and the maximum used buffer was 200 bytes, so 300 bytes buffer size will be enough.\nCPU load minimally increased from 5.6% + 1.7% to 5.7% + 1.8% for the main and writer threads.\n\nFixes https://github.com/PX4/Firmware/issues/10189.\n\nI enabled the mission log by default so that we get it field-tested. But it does not have to be enabled later on.",
+    "issue_comments": [
+      {
+        "author": "hamishwillee",
+        "created_at": "2018-10-23T01:19:35Z",
+        "body": "Looks cool. I commented on the parameter doc.\r\n\r\nCan we also update the user guide with this and also cover the other SDLOG_ params? Proposal is that this should be added in user guide https://docs.px4.io/en/getting_started/flight_reporting.html\r\n- Add a section on \"Configuring logging\" covering all the params\r\n- Explain which logs can be used for what - for example, is Mission Log useful in Flight Reporting?\r\n\r\nI thought it would be good to add a link to the geotagging log in geotagging docs, but we don't have any. Do we need a page that covers what we offer in this area? If so, what would such a page offer?\r\n\r\nLast of all, I looked at the devguide logging topic https://dev.px4.io/en/log/logging.html\r\nMy guess is that the logger is set up with all the rates information etc when the board is set up - and the user guide people don't need to know about this?\r\nShould we perhaps just add a note in that logging topic about the SDLOG parameters. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2018-10-23T10:12:13Z",
+        "body": "> Can we also update the user guide with this and also cover the other SDLOG_ params? Proposal is that this should be added in user guide https://docs.px4.io/en/getting_started/flight_reporting.html\r\n\r\nOk.\r\n\r\n> Explain which logs can be used for what - for example, is Mission Log useful in Flight Reporting?\r\n\r\nNo.\r\n\r\n> I thought it would be good to add a link to the geotagging log in geotagging docs, but we don't have any. Do we need a page that covers what we offer in this area? If so, what would such a page offer?\r\n\r\nYes we should have that. But I don't know of anything that exists already either.\r\n\r\n> My guess is that the logger is set up with all the rates information etc when the board is set up - and the user guide people don't need to know about this?\r\n\r\nYou generally don't have to change anything, since the defaults are good for general log analysis. Special use-cases that differ from that include:\r\n- ekf2 replay\r\n- enabling the high-rate logging profile for PID & filter tuning\r\n- if you want your own set of logged topics.\r\n- thermal temperature calibration",
+        "type": "issue_comment"
+      },
+      {
+        "author": "hamishwillee",
+        "created_at": "2018-10-24T01:44:58Z",
+        "body": "Thanks @bkueng . I'll look into updates to those docs once this is merged.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2018-10-24T07:42:21Z",
+        "body": "CI fails:\r\n> remote file operation failed: /tmp/jenkins/workspace/irmware-compile_mission_log-VMOKXZB2XWPNUMKC2VMXOFD4RIUCZ46BF3YVCQJRPP6QGICMO3JA@tmp/durable-cb023d6c at hudson.remoting.Channel@61b65624:ec2_docker_slave (i-0001bbab6136cffbf): java.nio.file.FileSystemException: /tmp/jenkins/workspace/irmware-compile_mission_log-VMOKXZB2XWPNUMKC2VMXOFD4RIUCZ46BF3YVCQJRPP6QGICMO3JA@tmp/durable-cb023d6c: No space left on device\r\n\r\n@dagar can you look into it?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-10-24T14:30:12Z",
+        "body": "@bkueng we had a zombie ec2 slave. I'll restart these jobs now.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-10-24T16:36:02Z",
+        "body": "~~Some may want vehicle_attitude as well. Pix4d can optionally use roll, pitch, yaw.~~\r\n\r\nNevermind, just reviewed the contents of camera_capture.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Avysuarez",
+        "created_at": "2018-10-25T20:12:19Z",
+        "body": "I tested in pixhawk 4 and pixhawk 4 mini in both created a folder with the name of mission_log.\r\npixhawk 4 log\r\nhttps://review.px4.io/plot_app?log=eaed8008-87c9-40a3-b209-d23c50208f5f\r\npixhawk 4 mini log\r\nhttps://review.px4.io/plot_app?log=f074290a-4f59-4cff-9a05-23adf99b21ef",
+        "type": "issue_comment"
+      },
+      {
+        "author": "hamishwillee",
+        "created_at": "2018-10-26T03:53:16Z",
+        "body": "@bkueng OK, docs for this waiting in https://github.com/PX4/px4_user_guide/pull/372 . Note that they are only peripherally about the mission log - without a topic about something that uses it (e.g. geofencing) there isn't much to say about it yet. So consider this \"a start\".",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "hamishwillee",
+        "created_at": "2018-10-23T01:00:59Z",
+        "body": "HOw about:\r\n\r\n```\r\n/**\r\n * Mission Log\r\n *\r\n * If enabled, a small additional \"mission\" log file will be written to the SD card.\r\n * The log contains just those messages that are useful for tasks like \r\n * generating flight statistics and geotagging.\r\n *\r\n * The different modes can be used to further reduce the logged data\r\n * (and thus the log file size). For example, choose geotagging mode to\r\n * only log data required for geotagging.\r\n\r\n * Note that the normal/full log is still created, and contains all\r\n * the data in the mission log (and more).\r\n */\r\n```\r\n\r\nThe `@value 1 Complete` was also a little confusing to me when I first saw it, because I thought maybe this meant \"full log\", rather than just \"Complete mission log\".\r\nMaybe it is ok. Alternative: \r\n```\r\n * @value 0 Disabled\r\n * @value 1 All mission messages\r\n * @value 2 Geotagging mission messages\r\n```",
+        "path": "src/modules/logger/params.c",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2018-10-23T10:11:44Z",
+        "body": "Thanks, updated accordingly.",
+        "path": "src/modules/logger/params.c",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-10-24T16:27:09Z",
+        "body": "Picky minor side note - we should have some basic float literal guidelines. Inconsistent use of `0.f`, `0.0f`, `0.0F` throughout the codebase should be an easy eyesore to avoid.",
+        "path": "src/modules/navigator/navigator.h",
+        "position": 25,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-10-24T16:31:50Z",
+        "body": "vehicle_status is published at 1Hz or when something changes.",
+        "path": "src/modules/logger/logger.cpp",
+        "position": 167,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2018-10-25T07:26:41Z",
+        "body": "I saw that, but I wanted to be explicit/conservative here in case something changes in commander.",
+        "path": "src/modules/logger/logger.cpp",
+        "position": 167,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2018-10-25T07:26:43Z",
+        "body": "Yeah. I have no problem overlooking those though.",
+        "path": "src/modules/navigator/navigator.h",
+        "position": 25,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

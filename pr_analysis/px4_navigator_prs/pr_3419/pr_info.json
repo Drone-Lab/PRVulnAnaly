@@ -1,0 +1,71 @@
+{
+  "title": "Cmd forwarding",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/3419",
+  "number": 3419,
+  "created_at": "2016-01-02T20:21:57Z",
+  "merged": true,
+  "merged_at": "2016-01-11T07:35:45Z",
+  "state": "closed",
+  "conversation": {
+    "author": "LorenzMeier",
+    "body": "@AndreasAntener @sanderux This should be enough to forward the transition command and allow to embed it into missions. It also prepares everything for camera triggers. QGC should get support for all this also today.\n\nNone of this is tested, so bring up carefully. But it shows at least where to put the plumbing.\n",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-01-02T20:22:20Z",
+        "body": "@SimonWilks This goes pretty far in enabling what we discussed.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-01-02T20:35:14Z",
+        "body": "You can use this QGC branch: https://github.com/mavlink/qgroundcontrol/pull/2510\n\n<img width=\"1144\" alt=\"screen shot 2016-01-02 at 21 32 28\" src=\"https://cloud.githubusercontent.com/assets/1208119/12076012/b25644d6-b198-11e5-910c-c49f5b46fddd.png\">\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-01-03T13:50:52Z",
+        "body": "This is in QGC master and has made it into the daily build.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-01-03T20:26:12Z",
+        "body": "PR https://github.com/PX4/Firmware/pull/3426\nUntested but a basis to expand on.\n\nI will field test this asap. If succesful i will add some more logic like failsafe.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-01-05T20:16:58Z",
+        "body": "@sanderux Before re-working the whole mission / transition logic, should we maybe test this and try to get this in? It should enable transitions already.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-01-05T23:54:05Z",
+        "body": "@LorenzMeier The commands where not picked up by the VTOL controller. The current setup doesn't use the helper classes to perform these tasks in missions. (same with takeoff / land).they are only used for navigation modes.\n\nI have added publishing the command and checking transition completion in the current style for missions. I would be an advocate of rewriting this so that the helper classes are used in missions as well. Currently that would mean changing transition, takeoff and land procedures in the mission_block.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-01-06T07:54:30Z",
+        "body": "@sanderux With helper classes I assume you are referring to the independent nav state handlers (takeoff.cpp, land.cpp etc). I agree that we should try to reuse the handling code, like mission item creation which I already refactored for takeoff/land and RTL (common code in the super class mission_block.cpp). That should go into the direction you mean right?\n\nBut generally these navigation states can be executed standalone and therefore have different entry/exit state handling which we cannot merge. Otherwise we need to think about the general approach there.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-01-11T07:33:48Z",
+        "body": "I think this can be merged. Just did another test with the rebased version.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-01-11T07:35:47Z",
+        "body": "Nice!\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "title": "ROI bugfix and improved precision",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/9781",
+  "number": 9781,
+  "created_at": "2018-06-27T15:00:22Z",
+  "merged": true,
+  "merged_at": "2018-08-06T14:17:12Z",
+  "state": "closed",
+  "conversation": {
+    "author": "potaito",
+    "body": "## The ROI all-zeros bug\r\n\r\nWhen transmitting a mission with QGC, occasionally the ROI waypoints are broken in the sense that the ROI lat/lon is set to `(0.0, 0.0)`. Some digging showed that this only happens when the `MAV_CMD` used to send the mission is in INT mode. The reason is the conversion  from `mavlink_mission` to `mission_item`. In INT mode the latitude and longitude need scaling:\r\n\r\nhttps://github.com/PX4/PX4-Autopilot/blob/bb8e653469e67afb43dbb9ecf3899cf50ef6162f/src/modules/mavlink/mavlink_mission.cpp#L1282-L1294\r\n\r\nHowever, further down when setting the ROI parameters for LAT/LONG/ALT, the conversion is missing and the values are simply copied (cast) regardless of `_int_mode`:\r\n\r\nhttps://github.com/PX4/PX4-Autopilot/blob/bb8e653469e67afb43dbb9ecf3899cf50ef6162f/src/modules/mavlink/mavlink_mission.cpp#L1355-L1363\r\n\r\nA proposed fix is in the first commit.\r\n\r\n### Reproducing the issue:\r\nThe bug occurs only when the vehicle already has a mission loaded, with is removed in QGC, and then a new mission is sent containing the ROI. I am not sure why in one case INT mode is used, and in another case it's not...\r\n\r\n## ROI waypoint floating-point precision\r\nLooking at the situation with @MaEtUgR and @julianoes, we noticed that some precision is lost when using the parameter fields (float) of the vehicle message to store/access the ROI latitude and longitude (param 5 and param6):\r\nhttps://github.com/PX4/PX4-Autopilot/blob/bb8e653469e67afb43dbb9ecf3899cf50ef6162f/src/modules/navigator/mission_block.cpp#L445-L463\r\n\r\nInstead, we can just as well use the mission item's latitude and longitude, which are `double`s instead of `float`s:\r\nhttps://github.com/PX4/PX4-Autopilot/blob/bb8e653469e67afb43dbb9ecf3899cf50ef6162f/src/modules/navigator/navigation.h#L135-L153\r\n\r\nThe proposed fix is in the second commit, making the other commit redundant. \r\n\r\n------\r\n\r\n@julianoes Please take a look :)",
+    "issue_comments": [
+      {
+        "author": "potaito",
+        "created_at": "2018-07-26T07:32:29Z",
+        "body": "@julianoes Could you review the changes? :)",
+        "type": "issue_comment"
+      },
+      {
+        "author": "potaito",
+        "created_at": "2018-07-26T16:06:18Z",
+        "body": "Now there are conflicts :cry: \r\nI'll take care of it. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "potaito",
+        "created_at": "2018-08-06T09:28:29Z",
+        "body": "@julianoes Conflicts resolved. They were caused by this commit: https://github.com/PX4/Firmware/commit/cf741668018f17cae47180064ebe2cfd2c9de214#diff-7a824e3d1e9a5420071c8c9bbe27b8e7R455\r\n\r\nWith the changes in this PR there is no conversion required, since the `lat` and `lon` fields are already `double` types:\r\nhttps://github.com/PX4/PX4-Autopilot/blob/e989c80205e22d11e5346bda3d11f90cdf294dfc/src/modules/navigator/navigation.h#L135-L137",
+        "type": "issue_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2018-08-06T09:54:06Z",
+        "body": "```\r\n/usr/local/opt/ccache/libexec/c++  -DCONFIG_ARCH_BOARD_SITL -DMODULE_NAME=\\\"navigator\\\" -DPX4_MAIN=navigator_app_main -D__DF_DARWIN -D__PX4_DARWIN -D__PX4_POSIX -D__STDC_FORMAT_MACROS -Dnoreturn_function=\"__attribute__((noreturn))\" -I. -Isrc -Isrc/lib -Isrc/modules -I../../src -I../../src/drivers/boards/sitl -I../../src/include -I../../src/lib -I../../src/lib/DriverFramework/framework/include -I../../src/lib/matrix -I../../src/modules -I../../src/platforms -I../../platforms/posix/include -Iexternal/Install/include -I../../src/lib/ecl -g -fno-exceptions -fno-rtti -std=gnu++11 -fno-threadsafe-statics -DCONFIG_WCHAR_BUILTIN -D__CUSTOM_FILE_IO__ -Wall -Wextra -Werror -Warray-bounds -Wdisabled-optimization -Wdouble-promotion -Wfatal-errors -Wfloat-equal -Wformat-security -Winit-self -Wlogical-op -Wmissing-declarations -Wpointer-arith -Wshadow -Wuninitialized -Wunknown-pragmas -Wunused-variable -Wno-implicit-fallthrough -Wno-missing-field-initializers -Wno-missing-include-dirs -Wno-unused-parameter -Qunused-arguments -Wno-unused-const-variable -Wno-varargs -Wno-address-of-packed-member -Wno-unknown-warning-option -Wunused-but-set-variable -Wno-overloaded-virtual -Wreorder -fvisibility=hidden -include visibility.h -fno-strict-aliasing -fomit-frame-pointer -fno-math-errno -funsafe-math-optimizations -ffunction-sections -fdata-sections -fcolor-diagnostics -O2 -g -DNDEBUG   -fno-strict-aliasing -fomit-frame-pointer -fno-math-errno -funsafe-math-optimizations -ffunction-sections -fdata-sections -fcolor-diagnostics -std=gnu++11 -MD -MT src/modules/navigator/CMakeFiles/modules__navigator.dir/mission_block.cpp.o -MF src/modules/navigator/CMakeFiles/modules__navigator.dir/mission_block.cpp.o.d -o src/modules/navigator/CMakeFiles/modules__navigator.dir/mission_block.cpp.o -c ../../src/modules/navigator/mission_block.cpp\r\n\r\n../../src/modules/navigator/mission_block.cpp:462:18: fatal error: implicit conversion increases floating-point precision: 'const float' to 'double' [-Wdouble-promotion]\r\n\r\n                        vcmd.param5 = item.params[4];\r\n```",
+        "type": "issue_comment"
+      },
+      {
+        "author": "potaito",
+        "created_at": "2018-08-06T12:43:19Z",
+        "body": "fixed",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "julianoes",
+        "created_at": "2018-06-28T06:38:34Z",
+        "body": "I thought here we lose the accuracy yet again but I was wrong.\r\nhttps://github.com/PX4/Firmware/blob/18abeb1118f3db8e4012d290e1b8dc5d0883333a/msg/vehicle_command.msg#L105-L106",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2018-06-28T06:41:34Z",
+        "body": "So here we might as well use `item.alt` to be consistent, right?",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "potaito",
+        "created_at": "2018-06-28T06:51:54Z",
+        "body": "True, didn't realize that thanks to the `union` the two fields actually occupy the same bytes. ",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "potaito",
+        "created_at": "2018-06-28T06:52:05Z",
+        "body": "Right, those two params are the exception. Apparently they are meant for LAT/LON storage :)",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2018-06-28T07:51:37Z",
+        "body": "Oh funny.",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "2018-06-28T07:51:46Z",
+        "body": "Yep.",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "potaito",
+        "created_at": "2018-06-28T08:09:29Z",
+        "body": ":heavy_check_mark: ",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "julianoes",
+        "created_at": "",
+        "body": "",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "julianoes",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

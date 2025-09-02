@@ -1,0 +1,24 @@
+{
+  "title": "Navigator: mission_block: reduce margin to enforce aligned exit course to 105% of the loiter radius",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22511",
+  "number": 22511,
+  "created_at": "2023-12-08T10:43:56Z",
+  "merged": true,
+  "merged_at": "2023-12-21T15:58:22Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "This margin helps to not have a vehicle stuck at a loiter waypoint if it is not perfectly tracked, (vehicle outside of path setpoint) and the next waypoint is just at the border of the loiter.\r\nIt should though be as small as necessary, as otherwise, with good loiter tracking,  waypoints that are close but not right on the loiter radius are not enforcing the exit course neither.\r\n\r\nThe previous margin of 120% seems rather a bit too high, I propose 105% here.\r\n\r\nReduces the likelihood of ugly loiter exits like this one here, where the loiter radius is huge and the distance to the next WP is small:\r\n\r\n![image](https://github.com/PX4/PX4-Autopilot/assets/26798987/9b4d24f9-586c-451c-8587-387d8aa7c7eb)\r\n\r\n",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "Seems valid, but if it's an issue for anyone after this I suppose it needs to be configurable.",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

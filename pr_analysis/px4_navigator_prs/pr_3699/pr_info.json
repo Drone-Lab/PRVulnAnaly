@@ -1,0 +1,65 @@
+{
+  "title": "WIP: VTOL_TAKEOFF and VTOL_LAND mission command support",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/3699",
+  "number": 3699,
+  "created_at": "2016-02-07T23:47:48Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "sanderux",
+    "body": "Fixes: https://github.com/PX4/Firmware/issues/3492\nFixes: https://github.com/PX4/Firmware/issues/3414\nSupport for MAV_CMD_NAV_VTOL_TAKEOFF and MAV_CMD_NAV_VTOL_LAND\n\ntodo\n- [ ] Rebase and remove weathervane merge (maybe setup new branch)\n- [ ] Implement weathervane land for VTOL_LAND\n- [ ] Flight test\n",
+    "issue_comments": [
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-07T23:50:57Z",
+        "body": "@DonLakeFlyer these commands should be supported in QGC\nthey are in every sense similar to takeoff and land commands\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-07T23:55:24Z",
+        "body": "Here's the test mission waypoint file\n[vtol takeoff and land.txt](https://github.com/PX4/Firmware/files/120995/vtol.takeoff.and.land.txt)\n\nThe vtol transition takeoff and land waypoints are displayed as mission frame commands. they are actually located near home. Takeoff a few meters north and land very close to home (where it lands)\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-08T18:08:08Z",
+        "body": "whoops, merge was not intended\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-08T20:09:12Z",
+        "body": "It's probably best to wait with this until the new mission handling is in (it's ready now, just needs a last flight test).\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-08T21:22:19Z",
+        "body": "I'm going to reset this branch. @sanderux Please delete this branch locally and re-checkout it.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-08T21:22:58Z",
+        "body": "No, actually not resetting. We'll deal with this later.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-08T22:06:49Z",
+        "body": "Both these items need further testing in actual flight (mostly weathervane) because testing this in SITL is hard.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-08T22:10:38Z",
+        "body": "@AndreasAntener i merged this code in your vtol_mission_fixes tree locally. works (much better).\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

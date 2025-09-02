@@ -1,0 +1,16 @@
+{
+  "title": "more param metadata cleanup",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/4078",
+  "number": 4078,
+  "created_at": "2016-03-25T20:30:01Z",
+  "merged": true,
+  "merged_at": "2016-03-26T11:17:52Z",
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": []
+  }
+}

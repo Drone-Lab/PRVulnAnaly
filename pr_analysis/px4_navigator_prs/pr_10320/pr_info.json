@@ -1,0 +1,197 @@
+{
+  "title": "Make DO_SET_SERVO work",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10320",
+  "number": 10320,
+  "created_at": "2018-08-24T15:26:45Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "kpetrykin",
+    "body": "Hello!\n\nMy goal was to make the mission command DO_SET_SERVO working with the possibility of triggering the servo with RC switch.\n\nFirst, I have found that \"vmount\" module (when enabled) publishes its values to actuator_controls_2 topic all the time. This overwrites all other publications to this topic. That is why DO_SET_SERVO is not working.\n\nI modified \"vmount\" module so that it would publish only if one of the actuator values were changed by RC. In other cases it stays silent.\n\nSecond, I have found that the formula, which translates PWM value from DO_SET_SERVO command parameters to -1..1 range for uORB, does not match the one which translates it back.\n[Original formula:](https://github.com/PX4/Firmware/blob/c997159e32f3870c7fd3202877324b76a62ea610/src/modules/navigator/mission_block.cpp#L433) `actuators.control[(int)item.params[0]] = 1.0f / 2000 * -item.params[1];`\n[Formula, which translates value back](https://github.com/4ert/Firmware/blob/397522d3813924380c209984b47b05bf743c3037/src/lib/pwm_limit/pwm_limit.cpp#L211): `effective_pwm[i] = control_value * (max_pwm[i] - min_pwm[i]) / 2 + (max_pwm[i] + min_pwm[i]) / 2;`\n[New formula](https://github.com/4ert/Firmware/blob/397522d3813924380c209984b47b05bf743c3037/src/modules/navigator/mission_block.cpp#L440): `actuators.control[(int)item.params[0]] = (float)(((float)item.params[1] - (PWM_DEFAULT_MAX + PWM_DEFAULT_MIN) / 2)/((PWM_DEFAULT_MAX - PWM_DEFAULT_MIN) / 2));`\n\nI need to discuss two questions about the formula: \n- to make it work properly we need to get actual \"max_pwm[i]\" and \"min_pwm[i]\" into navigator module. I have found a [way to get them](https://github.com/PX4/Firmware/blob/c997159e32f3870c7fd3202877324b76a62ea610/src/drivers/px4fmu/fmu.cpp#L1678), but I don't understand how to use it correctly\n- when I tested mission with DO_SET_SERVO command, servo works nice only with 1, 3 and 4 aux outputs. The second one for some reason outputs into first. I think there is something wrong with casting here: `(int)item.params[0]`\n\nI have tested everything with 1.7.3 Firmvare (px4fmu-v2_default), but did not save the flight log.\nI will test the last master in a few days.",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2018-08-24T23:00:07Z",
+        "body": "There are a few problems with this PR, but let's take a step back first.\r\n\r\nHow do people want/expect DO_SET_SERVO to even work?\r\n![screen shot 2018-08-24 at 18 55 07](https://user-images.githubusercontent.com/84712/44611459-43a8b980-a7cf-11e8-9266-6aad77f5252a.png)\r\n\r\nWhich servo does it correspond to? What's supposed to happen in the not entirely unlikely scenario that that PWM channel is already used for something?\r\n\r\nWhat's the real use case for DO_SET_SERVO? Would we be better implementing a couple higher level commands? payload, gripper, etc\r\n\r\nIf the answer is still DO_SET_SERVO then the right place to implement that command is in the px4io (MAIN pwm) and/or px4fmu (AUX pwm) drivers. Those drivers are the consumers of actuator_controls_{0, 1, 2, 3} and work directly with PWM values.\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-08-26T18:52:17Z",
+        "body": "@4ert We need to separate the different actuator groups for good to make this easier. Could you join the PX4 dev call this week?\r\nhttps://dev.px4.io/en/contribute/#dev_call",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kpetrykin",
+        "created_at": "2018-08-27T12:16:37Z",
+        "body": "- **How do people want/expect DO_SET_SERVO to even work?**\r\nIn our case we want to release a cargo by the mission command. The cargo is locked by the servo which is connected to one of the AUX outputs. We want to use DO_SET_SERVO command to send a PWM signal (parameter 2) to the AUX output from paramter 1.\r\n- **Which servo does it correspond to?**\r\n[As we can see now](https://github.com/PX4/Firmware/blob/bbc0c28c2c07743e489a338677e449a28ab5fd74/src/modules/navigator/mission_block.cpp#L436) the Navigator publish DO_SET_SERVO values to actuator_controls_2 topic. This control group is used to rule gimbal:\r\n![image](https://user-images.githubusercontent.com/161284/44657760-b18af600-aa06-11e8-9fd8-8a5971d51ffe.png)\r\n- **What's the real use case for DO_SET_SERVO? Would we be better implementing a couple higher level commands? payload, gripper, etc**\r\nI think when you use DO_SET_SERVO command - you just want to send an exactly PWM to external servo connected to your controller. If you want to rule gimbal - you will use DO_MOUNT_CONTROL, if you have any flight control mechanizm connected to the AUX - you will want to use some more convenient commands for this.\r\n- **If the answer is still DO_SET_SERVO then the right place to implement that command is in the px4io (MAIN pwm) and/or px4fmu (AUX pwm) drivers. Those drivers are the consumers of actuator_controls_{0, 1, 2, 3} and work directly with PWM values.**\r\nSo, I just made a little repair into an existing WORKING mechanizm. For now, Navigator module publishes into an \"actuator_controls_2\" topic and the px4fmu driver gets values from it and sends to the servos. There's just two things which discourage the process: the vmount driver spamming with its own values to the topic and the formula which translates data wrong. If you switch vmount off (\"vmount stop\" command into a console) and correct the formula - DO_SET_SERVO will work as expected. And don't forget to load a mixer for AUX outputs.\r\n\r\n- **What's supposed to happen in the not entirely unlikely scenario that that PWM channel is already used for something?**\r\nI think, this question is up to the one who builds and sets up the specific device. If you connects some critical stuff to the AUX - edit mixers or just don't use DO_SET_SERVO.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kpetrykin",
+        "created_at": "2018-08-27T16:01:36Z",
+        "body": "Made a flight, the log is here: https://logs.px4.io/plot_app?log=8fb644ab-1fe4-449a-9b0f-c4656fdae029#Nav-Actuator-Outputs-AUX\r\nThe mission was: \r\n- takeoff to 10 meters \r\n- DO_SET_SERVO on AUX1 1000 PWM \r\n- go to waypoint \r\n- DO_SET_SERVO on AUX1 2000 PWM\r\n- land \r\n- DO_SET_SERVO on AUX1 1000 PWM (example releasing cargo)\r\n- takeoff to 10 meters\r\n- RTL",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kpetrykin",
+        "created_at": "2018-08-27T18:57:12Z",
+        "body": "@LorenzMeier my speaking english is not very good but I could try to join the devcall",
+        "type": "issue_comment"
+      },
+      {
+        "author": "maitham",
+        "created_at": "2018-09-05T14:11:09Z",
+        "body": "@kpetrykin  I'm currently trying to get this to work I've used your commit. So I have my Pixhawk connected to a servo and I'm trying to get the servo to move within the mavproxy shell by running servo set 1 1000. However the message I keep getting back is that the command was acknowledged but is unrecognised (result:3) . I can get the servo moving using nuttx shell, but I really want to be able to send a mavlink command to set the servo pwm is there any way of doing this? ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "hamishwillee",
+        "created_at": "2018-09-05T23:19:26Z",
+        "body": "@maitham1 It looks like the  MAV_CMD_DO_SET_SERVO is **set in missions** and handled here: \r\nhttps://github.com/PX4/Firmware/blob/master/src/modules/navigator/mission_block.cpp#L424\r\n(FYI @bkueng  this is related to https://github.com/Dronecode/DronecodeSDK/issues/533)\r\n\r\nI can't find the message being handled outside of missions. While that does not mean it isn't, the fact that you're getting \"unrecognised\" is indicative. \r\n\r\nThere is quite a bit of discussion above about this. @dagar did the devcall come to any conclusions? Is there a short term recommendation on how people should approach this?\r\n\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "hamishwillee",
+        "created_at": "2018-09-06T00:04:36Z",
+        "body": "@dagar regarding https://github.com/PX4/Firmware/pull/10320#issuecomment-415903772 (your questions) there are some good points there. Below are \"in my opinion\". \r\n\r\n> Which servo does it correspond to? \r\n\r\nShouldn't this be defined at the MAVLink/message level by a convention? How about 1-n are the MAIN outputs as labeled on board, and n upwards are the AUX ports, if present? \r\n\r\n> What's supposed to happen in the not entirely unlikely scenario that that PWM channel is already used for something?\r\n\r\nIMO things screw up - it is up to the user of this tool to manage contention. See real use case below. \r\n\r\nDo we actually manage contention otherwise? ie does the system check that we don't have multiple control group inputs assigned to the same output?\r\n\r\n> What's the real use case for DO_SET_SERVO? \r\n\r\nThe real use case is probably the hardware we haven't thought about. Someone has some magic hardware that they want to drive, and a free port. They just want to be able to plug in that hardware and send it a command via MAVLink. They don't want to care about mixers. They are happy to manage contention themselves -  ie they know that nothing else is connected to the port, and if they screw up they screw up.\r\n\r\n> Would we be better implementing a couple higher level commands? payload, gripper, etc\r\n\r\nWe currently have [First Payload](http://dev.px4.io/en/concept/mixing.html#control-group-6-first-payload) which is just a parachute. Yes we should probably define something for a gripper. Not sure it will address the above use case.\r\n\r\nI've read http://dev.px4.io/en/concept/mixing.html and I am not 100% confident that my understanding of how these work is complete. I think that control groups are implemented as UORB topics that something can set (ie a controller). A mixer defines what actuators are set and their values based on these inputs. \r\n\r\nSo essentially you create a control group so that you can arbitrarily map a specific **type** of command to a physical output. For example to use a parachute you write a handler for it in MAVLink that sets the appropriate control group UORB topic. \"Something\" in the architecture then takes the mapping in the mixer file and based on that topic input sets the appropriate PWM output. Is that about right?\r\n\r\nThis is good because your system does not need to know what plugs into the output to implement a parachute or gripper (say). But it does mean that you need a mixer.\r\n\r\nQuestion: Are mixer's additive? Ie I have an airframe which uses the main outputs. I add a parachute. Do I need a completely new mixer file, or can I add my mixer just for my parachute?\r\n\r\nYou could implement this as a servo control group(s). But would be better if the mapping was transparent (ie no specific mixer required). \r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kpetrykin",
+        "created_at": "2018-09-06T10:16:30Z",
+        "body": "@maitham1 this PR is generally about mission's DO_SET_SERVO command.\r\nIt looks like if you want to pass it through mavlink it would not be handled.\r\nYou may experiment with writing your own handler somewhere here: https://github.com/PX4/Firmware/blob/039221fa93303a6840a45c3f8a72580aaaf2d74c/src/modules/mavlink/mavlink_receiver.cpp#L527\r\nOr you may assign an rc trigger for your servo and try to override it with mavlink message, but it is not a good way.\r\nAnd what do you want to do? What is your case?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "maitham",
+        "created_at": "2018-09-06T10:43:34Z",
+        "body": "@kpetrykin Thanks for getting back to me. I want to simply change pwm output from a script. \r\nCurrently I thought this would be possible via sending the MV_CMD_DO_SET_SERVO using pymavlink, \r\nit doesn't seem to be implemented, unless i'm missing something (which is highly likely as this is all new to me) but I'm open to other ways? ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kpetrykin",
+        "created_at": "2018-09-06T10:59:22Z",
+        "body": "@maitham1 so what is your goal of using servo? What you try to do with this?\r\nAnd from what you send MAV_CMD_DO_SET_SERVO using pymavlink? Onboard computer?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "maitham",
+        "created_at": "2018-09-06T11:32:51Z",
+        "body": "@kpetrykin I would like run certain tests to change servo positions, its a static test so nothings flying. I just want the ability to set servos to specific angles and motors to specific speeds within a python script. I don't intend to use it for flying. Its just for testing.\r\n\r\nSending MAV_CMD_DO_SET_SERVO using pymavlink! ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kpetrykin",
+        "created_at": "2018-09-25T11:07:11Z",
+        "body": "So, @dagar, @LorenzMeier - what's with this PR? What could i do to improve it?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "tubeme",
+        "created_at": "2018-10-24T03:53:21Z",
+        "body": "Hey @kpetrykin Can you share your mixer that you are using for the AUX channel? I'm trying to follow yur route but cannot make the mixer properly maybe. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kpetrykin",
+        "created_at": "2018-10-24T09:28:11Z",
+        "body": "@tubeme, sure, it's simple:\r\n\r\n```\r\nM: 1\r\nO:      10000  10000      0 -10000  10000\r\nS: 2 0  10000  10000      0 -10000  10000\r\n\r\nM: 1\r\nO:      10000  10000      0 -10000  10000\r\nS: 2 1  10000  10000      0 -10000  10000\r\n\r\nM: 1\r\nO:      10000  10000      0 -10000  10000\r\nS: 2 2  10000  10000      0 -10000  10000\r\n\r\nM: 1\r\nO:      10000  10000      0 -10000  10000\r\nS: 2 3  10000  10000      0 -10000  10000\r\n```\r\nTo make it work:\r\n\r\n- Place a mixer into a /etc/mixers/pass.aux.mix on your pixhawk's SD card\r\n- Create /etc/extras.txt with the folowing command: `mixer load /dev/pwm_output1 /fs/microsd/etc/mixers/pass.aux.mix`",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kpetrykin",
+        "created_at": "2018-11-07T09:27:43Z",
+        "body": "So, @tubeme, did you get the mixer to work?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "GaoGeolone",
+        "created_at": "2018-12-01T02:17:34Z",
+        "body": "@kpetrykin How to make it work, bro?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "bys1123",
+        "created_at": "2018-12-01T05:59:52Z",
+        "body": "Is there any new update?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kpetrykin",
+        "created_at": "2018-12-03T10:29:35Z",
+        "body": "@GaoGeolone what have you done already?\r\n@bys1123 no, it's still as it is",
+        "type": "issue_comment"
+      },
+      {
+        "author": "GaoGeolone",
+        "created_at": "2018-12-04T03:20:49Z",
+        "body": "@kpetrykin I think I have already make it work, thank you~I just want to trigger my servo at a certain position. And by making a change to the AUXMIXER pass file , as well as modifying the Formula in Mission_block.cpp.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "stale[bot]",
+        "created_at": "2019-03-04T04:15:20Z",
+        "body": "This issue has been automatically marked as stale because it has not had recent activity. It will be closed if no further activity occurs. Thank you for your contributions.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "JamesChooWK",
+        "created_at": "2019-03-06T13:03:51Z",
+        "body": "Hi @kpetrykin , I want to follow what you have done the flight for example takeoff, go to a waypoint and drop a cargo. Now, I am trying to follow and write a same mixer that you provide. But there are some questions that I want to ask:\r\n\r\nQ1) Why do we create a \"extrats.txt\" file  with a command line \"mixer load /dev/pwm_output1 /fs/microsd/etc/mixers/pass.aux.mix\" ?\r\nQ2) Where do we place this \"extrats.txt\" file ? same folder as our mixer file?\r\nQ3) How can we upload the mixer and this \"extrats.txt\" file into our Pixhawk's SDcard? via QGC?\r\nQ4) If QGC is needed, do we need to place these two file into our Firmware before uploading it? \r\n\r\nSorry for asking these silly questions. Thanks. \r\n\r\n\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "hamishwillee",
+        "created_at": "2019-03-06T21:25:14Z",
+        "body": "@JamesChooWK The Extras.txt is documented here: https://dev.px4.io/master/en/concept/system_startup.html#customizing-the-system-startup\r\n\r\nIt is used for system startup customisations - basically you're adding the mixer at runtime rather than as part of the firmware build. This is much easier for examples, testing,  and when you're doing something that only applies to your setup. \r\n\r\nYou can copy the files onto the card using whatever mechanism you like - ie File explorer on windows. The files need to be present on the SD card before booting PX4. Again, they are not part of firmware, but are loaded as though they were.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "JamesChooWK",
+        "created_at": "2019-03-07T19:36:25Z",
+        "body": "@hamishwillee Thanks for answering my questions.  I manage to upload the mixer and Extras.txt file into MicroSD card. \r\n\r\nBut when I tried to push a DO_SET_SERVO command to pixhawk using mavros services(\"mavros/mission/push\") by assigning \"command=183\", it return this error (\" WP: upload failed: command is not supported\")\r\n\r\nI am not sure whether I use the DO_SET_SERVO in (\"mavros/mission/push\") correctly or I have to do it in (\"mavros/cmd/command\") or I have to use mavlink ?\r\n\r\nI am using MAVROS and PX4 native flight stack.\r\n\r\nMany thanks.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "hamishwillee",
+        "created_at": "2019-03-07T21:16:16Z",
+        "body": "@JamesChooWK Did you incorporate this PR? It has the code that is supposed to support  DO_SET_SERVO",
+        "type": "issue_comment"
+      },
+      {
+        "author": "JamesChooWK",
+        "created_at": "2019-03-07T21:45:40Z",
+        "body": "@hamishwillee  I am sorry I do not incorporate this PR, but I will do it. If I uses the new code, does it means that I have to build the firmware and load to pixhawk or I can copy the files and paste it into the SDcard like the mixer?\r\nI'm sorry to ask so many questions, I'm a newbie to these sort of things.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "hamishwillee",
+        "created_at": "2019-03-07T22:05:01Z",
+        "body": "@JamesChooWK So the point of the PR is that the message doesn't work on PX4 right now (as far as I know - I'm guessing based on what I see here).\r\nSo yes, you will have to build PX4 firmware with the changes in this code and upload it as \"custom firmware\". There are conflicts between the changes and master branch, so you might need to do some coding to integrate them.\r\n\r\nAlso note this PR did not get accepted yet - so there is no guarantee that even if you do this it will work. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "JamesChooWK",
+        "created_at": "2019-03-08T09:14:52Z",
+        "body": "@hamishwillee  I will try to amend the code and build the firmware, Thanks for the time answering my questions. Cheers. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "kpetrykin",
+        "created_at": "2019-03-11T08:31:46Z",
+        "body": "@JamesChooWK this PR does not contain code to accept DO_SET_SERVO from external sourses, it's about command from mission.\r\nIf you want to use external call of this command, you need to add a code to process a corresponding mavlink message.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "JamesChooWK",
+        "created_at": "2019-03-11T09:54:30Z",
+        "body": "@hamishwillee  I will try to amend the code and build the firmware, Thanks for the time answering my questions. Cheers. ",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

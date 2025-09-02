@@ -1,0 +1,71 @@
+{
+  "title": "[WIP]: move \"Follow Me\" out of navigator to flight_mode_manager",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/17029",
+  "number": 17029,
+  "created_at": "2021-03-05T15:30:35Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "This is the next little piece on the long road to unified flight mode handling and turning navigator into a simple \"mission manager\".\r\n\r\n - follow navigator navigation state moves entirely into a flight task (flight mode)\r\n - position_setpoint_triplet remove velocity and yawspeed setpoints (now position only)\r\n\r\nTODO\r\n - fully test FOLLOW",
+    "issue_comments": [
+      {
+        "author": "potaito",
+        "created_at": "2021-03-30T14:36:38Z",
+        "body": "This is awesome Daniel, thanks for doing this! Particularly the reduced number of fields in `msg/position_setpoint.msg`",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2021-03-30T14:43:19Z",
+        "body": "> This is awesome Daniel, thanks for doing this! Particularly the reduced number of fields in `msg/position_setpoint.msg`\r\n\r\nThanks @potaito, any suggestions for testing? I need a simple test case to work through the remaining details and ensure there are no regressions.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "potaito",
+        "created_at": "2021-03-31T09:07:41Z",
+        "body": "> > This is awesome Daniel, thanks for doing this! Particularly the reduced number of fields in `msg/position_setpoint.msg`\r\n> \r\n> Thanks @potaito, any suggestions for testing? I need a simple test case to work through the remaining details and ensure there are no regressions.\r\n\r\nNo suggestion from me right now. I'm about to test \"Follow Me\" with the old implementation once I figure out how to stream GPS from my ground station to the drone. :sweat_smile: \r\nOnce I have that, I would just hop on a bicycle, go to an open field and have the drone follow me.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "potaito",
+        "created_at": "2021-04-01T12:51:25Z",
+        "body": "I can test it in simulation. Got a python script with a moving target. Is there any other test that we need @dagar ?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "potaito",
+        "created_at": "2021-04-01T13:18:02Z",
+        "body": "Hm just tried with jmavsim and the drone did not move after takeoff: https://logs.px4.io/plot_app?log=764e59d1-a728-4aa9-b744-8f8c95bbdc06\r\n\r\nAnd here's the same simulation with current master, where the drone is moving: https://logs.px4.io/plot_app?log=be67163b-dd12-4836-97fd-53004f4946ed\r\n\r\nThe script I used for simulating is this one: https://gist.github.com/potaito/6d1db7471c0428f3a7e2342d6e34130d\r\nJust need `pip3 install mavsdk`",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2021-04-01T13:23:07Z",
+        "body": "> Hm just tried with jmavsim and the drone did not move after takeoff: https://logs.px4.io/plot_app?log=764e59d1-a728-4aa9-b744-8f8c95bbdc06\r\n\r\nI should have been more clear, this is the bulk of the move with a few key pieces of logic still missing before it will actually work. \r\n\r\nhttps://github.com/PX4/PX4-Autopilot/blob/7f4fbc102c60ad6da1130edd036ba44d6486e880/src/modules/flight_mode_manager/tasks/AutoFollowMe/FlightTaskAutoFollowMe.cpp#L215-L219\r\n\r\nMy next step was figuring out how to effectively test in simulation so I could fill in the remaining TODOs. ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "potaito",
+        "created_at": "2021-04-01T13:37:40Z",
+        "body": "Right, the PR even says \"draft\" :sweat_smile: \r\nThe script I posted above is simply using mavSDK to publish the FOLLOW_TARGET mavlink message for a simulated target.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2021-04-01T13:41:50Z",
+        "body": "> Right, the PR even says \"draft\" \r\n> The script I posted above is simply using mavSDK to publish the FOLLOW_TARGET mavlink message for a simulated target.\r\n\r\nThanks that's exactly what I needed. I'll finish this once v1.12 is out the door.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "potaito",
+        "created_at": "2021-08-05T08:36:25Z",
+        "body": "Closing in favour of https://github.com/PX4/PX4-Autopilot/pull/18026",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

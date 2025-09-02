@@ -1,0 +1,23 @@
+{
+  "title": "MS5611 reliability",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/2011",
+  "number": 2011,
+  "created_at": "2015-04-10T23:36:19Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "LorenzMeier",
+    "body": "This fixes reliability issues found in the reset logic in #2007. Likely not going to improve / affect operation on Pixhawk, but helpful for anyone operating via I2C.\n",
+    "issue_comments": [
+      {
+        "author": "bansiesta",
+        "created_at": "2015-05-25T16:27:50Z",
+        "body": "Reviewed, can be merged in my opinion.\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

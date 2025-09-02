@@ -1,0 +1,16 @@
+{
+  "title": "DeltaTag: enhanced geo-referencing survey images",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10715",
+  "number": 10715,
+  "created_at": "2018-10-17T22:02:25Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "sanderux",
+    "body": "DeltaTag provides an alternate method to geo-referencing images from survey missions.\r\nIt uses the delta in seconds between the images and the delta between the triggers to \r\nmatch geo information with pictures, allowing for mission images.\r\n\r\nIt uses the last image and last trigger event as a calibration point as errors are\r\nmore likely to arrise in the first images (test triggers, booting cameras, etc)\r\n\r\nNote: DeltaTag does not make copies, it writes the Exif information directly to the images\r\n\r\nInstall: sudo pip install pyulog piexif Pillow\r\nRun: python deltatag.py [logfile] [image dir] (optional offset)\r\neg: python deltatag.py mylog.ulg ./images\r\n\r\nParameters\r\nlogfile: a ulog formatted logfile containing camera_capture events (survey missions)\r\nimage_dir: the directory where the images are located\r\noffset (optional): skip [offset] triggers to reference the last image\r\n                   0 means the last trigger event equals last image (default)\r\n                   1 means the second last trigger event equals last image\r\n                   ...etc",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": []
+  }
+}

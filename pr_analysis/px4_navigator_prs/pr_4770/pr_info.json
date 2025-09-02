@@ -1,0 +1,101 @@
+{
+  "title": "Enable FW without airspeed sensor",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/4770",
+  "number": 4770,
+  "created_at": "2016-06-08T09:33:06Z",
+  "merged": true,
+  "merged_at": "2016-06-23T07:28:06Z",
+  "state": "closed",
+  "conversation": {
+    "author": "RomanBapst",
+    "body": "Enables flying a fw / vtol without an airspeed sensor.\nThe new mode parameter enables 3 different modes:\n\n1) Use values from airspeed sensor\n2) Approximate airspeed with ground velocity (good if wind-still, e.g indoors with VICON )\n3) Declare airspeed invalid, controllers will assume trim speed (e.g. TECS or fw attitude controller)\n",
+    "issue_comments": [
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-06-08T11:14:33Z",
+        "body": "Jenkins test this please!\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-06-08T12:51:35Z",
+        "body": "Very nice. To enable VTOL transitions without ASPS we need to change the transition logic to consider this param. A new (or existing param) should be used to add a time constant (front transition time).\nAt the moment we have a VT_F_TRANS_DUR (front transition duration) param which in effect is the ramp-up time for the pusher motor. To avoid confusion i propose to rename this to VT_F_TRANS_RAMP and use VT_F_TRANS_TIME as the new constant.\n\nAlternatively we could rely on VT_TRANS_MIN_TM but this will have defaulted to low values by now.\n@tumbili ?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-06-08T12:54:12Z",
+        "body": "SITL flies very well on mode 2 (disable airspeed) (transition still looks at airspeed) but the FW flights holds well even at very low airspeeds. TECS does respond too slow to compensate for stalls when the throttle trim is too low but it nicely balances banking etc.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "melisab",
+        "created_at": "2016-06-08T16:21:26Z",
+        "body": "So, in VTOL we need to use ground speed estimation to replace indicated_airspeed_m_s ? \n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-06-08T19:24:46Z",
+        "body": "@melisab You certainly don't need to do this and if you have an airspeed sensor available I certainly don't recommend you to do this.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-06-08T21:09:22Z",
+        "body": "@tumbili i added initial support for vtol transition based on minimum transition time. Works very nice in sitl. tested a few scenarios, no regression.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-06-08T21:41:50Z",
+        "body": "![image](https://cloud.githubusercontent.com/assets/14801663/15911879/ed479cba-2dd1-11e6-871d-36c8bf01022c.png)\n\nNotes on flying VTOL without airspeed sensor:\n- Make sure your FW_THR_CRUISE is set to a sensible level.\n- Set the airspeed sensor circuit braker\n- Set VT_TRANS_MIN_TM higher (this is the time it will take to transition)\n- Set VT_F_TRANS_DUR lower (this is the time the pusher takes to ramp up, 1 second should be good)\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "melisab",
+        "created_at": "2016-06-18T01:38:01Z",
+        "body": "The problem with relying on ground speed is that when there is tailwind then there won't be enough lift to transition from MC to FW.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-06-18T01:43:06Z",
+        "body": "@melisab relying on fixed throttle settings is not the same as relying on ground speed. this would however only work when the fixed throttle is significantly above stall speed.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-06-21T20:03:49Z",
+        "body": "@tumbili time based blending is in\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-06-22T09:16:09Z",
+        "body": "@sanderux This needs testing now. I'll do some basic tests in SITL.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-06-22T11:27:10Z",
+        "body": "@sanderux Tested all three modes in SITL, works as expected.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-06-22T11:46:16Z",
+        "body": "@tumbili considering all these changes only have impact on disabled airspeed sensor i see no possibility for regression. I think it's safe to merge this but i'll leave that up to you. I will test fly but that might be a while.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-06-22T13:43:55Z",
+        "body": "@tumbili The publish logic for EKF1 is missing, which is what planes are using still today.\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

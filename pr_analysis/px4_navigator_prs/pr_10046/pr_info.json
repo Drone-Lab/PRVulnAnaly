@@ -1,0 +1,24 @@
+{
+  "title": "Land: fix on_active() so mission finishes",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10046",
+  "number": 10046,
+  "created_at": "2018-07-26T00:29:25Z",
+  "merged": true,
+  "merged_at": "2018-07-26T05:45:01Z",
+  "state": "closed",
+  "conversation": {
+    "author": "dakejahl",
+    "body": "**Test data / coverage**\nVerified that the mission can actually finish using a print statement and running a test in gazebo.\n\n**Describe problem solved by the proposed pull request**\nNot a problem per se, but it is indeed a bug with `land` from the perspective of a mission. \n\n**Describe your preferred solution**\nUse the function available to us `_navigator->get_land_detected()` to verify that we have indeed landed. The previous implementation was looking for  `is_mission_item_reached()`, which was unreachable because during land the mission item altitude set point was being set to absolute zero.",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

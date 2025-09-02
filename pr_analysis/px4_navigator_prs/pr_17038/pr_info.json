@@ -1,0 +1,92 @@
+{
+  "title": "Migrate sensors and navigator to use YAML module configuration",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/17038",
+  "number": 17038,
+  "created_at": "2021-03-06T09:10:14Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "open",
+  "conversation": {
+    "author": "coderkalyan",
+    "body": "As discussed on slack, this PR moves the sensors and navigator modules to use the new YAML module configuration for parameter definitions rather than the legacy C API. I'm checking that CI likes this - if so, I can go ahead and convert the others as well in another PR.\r\n\r\nI also fixed a few bugs that I found along the way in the px4parameters build system python scripts.\r\n\r\nFYI @dagar",
+    "issue_comments": [
+      {
+        "author": "coderkalyan",
+        "created_at": "2021-03-06T09:21:20Z",
+        "body": "Looks like the module config regex is failing. I'll look into that tomorrow. Everything else seems to be fine.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "coderkalyan",
+        "created_at": "2021-03-10T17:24:38Z",
+        "body": "> Did you verify that the generated parameters.xml is the same (or rather contains all expected params)?\r\n\r\nNot yet, but will do.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "stale[bot]",
+        "created_at": "2021-06-26T03:10:28Z",
+        "body": "This issue has been automatically marked as stale because it has not had recent activity. Thank you for your contributions.\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "bkueng",
+        "created_at": "2021-03-09T08:01:40Z",
+        "body": "This could also just be removed",
+        "path": "src/lib/parameters/px4params/srcparser.py",
+        "position": 48,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2021-03-09T08:05:18Z",
+        "body": "```suggestion\r\n  - group: Mission\r\n```",
+        "path": "src/modules/navigator/module.yaml",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2021-03-09T08:06:05Z",
+        "body": "```suggestion\r\n  - group: Follow Target\r\n```",
+        "path": "src/modules/navigator/module.yaml",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2021-03-09T08:09:15Z",
+        "body": "multi?",
+        "path": "src/modules/sensors/module.yaml",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "bkueng",
+        "created_at": "2021-03-09T08:09:54Z",
+        "body": "for multi-instances, you need to add `num_instances: *max_num_sensor_instances`",
+        "path": "src/modules/sensors/module.yaml",
+        "position": 473,
+        "type": "review_comment"
+      },
+      {
+        "author": "coderkalyan",
+        "created_at": "2021-03-10T17:24:08Z",
+        "body": "Oh whoops completely forgot about using multi there :smile: I'll fix that",
+        "path": "src/modules/sensors/module.yaml",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "bkueng",
+        "created_at": "",
+        "body": "Thanks for going through this. I remarked a couple of things I spotted when looking over it.\r\nDid you verify that the generated parameters.xml is the same (or rather contains all expected params)?",
+        "state": "COMMENTED",
+        "type": "review"
+      }
+    ]
+  }
+}

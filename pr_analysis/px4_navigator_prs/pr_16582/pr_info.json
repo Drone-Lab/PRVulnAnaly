@@ -1,0 +1,56 @@
+{
+  "title": "RTL: VTOL: do the land delay loitering (RTL_LAND_DELAY) in fixed-wing flight",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/16582",
+  "number": 16582,
+  "created_at": "2021-01-18T17:24:19Z",
+  "merged": true,
+  "merged_at": "2021-01-29T12:46:34Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "\r\n**Describe problem solved by this pull request**\r\nhttps://github.com/PX4/PX4-Autopilot/issues/16500 --> for some VTOL applications it is desired if the land delay loitering is done while still in fixed-wing mode, instead of hover. I see these use-cases:\r\n- if there should be a delay before landing, such that pilot could interfere (better do that in FW, as much more energy efficient)\r\n- to estimate wind speed before triggering the backtransition, such that the distance to home can be optimized\r\n\r\n**Describe your solution**\r\nChange RTL state order \r\nold:   (CLIMB-->RETURN-->DESCEND-->TRANSITION-->MOVE_TO_LAND_HOVER-->LOITER-->LAND)\r\nnew: (CLIMB-->RETURN-->DESCEND-->LOITER-->TRANSITION-->MOVE_TO_LAND_HOVER-->LAND)\r\n\r\n**Describe possible alternatives**\r\nSome logic with NAV_FORCE_VT --> e.g. if NAV_FORCE_VT is set to false, then do not execute transition but directly go to loiter and then land in FW. Sounds dangerous to me, would have the advantage that if a user wants to have the loitering done in hover also for a VTOL, that could be set up.\r\n\r\n**Test data / coverage**\r\nSITL tested. \r\n\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "MartinStokelj",
+        "created_at": "2021-01-19T07:09:01Z",
+        "body": "@sfuhrer If I understand this right it says \"go to loiter and then land in FW\". \r\nWe don't want him to land and also not land him as FW, this would damage the drone.\r\nIf param RTL_LAND_DELAY is set to -1 he should loiter as FW above WP and not auto land or auto transition to MC...",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sfuhrer",
+        "created_at": "2021-01-19T08:32:52Z",
+        "body": "> it says \"go to loiter and then land in FW\". \r\n\r\nWhere does it say that? That's certainly not the idea, but that after the loiter in FW it transitions and lands in hover.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "MartinStokelj",
+        "created_at": "2021-01-19T10:45:13Z",
+        "body": "sorry I misunderstood, it looks ok now with\r\nRTL_LAND_DELAY -1\r\nNAV_FORCE_VT 0\r\nhttps://review.px4.io/plot_app?log=beb86924-b2a7-48f3-8e35-c1723e8b519d\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2021-01-25T05:39:57Z",
+        "body": "@sfuhrer SITL tests are failing. Need to have a closer look if related. Otherwise, I agree with these changes.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

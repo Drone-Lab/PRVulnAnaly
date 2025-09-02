@@ -1,0 +1,23 @@
+{
+  "title": "Auto take-off corner case: Reset work item type when landed",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/4420",
+  "number": 4420,
+  "created_at": "2016-05-03T12:10:25Z",
+  "merged": true,
+  "merged_at": "2016-05-03T12:13:17Z",
+  "state": "closed",
+  "conversation": {
+    "author": "mswingtra",
+    "body": "If the auto mission is paused/aborted during take-off and we land in manual mode, then work_item_type needs to be reset unless we re-power. Otherwise, it is set to WORK_ITEM_TYPE_TAKEOFF, and take-off waypoint is treated as normal position waypoint next time mission is launched. Thus, controller does not use take-off logic but position control logic. \n",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-05-03T12:13:30Z",
+        "body": "Thanks!\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

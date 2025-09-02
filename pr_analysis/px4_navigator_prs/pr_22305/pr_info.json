@@ -1,0 +1,65 @@
+{
+  "title": "VTOL takeoff: do not change loiter location after VTOL takeoff completed",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22305",
+  "number": 22305,
+  "created_at": "2023-11-03T11:08:52Z",
+  "merged": true,
+  "merged_at": "2023-11-13T11:43:58Z",
+  "state": "closed",
+  "conversation": {
+    "author": "KonradRudin",
+    "body": "<!--\r\n\r\nThank you for your contribution!\r\n\r\nGet early feedback through\r\n- Dronecode Discord: https://discord.gg/dronecode\r\n- PX4 Discuss: http://discuss.px4.io/\r\n- opening a draft pr and sharing the link\r\n\r\n-->\r\n\r\n### Solved Problem\r\nWhen using a VTOL takeoff, a loiter location can be set. when the system reaches the takeoff altitude, it starts loitering at the current position instead of continuing at the loiter location defined in the VTOL takeoff. \r\n\r\n### Solution\r\n- Check in the loiter activation is the current position setpoint is a valid loiter point. If this is true and no reposition is active, set the loiter position to the loiter position item.\r\n- Refactor ...\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nBugfix VTOL takeoff: do not change loiter location after VTOL takeoff completed.\r\n```\r\n### Test coverage\r\n- Simulation tests: using gazebo-classic_standard_vtol.\r\n  - Check correct loiter location for vtol takeoff.\r\n  - Check correct functionality for hold when currently flying to an orbit/mission orbit\r\n",
+    "issue_comments": [],
+    "review_comments": [
+      {
+        "author": "RomanBapst",
+        "created_at": "2023-11-03T12:52:09Z",
+        "body": "@KonradRudin Just an idea, should we add a protection for loiter points which are too far away from the vehicle?",
+        "path": "src/modules/navigator/loiter.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-11-03T12:54:38Z",
+        "body": "hmm, i thought of making a check to only take it if we are on the loiter. So distance from vehicle to center point should be less than loiter_radius + acceptance_radius. That should do the trick, right?",
+        "path": "src/modules/navigator/loiter.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2023-11-03T12:56:51Z",
+        "body": "@KonradRudin Yes, that's exactly what I meant",
+        "path": "src/modules/navigator/loiter.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "KonradRudin",
+        "created_at": "2023-11-03T14:05:09Z",
+        "body": "I have a new proposal just commited. @RomanBapst can you review again please?",
+        "path": "src/modules/navigator/loiter.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "tstastny",
+        "created_at": "2023-11-12T14:28:53Z",
+        "body": "@RomanBapst ping",
+        "path": "src/modules/navigator/loiter.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

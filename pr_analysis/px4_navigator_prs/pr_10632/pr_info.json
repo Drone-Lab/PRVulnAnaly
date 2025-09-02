@@ -1,0 +1,70 @@
+{
+  "title": "Triplets  acceptance radius",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10632",
+  "number": 10632,
+  "created_at": "2018-10-03T14:09:28Z",
+  "merged": true,
+  "merged_at": "2018-10-09T16:01:46Z",
+  "state": "closed",
+  "conversation": {
+    "author": "mrivi",
+    "body": "**Describe problem solved by the proposed pull request**\nThe `acceptance_radius` field of a triplet is set only when explicitly setting param2 in the mission item (see https://github.com/PX4/Firmware/pull/10413#discussion_r218913242). When using the default `NAV_ACC_RAD`, the field in the triplet is always `0.0`.\nThis PR sets the triplet  `acceptance_radius` to the default `NAV_ACC_RAD` unless the mission item has a param2 different from zero. The triplet field is checked in the Auto FlightTasks instead of the parameter. \n\n**Test data / coverage**\nOnly tested on SITL.",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2018-10-03T14:46:27Z",
+        "body": "It's not clear to me how acceptance radius not set is supposed to be expressed. This is the type of thing that's unclear in the mavlink spec. At the moment I'm guessing 0 or NAN could both be used.\r\n\r\n![image](https://user-images.githubusercontent.com/84712/46418202-4b764a80-c6f9-11e8-9841-e26b0f2e9b52.png)\r\n\r\nhttps://mavlink.io/en/messages/common.html#MAV_CMD\r\n\r\n@DonLakeFlyer could you provide any insight here?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "DonLakeFlyer",
+        "created_at": "2018-10-03T16:04:45Z",
+        "body": "QGC sets to 0 to mean not set.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mrivi",
+        "created_at": "2018-10-03T16:04:55Z",
+        "body": "@dagar Right now, param2 is zero when not set",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2018-10-08T09:16:30Z",
+        "body": "careful: VTOL_LAND sets a dynamic acceptance radius on the setpoint.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "mrivi",
+        "created_at": "2018-10-08T09:35:19Z",
+        "body": "@sanderux could you please point me to where the acceptance radius is dynamically changed?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-10-09T16:01:41Z",
+        "body": "@sanderux we need to fix and review that for VTOL regardless.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2018-10-03T19:57:17Z",
+        "body": "To be paranoid (until it's documented) could you check ISFINITE as well? Setting the default in else would also be slightly better (only touching sp->acceptance_radius once).",
+        "path": "src/modules/navigator/mission_block.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

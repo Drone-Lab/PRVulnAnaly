@@ -1,0 +1,43 @@
+{
+  "title": "multiple: Fix abs(int) usage on float values",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21963",
+  "number": 21963,
+  "created_at": "2023-08-14T13:30:30Z",
+  "merged": true,
+  "merged_at": "2023-08-15T08:18:32Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sverrevr",
+    "body": "### Solved Problem\r\nResolves https://github.com/PX4/PX4-Autopilot/issues/21924\r\n\r\n### Solution\r\nSolves incorrect usage of abs. See https://github.com/PX4/PX4-Autopilot/issues/21924 for details\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nFeature/Bugfix XYZ\r\nNew parameter: XYZ_Z\r\nDocumentation: Solves incorrect usage of abs\r\n```\r\n\r\n### Alternatives\r\nN/A\r\n\r\n### Test coverage\r\n- Unit/integration test: All tests still pass\r\n- Simulation/hardware testing logs: None\r\n\r\n### Context\r\nI realized that using abs() on float values casts them to int, which caused problems in some code I was working on. While searching through the code I realized that there were 3 places abs is currently being used on float values which can cause problems/inaccuracies.  I don't have a setup to test these changes, so I have not tested it beyond verifying that no tests fail.\r\n",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2023-08-14T13:48:16Z",
+        "body": "Thanks @sverrevr, I suspect some of the confusion comes from std::abs (and using namespace std). ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2023-08-14T14:24:54Z",
+        "body": "We could consider ratcheting up the conversion warnings (+ -Werror), but last time I checked there's a huge number of harmless cases we'd have to adjust first.\r\n\r\n-Wconversion, -Wfloat-conversion, -Wsign-conversion, etc",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sverrevr",
+        "created_at": "2023-08-15T10:29:01Z",
+        "body": "> We could consider ratcheting up the conversion warnings (+ -Werror), but last time I checked there's a huge number of harmless cases we'd have to adjust first.\r\n> \r\n> -Wconversion, -Wfloat-conversion, -Wsign-conversion, etc\r\n\r\nI think that would be ideal, but I see that it can be a large job to fix all the harmless cases ",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "dagar",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

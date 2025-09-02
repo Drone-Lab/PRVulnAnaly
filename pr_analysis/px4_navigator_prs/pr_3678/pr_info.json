@@ -1,0 +1,137 @@
+{
+  "title": "WIP: Vtol TECS fix",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/3678",
+  "number": 3678,
+  "created_at": "2016-02-05T18:29:34Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "AndreasAntener",
+    "body": "@tumbili new tecs fix branch off master\n",
+    "issue_comments": [
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-11T12:26:41Z",
+        "body": "With this branch, the desired airspeed is nicely ramped up after the transition. I did 2 flights in altitude control (which is btw awesome to fly the standard VTOL in):\n\n![tecs init flight 1](https://cloud.githubusercontent.com/assets/5750020/12976174/774bc7dc-d0c2-11e5-960b-883c1389e2d1.png)\nhttp://logs.uaventure.com/view/ArZvMEN93W9uMHHU4igTed\n\n![tecs init flight 2](https://cloud.githubusercontent.com/assets/5750020/12976178/79492282-d0c2-11e5-8479-0058136969e1.png)\nhttp://logs.uaventure.com/view/zrRkhmi35oGRRZiq9fTcPm\n\nIn flight 1 you still see that TECS has a huge pitch integrator to start with. There must be something wrong there when TECS starts. In the following transitions and in flight 2 you never see any integrator when it starts, so I'm assuming it's correctly reset.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-12T08:17:45Z",
+        "body": "Another log from yesterday afternoon where the init was ok: http://logs.uaventure.com/view/Gi8kX8ho4oaye8gcjjS5sd\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-12T08:21:19Z",
+        "body": "Are you saying we should merge?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-12T08:28:06Z",
+        "body": "No :) This should be flight tested a bit more, also I need to fix AUX logging so I see FW thrust during the transition which is also one of the reasons for this fix.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-12T08:28:44Z",
+        "body": "Aux logging is fixed on master (as far as implemented).\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-12T15:01:10Z",
+        "body": "Two more flights:\nmission http://logs.uaventure.com/view/gVUinykcLifN6tCpvTTrW6\naltctl http://logs.uaventure.com/view/943VqsD7bbhZq5hX9vzCUf\nnot analyzed yet\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-12T17:12:36Z",
+        "body": "Looked good in both flights:\n![screen shot 2016-02-12 at 18 04 01](https://cloud.githubusercontent.com/assets/5750020/13014311/731ff268-d1b3-11e5-8b07-9094368b3d05.png)\n\nVTOL att contorller is holding thrust until tecs/fw pos is publishing, TECS is reinitialized and airspeed setpoint ramps up. The only thing I don't like now is the thrust dip after the transition, could also still be smoothed out.\n\n@tumbili I implemented the thrust holding for standard vtol, how does it look for tailsitter and tiltrotor?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-12T22:25:13Z",
+        "body": "TODOs\n- implement wait_on_fw for tailsitter and tiltrotor\n- copy MC state until finished waiting so the attitude setpoint doesn't jump to an undefined value\n\nFlight test\n- try setting a higher transition speed, e.g. min speed + 1\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-15T00:22:43Z",
+        "body": "@tumbili I made the FW position controller aware of when TECS is running and using a 0 pitch and thrust setpoint if not. The irregularity we had before was due to stale TECS data published before it started to run (and reset) again.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-02-15T07:45:30Z",
+        "body": "@AndreasAntener I had a look and it looks good to me. Looking forward to some flight results.\nEspecially, for the planes of Marco and Sanders I hope to see some difference. They were always diving quite a bit.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-15T13:18:14Z",
+        "body": "I think i can fly this tomorrow\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-16T15:16:36Z",
+        "body": "2 logs of successful missions and one with induced rc loss failsafe RTL;\nRTL mission 1: http://logs.uaventure.com/view/3msrKYiSjKrDvKKckveA4e\nFull mission 2: http://logs.uaventure.com/view/7y4hdAoz4Bsog8K24qE67c\nFull mission 3: http://logs.uaventure.com/view/x7RvfZX3MVfCrnVgocbUoG\nMission 3 video: https://drive.google.com/file/d/0B27AvDmVit4KQzNNZGRxZ0RaU2M/view?usp=sharing\n\nFor reference here a manual hover log with one yaw turn:\nhttp://logs.uaventure.com/view/YXLzTNbzjasnmqnaQfjMBY \n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-16T15:39:20Z",
+        "body": "Wobbly back transition, see missions 2 and 3. and video at 4:27\nThe wobble wasnt there in the transition that happened when switching to manual mode in mission 1\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-16T15:51:00Z",
+        "body": "Mission flight on master (without this branch): http://logs.uaventure.com/view/57bJPThtDayp6ZXCQ2guTQ\nmission: http://logs.uaventure.com/view/GanJap84VKsX4scBe7Zk5C\naltctl: http://logs.uaventure.com/view/vY8d5Hdufkwip8gCobdqEL\nabort after transition because it got blown away by wind: http://logs.uaventure.com/view/zQ5WKTyQcqPMJdhLHBD6Zg\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-16T20:01:41Z",
+        "body": "After changing some parameters MUCH better performance:\nnew mission 1: http://logs.uaventure.com/view/zCiXVJtTPNoPNZ7e2cn4h\nnew mission 2: http://logs.uaventure.com/view/SGutTXNPo92waZE5UBkGSK\n\nAnd a video of mission 1: https://drive.google.com/file/d/0B27AvDmVit4KT1BpNTRnNzVrZEE/view?usp=sharing\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-16T21:03:36Z",
+        "body": "The 2 missions with new params were identical.\nI do see strange altitude behavior when comparing both:\n\nThe whole mission was set on 25m altitude waypoints\n(Alt \\* 100)\n\nMission 1:\n![alt 1](https://cloud.githubusercontent.com/assets/14801663/13090946/1157dbba-d4f9-11e5-8dcc-23900b049b1b.png)\n\nMission 2:\n![alt 2](https://cloud.githubusercontent.com/assets/14801663/13090951/16fe7146-d4f9-11e5-864d-8eaacc407911.png)\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-17T15:39:32Z",
+        "body": "New test flights, in 0 wind, higher transition speed, and 0 speed weight:\nhttp://logs.uaventure.com/view/2AZKfJ5DHxbAmbbmsg4dr8\nhttp://logs.uaventure.com/view/qjFVbGSC4ACEzeCN3UcMRB\nvery nice\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-02-18T10:35:29Z",
+        "body": "@AndreasAntener This is tested with tailsitter in SITL.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-18T17:54:24Z",
+        "body": "@AndreasAntener Can we merge this?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-18T17:56:58Z",
+        "body": "Awesome work! Rebased and applied (and I checked that I had Roman's rebased branch and the diff is clean).\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}

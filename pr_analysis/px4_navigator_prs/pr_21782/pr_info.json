@@ -1,0 +1,31 @@
+{
+  "title": "Navigator RTL: run find_RTL_destination() only on_inactive",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/21782",
+  "number": 21782,
+  "created_at": "2023-06-30T10:13:08Z",
+  "merged": true,
+  "merged_at": "2023-07-04T07:36:22Z",
+  "state": "closed",
+  "conversation": {
+    "author": "sfuhrer",
+    "body": "\r\n### Solved Problem\r\nRTL::find_RTL_destination() is called also when the RTL has already started, and can override the set _destination etc. I don't think that's desired.\r\n\r\nThis was introduced through a refactor commit: https://github.com/PX4/PX4-Autopilot/pull/21208/commits/2bff49475b504b29eba8fb5cf1cb65400ea80482\r\n\r\n### Solution\r\nRemove it again.\r\n\r\n### Changelog Entry\r\nFor release notes:\r\n```\r\nBugfix: RTL: do not edit RTL destination once RTL is started\r\n```\r\n\r\n\r\n### Test coverage\r\n- Unit/integration test: ...\r\n- Simulation/hardware testing logs: https://review.px4.io/\r\n\r\n",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "RomanBapst",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "",
+        "body": "I assume this is only there such that active and inactive are the same.\r\nThe `_destination_check_time` gets reset now even if the digestion does not change. That's not a problem in my eyes. When you switch out of RTL and in again within less than a second then the old destination stays. Maybe that's even a feature. It could be named `_slow_rate_timestamp` or so.",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

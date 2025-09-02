@@ -1,0 +1,24 @@
+{
+  "title": "increase vehicle command queue depth and updates modules to consume all available queued commands",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/16635",
+  "number": 16635,
+  "created_at": "2021-01-24T18:44:53Z",
+  "merged": true,
+  "merged_at": "2021-01-26T17:00:19Z",
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "This is to prevent the possible loss of vehicle_commands. At the moment it's likely only problematic in the case of high rate vehicle_commands from things like vmount, but better safe than sorry.\r\n\r\n - fixes https://github.com/PX4/PX4-Autopilot/issues/16630",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "bkueng",
+        "created_at": "",
+        "body": "",
+        "state": "DISMISSED",
+        "type": "review"
+      }
+    ]
+  }
+}

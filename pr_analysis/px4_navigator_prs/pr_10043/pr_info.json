@@ -1,0 +1,31 @@
+{
+  "title": "Takeoff: Arm occasionally triggers `maybe_landed`",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10043",
+  "number": 10043,
+  "created_at": "2018-07-25T20:02:09Z",
+  "merged": true,
+  "merged_at": "2018-07-26T05:49:15Z",
+  "state": "closed",
+  "conversation": {
+    "author": "dakejahl",
+    "body": "**Test data / coverage**\nhttps://review.px4.io/plot_app?log=42ef1074-1762-4a6d-9861-bb0ec3a9ec38\n![takeoff](https://user-images.githubusercontent.com/37091262/43223873-b4b6c390-9011-11e8-9402-eb6985511e7b.png)\n\n\n**Describe problem solved by the proposed pull request**\nVery rarely (1 out of 20) an `arm` command will kick the **`land_detector`** into the  _`maybe_landed`_ state due to the torque from the props. This will cause the vehicle to fail to takeoff. I added the log statement (RESETTING TAKEOFF TO POSITION) at line 524 in `mission_block.cpp` which confirms that land detector thinks we are no longer `landed`.\n\n**Describe your preferred solution**\nCheck that  the vehicle is not  _`maybe_landed`_ as well as not _`landed`_ upon takeoff.",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-07-26T05:49:10Z",
+        "body": "Thanks! I believe I have experienced these as well with vehicles with longer legs.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

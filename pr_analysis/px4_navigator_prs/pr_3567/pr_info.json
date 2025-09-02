@@ -1,0 +1,144 @@
+{
+  "title": "Do change speed support",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/3567",
+  "number": 3567,
+  "created_at": "2016-01-22T12:31:43Z",
+  "merged": true,
+  "merged_at": "2016-03-13T17:12:39Z",
+  "state": "closed",
+  "conversation": {
+    "author": "LorenzMeier",
+    "body": "",
+    "issue_comments": [
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-01-22T12:32:28Z",
+        "body": "@MikaelFerland  @tubeme This is now implemented, but UNTESTED. Simulation testing would be appreciated. I will get to test it later this weekend.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-07T17:13:43Z",
+        "body": "Support is in for QGC. Just needs to be validated here.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-11T10:50:39Z",
+        "body": "Doesn't seem to work yet. Not sure why.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "MikaelFerland",
+        "created_at": "2016-02-11T12:51:13Z",
+        "body": "Does it take the speed from an average of GPS data or it uses the ground\nspeed sensor as reference? I have tested over HITL with jMAVSim, but I was\nunsuccesful for me also.\n\nDoesn't seem to work yet. Not sure why.\n\n—\nReply to this email directly or view it on GitHub\nhttps://github.com/PX4/Firmware/pull/3567#issuecomment-182807771.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "tubeme",
+        "created_at": "2016-02-16T13:44:10Z",
+        "body": "Does not work in mission. Could not load the mission QGC gave error. I'm using the Latest master with the Intel angle patch from couple of days. PX4 master is 5 days old. \n\n![setspeed](https://cloud.githubusercontent.com/assets/12617619/13077856/145353c4-d4c4-11e5-897b-019862457e6f.png)\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-17T15:52:32Z",
+        "body": "@tubeme I've tested it after a few additional fixes successfully in SITL. @dagar Could you test with Gazebo / VTOL sim in fixed wing mode? Then it would be ready for flight tests.\n\n<img width=\"1392\" alt=\"screen shot 2016-02-17 at 16 49 19\" src=\"https://cloud.githubusercontent.com/assets/1208119/13115122/d2b8e4f0-d596-11e5-93b9-ed8fee75b986.png\">\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "MikaelFerland",
+        "created_at": "2016-02-17T18:06:30Z",
+        "body": "@LorenzMeier Did you see my comments? Addionally, do I will be able to test it with jMAVSim or you guys usually tested it with Gazebo? Because it will fix my setup to get better results. Thank you for your time.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-17T18:09:23Z",
+        "body": "@MikaelFerland You would need to re-test with the current state I pushed. Its ground speed based for multicopters, currently airspeed based for planes. We'll clean this up for planes later.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "MikaelFerland",
+        "created_at": "2016-02-17T18:14:05Z",
+        "body": "Perfect, to simulate it jMAVSim or Gazebo is prefered?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-17T18:21:24Z",
+        "body": "Both works.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-02-18T05:36:10Z",
+        "body": "It seems my old thinkpad is nowhere near fast enough to run the gazebo simulation, so you may have finally given me a reason to upgrade. I'll try it again on a faster machine tomorrow.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-02-18T17:58:25Z",
+        "body": "Rebased on master. Needs flight testing. Tested successfully in SITL in multicopter mode.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "tubeme",
+        "created_at": "2016-02-18T21:59:13Z",
+        "body": "Do I need the latest master of QGC for this mission or can go with the current version I use from the screenshot?\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-02-19T01:11:21Z",
+        "body": "![screenshot from 2016-02-18 20 09 31](https://cloud.githubusercontent.com/assets/84712/13163508/b579da6c-d67b-11e5-9093-381c8c94dcf2.png)\n\nI'm getting airspeed errors in the gazebo simulation now.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2016-02-19T01:34:06Z",
+        "body": "Rebased on master to get airspeed fix.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-13T17:12:54Z",
+        "body": "Merged to master.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "MikaelFerland",
+        "created_at": "2016-03-15T02:29:59Z",
+        "body": "@LorenzMeier Thank you, we tested it last weekend, and it works very well. We land unsuccessfully, but I think we broke the power plug before the mission start. We will test it again this sunday of the weather permit us.\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-03-07T20:00:19Z",
+        "body": "Really? ;) I'd say 10 would be the max acceptable default.\n",
+        "path": "src/modules/mc_pos_control/mc_pos_control_params.c",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-03-07T20:00:38Z",
+        "body": "I guess that should be MPC_XY_CRUISE\n",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2016-03-07T21:59:06Z",
+        "body": "Yes indeed.\n",
+        "path": "src/modules/navigator/navigator_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": []
+  }
+}

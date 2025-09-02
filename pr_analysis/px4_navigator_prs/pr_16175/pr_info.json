@@ -1,0 +1,16 @@
+{
+  "title": "v1.11.2 cherry-picked bug fixes",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/16175",
+  "number": 16175,
+  "created_at": "2020-11-12T16:50:17Z",
+  "merged": true,
+  "merged_at": "2020-11-12T17:57:28Z",
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": []
+  }
+}

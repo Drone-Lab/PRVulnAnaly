@@ -1,0 +1,16 @@
+{
+  "title": "navigator: Get rid of audio tag in strings and use appropriate priority ...",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/2023",
+  "number": 2023,
+  "created_at": "2015-04-14T11:25:41Z",
+  "merged": true,
+  "merged_at": "2015-04-14T13:44:45Z",
+  "state": "closed",
+  "conversation": {
+    "author": "LorenzMeier",
+    "body": "...to get audio out when needed in the GCS.\n\n@tumbili Please review and let me know what you think.\n",
+    "issue_comments": [],
+    "review_comments": [],
+    "reviews": []
+  }
+}

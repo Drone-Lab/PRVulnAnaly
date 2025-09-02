@@ -1,0 +1,130 @@
+{
+  "title": "Vtol weathervane cleaned up history",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/3736",
+  "number": 3736,
+  "created_at": "2016-02-12T11:42:50Z",
+  "merged": true,
+  "merged_at": "2016-02-15T08:50:32Z",
+  "state": "closed",
+  "conversation": {
+    "author": "RomanBapst",
+    "body": "Fixes https://github.com/PX4/Firmware/issues/3679\n@sanderux As discussed I cleaned up the history so that we only remain with three commits.\nThe diff to the old branch is zero so everything should be inside. Will give this a test in SITL and Ada can maybe test fly it today.\n@AndreasAntener  FYI\n",
+    "issue_comments": [
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-02-12T11:45:12Z",
+        "body": "Please delete the old branch (referenced above ) if there aren't any objections.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-12T11:49:51Z",
+        "body": "Done, looks good\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-02-12T14:54:08Z",
+        "body": "@sanderux @AndreasAntener This is flight tested in SITL for both landing and loiter modes. Checked the log files, it seems to do the right thing.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-12T14:56:15Z",
+        "body": "Rain just stopped me right after flashing this branch... I hope the weather is good for you Sander tomorrow :)\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-12T14:58:01Z",
+        "body": "There is some wind but that would be the point for this pr. Should stay dry\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-02-12T15:06:42Z",
+        "body": "@sanderux @AndreasAntener Parameters to activate this are\nVT_WV_LND_EN enable mode for landing waypoint\nVT_WV_LTR_EN enable mode for loiter items\nVT_WV_YAWR_SCL scale factor for desired yaw_rate setpoint\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-12T15:10:21Z",
+        "body": "VT_WV_LTR_EN doesn't seem to be used anywhere\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-02-12T15:17:06Z",
+        "body": "@AndreasAntener https://github.com/PX4/Firmware/blob/vtol_weather_vane/src/modules/navigator/mission_block.cpp#L75\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-12T15:18:09Z",
+        "body": "In mission block\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-12T15:25:00Z",
+        "body": "Funny, QGC didn't show me this on the field, anyway, it's there :) \n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-02-12T15:35:46Z",
+        "body": "@AndreasAntener I pushed a late fix, probably you didn't have that one.\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-14T13:30:38Z",
+        "body": "Log from weathervane loiter test: http://logs.uaventure.com/view/t7a2AZB3WHgRZsDjGCEJpi\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-14T14:12:52Z",
+        "body": "This looks good. Let's address my 2 comments. We should check it on landing as well even though I don't think it's problematic.\n<img width=\"1366\" alt=\"screen shot 2016-02-14 at 15 07 12\" src=\"https://cloud.githubusercontent.com/assets/5750020/13034114/d95b8a0e-d32c-11e5-817b-5842bf44f54d.png\">\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-14T14:37:08Z",
+        "body": "Addressed comment 1\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "sanderux",
+        "created_at": "2016-02-14T22:53:17Z",
+        "body": "This should address the feed forward\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "RomanBapst",
+        "created_at": "2016-02-15T08:50:41Z",
+        "body": "Merged!\n",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-13T10:11:32Z",
+        "body": "we should change `_mode_auto` to `!_control_mode.flag_control_manual_enabled` so this also works in offboard and it's consistent with the other checks\n",
+        "path": "src/modules/mc_pos_control/mc_pos_control_main.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "AndreasAntener",
+        "created_at": "2016-02-14T13:53:11Z",
+        "body": "@tumbili should we also remove the feed forward when we clamp the rate?\n",
+        "path": "src/modules/mc_att_control/mc_att_control_main.cpp",
+        "position": 72,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": []
+  }
+}

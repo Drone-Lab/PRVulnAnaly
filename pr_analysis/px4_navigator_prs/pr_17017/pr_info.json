@@ -1,0 +1,33 @@
+{
+  "title": "Try to cleanup some things in mission navigation mode",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/17017",
+  "number": 17017,
+  "created_at": "2021-03-03T17:20:43Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "RomanBapst",
+    "body": "I've did initial testing of this but am not quite done.\r\nStill ready for an initial review.\r\n\r\n@dagar @MaEtUgR ",
+    "issue_comments": [],
+    "review_comments": [
+      {
+        "author": "RomanBapst",
+        "created_at": "2021-03-03T17:22:03Z",
+        "body": "@dagar @MaEtUgR hope I'm not missing anything, but to me this makes no sense. Mission itself just reads from dataman, right?",
+        "path": "src/modules/commander/Commander.cpp",
+        "position": 5,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2021-03-06T01:17:40Z",
+        "body": "It makes sense for air in restore to not have to depend on mavlink, but I think at this point we should get rid of it.",
+        "path": "src/modules/commander/Commander.cpp",
+        "position": 5,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": []
+  }
+}

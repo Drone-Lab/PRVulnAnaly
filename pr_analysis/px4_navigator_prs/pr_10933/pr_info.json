@@ -1,0 +1,172 @@
+{
+  "title": "WIP: HEARTBEAT and commander failsafe handling cleanup",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10933",
+  "number": 10933,
+  "created_at": "2018-11-28T14:51:09Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "dagar",
+    "body": "For discussion of expanded failsafe handling WRT mavlink HEARTBEAT (https://github.com/PX4/Firmware/pull/10841).\n\n - mavlink update telemetry_status with all HEARTBEAT timestamps\n - let commander decide which HEARTBEATs to use\n - optimizations to avoid unnecessary state and subscribing to all telemetry_status and iridiumsbd instances (saves ~1.5kB of RAM)\n - simplifies convoluted commander data link handling\n\n Related\n - https://github.com/PX4/Firmware/pull/10841\n - https://github.com/PX4/Firmware/pull/10194\n - https://github.com/PX4/Firmware/pull/9473\n - https://github.com/PX4/Firmware/pull/7985",
+    "issue_comments": [
+      {
+        "author": "TSC21",
+        "created_at": "2018-11-29T13:02:22Z",
+        "body": "@baumanta your commit looks really good. But it's failing for a specific target: http://ci.px4.io:8080/blue/organizations/jenkins/PX4_misc%2FFirmware-compile/detail/pr-heartbeat_failsafes/5/pipeline#step-533-log-407",
+        "type": "issue_comment"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "2018-12-04T10:52:02Z",
+        "body": "@dagar I quickly checked, so far no conflict with #10907 😅 ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "baumanta",
+        "created_at": "2018-12-05T12:51:45Z",
+        "body": "@dagar are there any updates on this?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-12-17T05:30:13Z",
+        "body": "TODO: double check the iridium behavior  ",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2019-02-13T14:40:10Z",
+        "body": "I'll try to resurrect this and get it in incrementally. \r\nPart 1 - https://github.com/PX4/Firmware/pull/11454",
+        "type": "issue_comment"
+      },
+      {
+        "author": "jkflying",
+        "created_at": "2019-06-04T11:50:07Z",
+        "body": "I guess this is all in now and can be closed?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2019-06-04T14:16:18Z",
+        "body": "Yes, thanks everyone!",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "TSC21",
+        "created_at": "2018-11-28T15:06:24Z",
+        "body": "If this came to the commander param list, why not change the suffix to `COM`?",
+        "path": "src/modules/commander/Commander.hpp",
+        "position": 5,
+        "type": "review_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-11-28T15:06:33Z",
+        "body": "Same thing here",
+        "path": "src/modules/commander/Commander.hpp",
+        "position": 12,
+        "type": "review_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-11-28T15:08:57Z",
+        "body": "so for an `_obc_datalink_loss`, we need to add new params right?",
+        "path": "src/modules/commander/Commander.hpp",
+        "position": 9,
+        "type": "review_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-11-28T15:12:14Z",
+        "body": "@baumanta ",
+        "path": "src/modules/commander/Commander.cpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-11-28T15:12:25Z",
+        "body": "They've already effectively been commander params for several releases. The only reason I didn't do the rename is that users will lose existing settings. This is the type of thing we can do for a release with proper migration documentation.",
+        "path": "src/modules/commander/Commander.hpp",
+        "position": 5,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-11-28T15:12:31Z",
+        "body": "See previous comment.",
+        "path": "src/modules/commander/Commander.hpp",
+        "position": 12,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-11-28T15:16:40Z",
+        "body": "One more time for clarity, how would you like it to work?",
+        "path": "src/modules/commander/Commander.hpp",
+        "position": 9,
+        "type": "review_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-11-28T15:20:54Z",
+        "body": "For example: I have a GCS link and a OBC link. I want the OBC link, if failing, to trigger a failsafe, but if the GCS link fails, I just want it to send a mavlink_log warning me, but not triggering a failsafe. Or, I may want them to both trigger a failsafe, or want that none trigger a failsafe but at least warn me this also applies to the high latency case.\r\n\r\nImagine we have 3 links. I would like to state which ones do trigger failsafes in the case of failure, but want to all of them to tell at least warn me in the case of a failsafe.",
+        "path": "src/modules/commander/Commander.hpp",
+        "position": 9,
+        "type": "review_comment"
+      },
+      {
+        "author": "TSC21",
+        "created_at": "2018-11-28T15:30:01Z",
+        "body": "It can make sense to be more atomic and say: OBC triggers a RTL failsafe, while GCS triggers a land failsafe",
+        "path": "src/modules/commander/Commander.hpp",
+        "position": 9,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-11-28T15:39:08Z",
+        "body": "TODO: we need to be careful for the scenario where a single mavlink connection will have multiple HEARTBEATs (eg companion also routing to GCS). I'll make sure that each received HEARTBEAT results in a telemetry_status publication.",
+        "path": "src/modules/commander/Commander.hpp",
+        "position": 9,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-11-30T15:51:57Z",
+        "body": "I'm wondering if we can drop the sysid check entirely now.",
+        "path": "src/modules/mavlink/mavlink_receiver.cpp",
+        "position": 13,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-12-17T05:27:29Z",
+        "body": "We need to preserve the ability to build px4 without the multicopter controllers. \r\n\r\nOne option is to use the older c param api for MPC_OBS_AVOID, but now that I'm looking at this again I'm wondering if it's needed at all. You could either have an independent set of commander parameters analogous to datalink loss, but specifically for avoidance loss (COM_OBS_LOSS_T), or perhaps have the position controller put something in `position_controller_status` (https://github.com/PX4/Firmware/blob/master/msg/position_controller_status.msg) indicating that an avoidance system is required.",
+        "path": "src/modules/commander/Commander.hpp",
+        "position": 1,
+        "type": "review_comment"
+      },
+      {
+        "author": "dagar",
+        "created_at": "2018-12-17T05:32:53Z",
+        "body": "```suggestion\r\n\r\n```",
+        "path": "src/modules/mavlink/mavlink_receiver.cpp",
+        "position": 13,
+        "type": "review_comment"
+      },
+      {
+        "author": "baumanta",
+        "created_at": "2018-12-19T12:29:54Z",
+        "body": "@dagar I just switched the definition of the parameter from position controller to commander. Now the parameter is called COM_OBS_AVOID. As commander is build anyway for all the boards this should solve our problem. Anyway I think this is the better location for this parameter as the decision on whether to use obstacle avoidance is rather a commander matter then a position controller choice. What do you think, would that be ok for you?",
+        "path": "src/modules/commander/Commander.hpp",
+        "position": 1,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": []
+  }
+}

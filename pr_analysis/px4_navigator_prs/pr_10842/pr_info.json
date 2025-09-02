@@ -1,0 +1,109 @@
+{
+  "title": "Landing gear improvement",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/10842",
+  "number": 10842,
+  "created_at": "2018-11-14T11:09:17Z",
+  "merged": true,
+  "merged_at": "2018-12-10T15:17:24Z",
+  "state": "closed",
+  "conversation": {
+    "author": "MaEtUgR",
+    "body": "**Test data / coverage**\nSITL/HITL and field tested ~20 flights in H520 Firmware before cherry-picking.\n\n**Describe problem solved by the proposed pull request**\nControlling the landing gear is tied to the attitude setpoint message which is just misusing an existing message that lead to a lot of problems when implementing landing gear behaviour according to product requirements.\n\n**Describe your preferred solution**\nWe took the time to solve these problems and make it more flexible and want to contribute this architecture.\n\n**Additional context**\nThere were conflicts with #10805. (FYI @bkueng)\n\n---\n\n**State:** I'm still porting commits.",
+    "issue_comments": [
+      {
+        "author": "dagar",
+        "created_at": "2018-11-14T17:10:53Z",
+        "body": "What do you think about getting landing gear out of control group 0?\r\n\r\n![image](https://user-images.githubusercontent.com/84712/48499335-33204200-e806-11e8-84a4-18b9ac9f231e.png)\r\n\r\nLater that could facilitate handling landing gear entirely outside of the position and attitude controllers.\r\n",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-11-14T22:41:51Z",
+        "body": "I recall having discussed that and I think that is necessary.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "2018-11-15T10:25:05Z",
+        "body": "Sure, this is just a **first step** of detaching the landing gear out of the attitude setpoint because it really has nothing to do with the attitude and its controller. These changes were necessary to **solve our nasty dependency issues** because of product customization that lead to a severe maintenance effort to keep **up to date with PX4** and that's why we wanted to contribute. Any further work in this direction is appreciated. The only obstacle I see with removing it from the control group is messing with the IO which usually takes more time but that should not hinder us after all.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "2018-12-06T14:26:21Z",
+        "body": "I rebased because there were conflicts in the position controller because of my own pr https://github.com/PX4/Firmware/pull/10831",
+        "type": "issue_comment"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "2018-12-10T14:02:07Z",
+        "body": "Rebased without conflicts, any reason this is waiting?",
+        "type": "issue_comment"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "2018-12-10T14:17:17Z",
+        "body": "No, good to go.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [
+      {
+        "author": "Stifael",
+        "created_at": "2018-12-04T14:41:32Z",
+        "body": "`_gear_switch_old = landing_gear_s::GEAR_KEEP `?",
+        "path": "src/lib/FlightTasks/tasks/Manual/FlightTaskManual.hpp",
+        "position": 4,
+        "type": "review_comment"
+      },
+      {
+        "author": "Stifael",
+        "created_at": "2018-12-04T14:44:03Z",
+        "body": "Am I correct with the assumption that the publication of landing-gear is only required for logging?",
+        "path": "src/modules/mc_att_control/mc_att_control.hpp",
+        "position": 28,
+        "type": "review_comment"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "2018-12-06T13:18:51Z",
+        "body": "No, to detect the transition of the RC **switch** controlling the landing gear (if there is any) like the word `switch` suggests.\r\nIt's states are defined according to: https://github.com/PX4/Firmware/blob/0c60fff6bd0e09db9b4fc716472849978a60516f/msg/manual_control_setpoint.msg#L3-L6",
+        "path": "src/lib/FlightTasks/tasks/Manual/FlightTaskManual.hpp",
+        "position": 4,
+        "type": "review_comment"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "2018-12-06T13:24:13Z",
+        "body": "~Your curiousity saves lives, good catch 👍 I'll fix this malicious publication.~",
+        "path": "src/modules/mc_att_control/mc_att_control.hpp",
+        "position": 28,
+        "type": "review_comment"
+      },
+      {
+        "author": "MaEtUgR",
+        "created_at": "2018-12-06T14:21:52Z",
+        "body": "I recalled my changes which were done during the rebase because the attitude controller had conflicts caused by https://github.com/PX4/Firmware/pull/10805. The landing gear field is not in the attitude setpoint anymore and @bkueng 's pattern here https://github.com/PX4/Firmware/pull/10805/files#diff-6e842349b82ef0b37ba6161a6d0f85c3R167 is to publish the attitude setpoint out of the same loop that polls on it (I find that confusing and improvable as well). So to enable landing gear operation in stabilized mode I had to follow the same pattern.\r\n\r\nFor the landing gear this might actually make a lot of sense because in the future the execution of the landing gear message should not be in the attitude controller anymore. And for the attitude I discussed with @Stifael it would make sense that the position controller sends thrust and yaw while the attitude controller converts either the input from the position controller or from the sticks to an attitude setpoint (quaterion) executes and publishes it for logging.",
+        "path": "src/modules/mc_att_control/mc_att_control.hpp",
+        "position": 28,
+        "type": "review_comment"
+      }
+    ],
+    "reviews": [
+      {
+        "author": "Stifael",
+        "created_at": "",
+        "body": "",
+        "state": "DISMISSED",
+        "type": "review"
+      },
+      {
+        "author": "LorenzMeier",
+        "created_at": "",
+        "body": "",
+        "state": "APPROVED",
+        "type": "review"
+      }
+    ]
+  }
+}

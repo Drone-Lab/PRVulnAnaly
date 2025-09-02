@@ -1,0 +1,35 @@
+{
+  "title": "Add mission point check when update the geofence",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22469",
+  "number": 22469,
+  "created_at": "2023-11-30T17:06:48Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed",
+  "conversation": {
+    "author": "Drone-Lab",
+    "body": "<!--\r\n\r\nThank you for your contribution!\r\n\r\nGet early feedback through\r\n- Dronecode Discord: https://discord.gg/dronecode\r\n- PX4 Discuss: http://discuss.px4.io/\r\n- opening a draft pr and sharing the link\r\n\r\n-->\r\n\r\n### Solved Problem\r\n\r\n1.  https://github.com/PX4/PX4-Autopilot/blob/c5101c70b31aa0c1454162c6ad1420e5af8086b2/src/modules/navigator/mission_feasibility_checker.cpp#L108 I've found that the MissionFeasibilityChecker()  is only triggered correctly when updating a mission.  when only updating a geofence,user need to click upload twice to invoke check function. Currently, the geofence update only checks the origin and the current position associated with the geofence, and I've added a check for mission waypoints to make the check on upload more complete.The problem is related to the state machine and asynchronous message reading in geofence.cpp.The checkMissionAgainstGeofence() is written in the mission and the geofence is still being read when the mission has finished uploading and checking.\r\n \r\n![%`%3Z`6)VGYLVSF_)N0L{BT](https://github.com/PX4/PX4-Autopilot/assets/151698793/38b3fe89-4ed8-47d7-8822-c5254984f679)\r\n\r\n2. Regarding the issue of being unable to perform geofence breach checks for the home point using VEHICLE_CMD_DO_SET_HOME in commander.cpp due to geofence not being available in the navigator, the following solution is proposed:**When the drone switches to RTL mode, check whether the home point triggers a geofence breach.**\r\nHowever, at present, we only return the result and have successfully tested it. We have not yet implemented handling for the detected issues and event notifications because there may be some irregularities or issues in the code. We would appreciate your feedback on this matter.\r\n\r\nFixes #{#22362}\r\nIn this bug issue , @czbxzm said ,\"1. When swapping the order, uploading the mission waypoint routes first and then plotting the no-fly zones does not trigger any checks, even if there is an overlap between the two;\"Actually this check triggers, but requires a second click on upload.(in the version reporting this bug issue)\r\n\r\n#｛#22373｝\r\nIn this bug issue, @BladeY1 said,\"In SITL simulation, we observed that the Home point can be arbitrarily set by the operator. Since Return to Launch (RTL) navigates the drone back to the Home point, inadvertent placement of the Home point within a no-fly zone can result in the drone breaching no-fly zone checks or entering the restricted area when the operator manually selects RTL. We validated this behavior using a drone equipped with PX4 flight control. It indeed demonstrated the ability to enter a no-fly zone through the aforementioned actions.We believe that operators typically intend to avoid their drones entering no-fly zones to prevent potential damage or safety incidents. No-fly zones, often manually designated by operators, are crucial in areas like airports, amusement parks with high-altitude ride systems, or locations with dense obstacles such as forests, lakes, and clusters of buildings.\"\r\n\r\n\r\n\r\n### Solution\r\n\r\n1. I've added a check for mission waypoints when update geofence.\r\n \r\n![95$0I@SC~0)3RA G`Q2XMCR](https://github.com/PX4/PX4-Autopilot/assets/151698793/d96db40e-0b0e-4061-9a9c-358a5bde2268)\r\n\r\n2. When the drone switches to RTL mode, check whether the home point triggers a geofence breach.\r\n\r\n\r\n### Test coverage\r\n\r\n test on jmavsim/gz_x500 and QGC\r\n\r\n\r\n\r\n",
+    "issue_comments": [
+      {
+        "author": "Drone-Lab",
+        "created_at": "2023-12-01T01:17:22Z",
+        "body": "Hello! @sfuhrer  83f3665d9576b453142196c2e4725e46728d1f46  I think this is an addition to this commit to make it more complete.",
+        "type": "issue_comment"
+      },
+      {
+        "author": "czbxzm",
+        "created_at": "2023-12-01T09:04:31Z",
+        "body": "It seems correct now. The system performs checks and displays a pop-up window when updating the geofence.(Previously, the pop-up window would only appear when updating the mission.)",
+        "type": "issue_comment"
+      },
+      {
+        "author": "Drone-Lab",
+        "created_at": "2023-12-03T02:11:28Z",
+        "body": "@dagar  Let me know what you think about this ,thx.",
+        "type": "issue_comment"
+      }
+    ],
+    "review_comments": [],
+    "reviews": []
+  }
+}
