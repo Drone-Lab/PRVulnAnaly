@@ -1,0 +1,9 @@
+{
+  "title": "Use target camera in image capture start/stop messages",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23115",
+  "number": 23115,
+  "created_at": "2024-05-09T07:10:10Z",
+  "merged": true,
+  "merged_at": "2024-10-09T08:10:08Z",
+  "state": "closed"
+}

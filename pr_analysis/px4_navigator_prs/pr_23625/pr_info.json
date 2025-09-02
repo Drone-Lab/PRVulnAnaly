@@ -1,0 +1,9 @@
+{
+  "title": "fix: use external precland if available during missions",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23625",
+  "number": 23625,
+  "created_at": "2024-08-28T00:42:16Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "open"
+}

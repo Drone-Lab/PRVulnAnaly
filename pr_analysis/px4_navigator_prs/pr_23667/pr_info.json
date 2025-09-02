@@ -1,0 +1,9 @@
+{
+  "title": "Fix max-hagl restriction to position/altitude control",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23667",
+  "number": 23667,
+  "created_at": "2024-09-11T08:54:18Z",
+  "merged": true,
+  "merged_at": "2025-01-20T14:50:21Z",
+  "state": "closed"
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Navigator: allow executing a disarm command during a mission",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/24910",
+  "number": 24910,
+  "created_at": "2025-05-23T14:50:11Z",
+  "merged": true,
+  "merged_at": "2025-05-27T11:26:30Z",
+  "state": "closed"
+}

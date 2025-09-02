@@ -1,0 +1,9 @@
+{
+  "title": "Navigator: RTL reverse: when landing set next to invalid to fix horizontal oscillations",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/24985",
+  "number": 24985,
+  "created_at": "2025-06-06T13:08:05Z",
+  "merged": true,
+  "merged_at": "2025-06-06T13:47:35Z",
+  "state": "closed"
+}

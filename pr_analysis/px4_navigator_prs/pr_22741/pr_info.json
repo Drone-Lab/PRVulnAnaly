@@ -1,0 +1,9 @@
+{
+  "title": "global: Maximum number of WPs can be set in board config",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22741",
+  "number": 22741,
+  "created_at": "2024-02-12T07:26:33Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "open"
+}

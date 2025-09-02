@@ -1,0 +1,9 @@
+{
+  "title": "rtl_direct: fix on_inactive()",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22869",
+  "number": 22869,
+  "created_at": "2024-03-12T09:34:31Z",
+  "merged": true,
+  "merged_at": "2024-03-12T10:27:50Z",
+  "state": "closed"
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Takeoff: only use local position in execution logic and allow setting loiter point of fixed-wing takeoff",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/25123",
+  "number": 25123,
+  "created_at": "2025-06-26T12:10:49Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed"
+}

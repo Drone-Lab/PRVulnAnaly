@@ -1,0 +1,9 @@
+{
+  "title": "Fix mission check for init mission",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22846",
+  "number": 22846,
+  "created_at": "2024-03-06T12:42:38Z",
+  "merged": true,
+  "merged_at": "2024-03-08T16:26:04Z",
+  "state": "closed"
+}

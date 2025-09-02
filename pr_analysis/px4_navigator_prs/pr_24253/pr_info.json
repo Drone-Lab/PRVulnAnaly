@@ -1,0 +1,9 @@
+{
+  "title": "Navigator: remove custom \"FLT_EPSILONs\"",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/24253",
+  "number": 24253,
+  "created_at": "2025-01-24T17:43:52Z",
+  "merged": true,
+  "merged_at": "2025-01-29T14:42:51Z",
+  "state": "closed"
+}

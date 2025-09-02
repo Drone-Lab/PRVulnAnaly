@@ -1,0 +1,9 @@
+{
+  "title": "Navigator: remove vtol_takeoff special handling for RTL",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22844",
+  "number": 22844,
+  "created_at": "2024-03-06T08:54:15Z",
+  "merged": true,
+  "merged_at": "2024-03-08T10:40:14Z",
+  "state": "closed"
+}

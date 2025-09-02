@@ -1,0 +1,9 @@
+{
+  "title": "navigator: loiter: allow without global position",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/24335",
+  "number": 24335,
+  "created_at": "2025-02-13T21:24:15Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed"
+}

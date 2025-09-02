@@ -1,0 +1,9 @@
+{
+  "title": "Rework 1st waypoint check",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23568",
+  "number": 23568,
+  "created_at": "2024-08-19T11:16:48Z",
+  "merged": true,
+  "merged_at": "2024-08-21T07:08:36Z",
+  "state": "closed"
+}

@@ -1,0 +1,9 @@
+{
+  "title": "MPC: LAND: Split Landing out of FlightTaskAuto into FlightTaskLand",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23678",
+  "number": 23678,
+  "created_at": "2024-09-17T07:18:43Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "open"
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Mission validity checks: make clear that MIS_DIST_1WP only warns, not invalidates",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23873",
+  "number": 23873,
+  "created_at": "2024-10-31T13:17:48Z",
+  "merged": true,
+  "merged_at": "2024-11-01T15:19:20Z",
+  "state": "closed"
+}

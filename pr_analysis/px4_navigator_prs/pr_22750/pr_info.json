@@ -1,0 +1,9 @@
+{
+  "title": "Add mission check land when no approach",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22750",
+  "number": 22750,
+  "created_at": "2024-02-14T09:50:26Z",
+  "merged": true,
+  "merged_at": "2024-02-16T09:27:22Z",
+  "state": "closed"
+}

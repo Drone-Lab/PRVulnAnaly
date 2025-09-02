@@ -1,0 +1,9 @@
+{
+  "title": "Enable distance sensor on land in Mode 2",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23664",
+  "number": 23664,
+  "created_at": "2024-09-10T07:59:07Z",
+  "merged": true,
+  "merged_at": "2024-09-16T07:11:23Z",
+  "state": "closed"
+}

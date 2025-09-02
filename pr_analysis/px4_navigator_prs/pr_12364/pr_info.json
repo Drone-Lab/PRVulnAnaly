@@ -1,0 +1,9 @@
+{
+  "title": "navigator fix vehicle_status update",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/12364",
+  "number": 12364,
+  "created_at": "2019-06-28T22:40:39Z",
+  "merged": true,
+  "merged_at": "2019-06-29T01:35:30Z",
+  "state": "closed"
+}

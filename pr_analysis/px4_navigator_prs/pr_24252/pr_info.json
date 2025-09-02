@@ -1,0 +1,9 @@
+{
+  "title": "Navigator/boards: introduce RAM_CONSTRAINED_SYSTEM for reduced mission length",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/24252",
+  "number": 24252,
+  "created_at": "2025-01-24T14:32:16Z",
+  "merged": true,
+  "merged_at": "2025-03-20T10:45:26Z",
+  "state": "closed"
+}

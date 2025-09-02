@@ -1,0 +1,9 @@
+{
+  "title": "Bugfix: unexpected vertical deceleration and acceleration during multicopter RTL final land phase",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23689",
+  "number": 23689,
+  "created_at": "2024-09-18T14:49:29Z",
+  "merged": true,
+  "merged_at": "2024-09-23T16:33:03Z",
+  "state": "closed"
+}

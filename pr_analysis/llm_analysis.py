@@ -8,6 +8,7 @@ from langchain_openai import ChatOpenAI
 from pathlib import Path
 import threading
 from tqdm import tqdm
+import datetime
 
 # 创建一个锁对象，用于保护共享资源
 json_lock = threading.Lock()
@@ -25,7 +26,10 @@ def load_pr_data(json_file: str) -> List[Dict]:
     try:
         with open(json_file, 'r', encoding='utf-8') as f:
             pr_data = json.load(f)
-        print(f"成功加载 {len(pr_data)} 个PR数据")
+        
+        # 添加统计信息：已分析和未分析的PR数量
+        analyzed_count = sum(1 for pr in pr_data if 'isLogicError' in pr)
+        print(f"成功加载 {len(pr_data)} 个PR数据，其中 {analyzed_count} 个已有分析结果，{len(pr_data) - analyzed_count} 个待分析")
         return pr_data
     except Exception as e:
         print(f"加载PR数据失败: {str(e)}")
@@ -252,7 +256,16 @@ def analyze_prs_with_threads(json_file: str, num_threads: int = 4):
     
     # 过滤掉已有分析结果的PR
     prs_to_analyze = [pr for pr in pr_data if 'isLogicError' not in pr]
-    print(f"找到 {len(prs_to_analyze)} 个需要分析的PR")
+    
+    # 添加详细统计信息
+    skipped_prs = len(pr_data) - len(prs_to_analyze)
+    print(f"从 {len(pr_data)} 个PR中筛选出 {len(prs_to_analyze)} 个需要分析的PR，跳过 {skipped_prs} 个已有分析结果的PR")
+    
+    # 打印一些被跳过的PR信息作为示例
+    if skipped_prs > 0:
+        skipped_examples = [pr.get('number') for pr in pr_data if 'isLogicError' in pr][:5]
+        if skipped_examples:
+            print(f"被跳过的PR示例: {', '.join(map(str, skipped_examples))} ...")
     
     if not prs_to_analyze:
         print("没有需要分析的PR，任务完成")
@@ -267,6 +280,8 @@ def analyze_prs_with_threads(json_file: str, num_threads: int = 4):
     for i in range(0, len(prs_to_analyze), batch_size):
         end_idx = min(i + batch_size, len(prs_to_analyze))
         pr_batches.append(prs_to_analyze[i:end_idx])
+    
+    print(f"将 {len(prs_to_analyze)} 个PR分成 {len(pr_batches)} 个批次进行处理")
     
     # 使用线程池处理PR
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
@@ -285,6 +300,9 @@ def analyze_prs_with_threads(json_file: str, num_threads: int = 4):
     print("所有PR分析完成")
 
 def main():
+    # 记录开始时间
+    start_time = time.time()
+    
     # PR数据文件路径
     json_file = "px4_navigator_prs.json"
     
@@ -295,6 +313,14 @@ def main():
     
     # 使用多线程分析PR
     analyze_prs_with_threads(json_file, num_threads=4)
+    
+    # 记录结束时间并计算总耗时
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    hours, remainder = divmod(elapsed_time, 3600)
+    minutes, seconds = divmod(remainder, 60)
+
+    print(f"总耗时: {int(hours)}小时 {int(minutes)}分钟 {seconds:.2f}秒")
 
 if __name__ == "__main__":
     main()

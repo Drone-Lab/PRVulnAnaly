@@ -1,0 +1,9 @@
+{
+  "title": "Implemented protection against flying into terrain during landing",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23396",
+  "number": 23396,
+  "created_at": "2024-07-12T14:29:12Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "closed"
+}

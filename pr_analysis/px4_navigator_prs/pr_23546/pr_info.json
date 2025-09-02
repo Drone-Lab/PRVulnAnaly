@@ -1,0 +1,9 @@
+{
+  "title": "Landing horizontal velocity compensation / unsteady landing",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23546",
+  "number": 23546,
+  "created_at": "2024-08-14T14:04:36Z",
+  "merged": true,
+  "merged_at": "2024-08-19T06:01:43Z",
+  "state": "closed"
+}

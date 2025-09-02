@@ -1,0 +1,9 @@
+{
+  "title": "Use VehicleCommand specified heading for VTOL transition",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/24040",
+  "number": 24040,
+  "created_at": "2024-11-26T16:12:02Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "open"
+}

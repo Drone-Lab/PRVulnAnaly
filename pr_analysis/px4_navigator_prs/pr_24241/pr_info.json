@@ -1,0 +1,9 @@
+{
+  "title": "Mission feasibility checks: make adding new check less error prone",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/24241",
+  "number": 24241,
+  "created_at": "2025-01-22T08:34:03Z",
+  "merged": true,
+  "merged_at": "2025-01-22T15:56:31Z",
+  "state": "closed"
+}

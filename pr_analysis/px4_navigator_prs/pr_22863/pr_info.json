@@ -1,0 +1,9 @@
+{
+  "title": " Commander: make low remaining flight time configurable and fix clearing condition",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22863",
+  "number": 22863,
+  "created_at": "2024-03-11T13:04:51Z",
+  "merged": true,
+  "merged_at": "2024-03-12T11:56:01Z",
+  "state": "closed"
+}

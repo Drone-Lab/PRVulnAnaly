@@ -1,0 +1,765 @@
+D:\python\project\fpga_vedio\.venv\Scripts\python.exe D:\1project\PRVulnAnaly\PRVulnAnaly\pr_analysis\llm_analysis.py
+成功加载 295 个PR数据，其中 0 个已有分析结果，295 个待分析
+从 295 个PR中筛选出 295 个需要分析的PR，跳过 0 个已有分析结果的PR
+将 295 个PR分成 5 个批次进行处理
+D:\python\project\fpga_vedio\.venv\Lib\site-packages\langchain\__init__.py:30: UserWarning: Importing verbose from langchain root module is no longer supported. Please use langchain.globals.set_verbose() / langchain.globals.get_verbose() instead.
+  warnings.warn(
+线程 4 开始处理 73 个PR
+线程 2 开始处理 73 个PR
+线程 4:   0%|          | 0/73 [00:00<?, ?it/s]
+线程 2:   0%|          | 0/73 [00:00<?, ?it/s]
+线程 3 开始处理 73 个PR
+线程 1 开始处理 73 个PR
+
+线程 3:   0%|          | 0/73 [00:00<?, ?it/s]
+
+
+线程 1:   0%|          | 0/73 [00:00<?, ?it/s]PR #23704 分析结果: isLogicError=True, confidence=high
+线程 4:   1%|▏         | 1/73 [00:05<06:11,  5.16s/it]PR #10240 分析结果: isLogicError=True, confidence=high
+PR #21782 分析结果: isLogicError=True, confidence=high
+PR #3699 分析结果: isLogicError=True, confidence=medium
+
+
+线程 3:   1%|▏         | 1/73 [00:07<09:05,  7.58s/it]
+
+
+线程 1:   1%|▏         | 1/73 [00:07<09:32,  7.94s/it]
+线程 2:   1%|▏         | 1/73 [00:08<09:36,  8.00s/it]PR #23689 分析结果: isLogicError=True, confidence=high
+线程 4:   3%|▎         | 2/73 [00:12<07:26,  6.29s/it]PR #21776 分析结果: isLogicError=False, confidence=high
+
+
+
+线程 1:   3%|▎         | 2/73 [00:15<08:57,  7.57s/it]PR #23688 分析结果: isLogicError=True, confidence=high
+PR #10194 分析结果: isLogicError=False, confidence=high
+PR #3694 分析结果: isLogicError=True, confidence=high
+线程 4:   4%|▍         | 3/73 [00:17<06:35,  5.65s/it]
+
+线程 3:   3%|▎         | 2/73 [00:17<10:50,  9.17s/it]
+线程 2:   3%|▎         | 2/73 [00:17<10:49,  9.14s/it]PR #21775 分析结果: isLogicError=True, confidence=high
+PR #3690 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:   4%|▍         | 3/73 [00:21<08:20,  7.15s/it]
+线程 2:   4%|▍         | 3/73 [00:22<08:22,  7.18s/it]PR #10193 分析结果: isLogicError=False, confidence=medium
+PR #23678 分析结果: isLogicError=True, confidence=high
+
+
+线程 4:   5%|▌         | 4/73 [00:24<07:25,  6.46s/it]PR #21736 分析结果: isLogicError=False, confidence=high
+
+
+
+线程 1:   5%|▌         | 4/73 [00:27<07:20,  6.39s/it]PR #3687 分析结果: isLogicError=True, confidence=high
+
+线程 2:   5%|▌         | 4/73 [00:28<07:48,  6.79s/it]PR #23674 分析结果: isLogicError=True, confidence=high
+线程 4:   7%|▋         | 5/73 [00:31<07:35,  6.70s/it]PR #10180 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:   5%|▌         | 4/73 [00:33<09:51,  8.58s/it]PR #21714 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:   7%|▋         | 5/73 [00:35<08:05,  7.14s/it]PR #3686 分析结果: isLogicError=True, confidence=high
+
+线程 2:   7%|▋         | 5/73 [00:37<08:17,  7.31s/it]PR #23667 分析结果: isLogicError=True, confidence=high
+线程 4:   8%|▊         | 6/73 [00:39<07:42,  6.90s/it]PR #10077 分析结果: isLogicError=True, confidence=medium
+
+
+线程 3:   7%|▋         | 5/73 [00:41<09:17,  8.20s/it]PR #21710 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:   8%|▊         | 6/73 [00:43<08:26,  7.56s/it]PR #10046 分析结果: isLogicError=True, confidence=high
+PR #3678 分析结果: isLogicError=True, confidence=high
+PR #23664 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:   8%|▊         | 6/73 [00:46<07:56,  7.11s/it]
+线程 4:  10%|▉         | 7/73 [00:47<07:56,  7.21s/it]PR #21697 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  10%|▉         | 7/73 [00:50<07:56,  7.22s/it]PR #10044 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  10%|▉         | 7/73 [00:52<07:36,  6.92s/it]PR #3675 分析结果: isLogicError=True, confidence=high
+
+线程 2:  10%|▉         | 7/73 [00:54<08:38,  7.85s/it]PR #23627 分析结果: isLogicError=True, confidence=high
+线程 4:  11%|█         | 8/73 [00:55<08:10,  7.54s/it]PR #21689 分析结果: isLogicError=False, confidence=medium
+PR #10043 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  11%|█         | 8/73 [00:58<08:12,  7.58s/it]
+
+线程 3:  11%|█         | 8/73 [00:59<07:25,  6.86s/it]PR #3673 分析结果: isLogicError=True, confidence=high
+
+线程 2:  11%|█         | 8/73 [01:00<08:10,  7.55s/it]PR #23625 分析结果: isLogicError=True, confidence=medium
+线程 4:  12%|█▏        | 9/73 [01:03<08:08,  7.63s/it]PR #21665 分析结果: isLogicError=True, confidence=medium
+PR #10037 分析结果: isLogicError=False, confidence=high
+PR #3664 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  12%|█▏        | 9/73 [01:06<08:07,  7.61s/it]
+
+线程 3:  12%|█▏        | 9/73 [01:06<07:23,  6.94s/it]
+线程 2:  12%|█▏        | 9/73 [01:07<07:34,  7.10s/it]PR #23605 分析结果: isLogicError=True, confidence=high
+线程 4:  14%|█▎        | 10/73 [01:10<07:58,  7.59s/it]PR #3660 分析结果: isLogicError=True, confidence=medium
+
+线程 2:  14%|█▎        | 10/73 [01:13<07:07,  6.79s/it]PR #10003 分析结果: isLogicError=True, confidence=high
+PR #21663 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  14%|█▎        | 10/73 [01:14<07:40,  7.31s/it]
+
+
+线程 1:  14%|█▎        | 10/73 [01:15<08:23,  7.99s/it]PR #3604 分析结果: isLogicError=True, confidence=high
+PR #23587 分析结果: isLogicError=True, confidence=high
+
+线程 4:  15%|█▌        | 11/73 [01:19<08:08,  7.88s/it]PR #21657 分析结果: isLogicError=False, confidence=medium
+
+
+
+线程 1:  15%|█▌        | 11/73 [01:24<08:30,  8.23s/it]PR #9880 分析结果: isLogicError=True, confidence=high
+PR #3598 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  15%|█▌        | 11/73 [01:26<08:53,  8.60s/it]
+PR #23578 分析结果: isLogicError=True, confidence=high
+线程 4:  16%|█▋        | 12/73 [01:28<08:20,  8.20s/it]PR #21643 分析结果: isLogicError=False, confidence=low
+
+
+
+线程 1:  16%|█▋        | 12/73 [01:30<07:45,  7.64s/it]PR #9850 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  16%|█▋        | 12/73 [01:32<08:00,  7.88s/it]PR #21641 分析结果: isLogicError=True, confidence=high
+PR #3582 分析结果: isLogicError=True, confidence=medium
+
+
+
+线程 1:  18%|█▊        | 13/73 [01:35<06:50,  6.84s/it]PR #23576 分析结果: isLogicError=True, confidence=high
+
+线程 4:  18%|█▊        | 13/73 [01:36<08:18,  8.31s/it]PR #9781 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  18%|█▊        | 13/73 [01:39<07:35,  7.59s/it]PR #3579 分析结果: isLogicError=True, confidence=high
+PR #21620 分析结果: isLogicError=True, confidence=high
+
+线程 2:  19%|█▉        | 14/73 [01:41<06:47,  6.90s/it]
+
+
+线程 1:  19%|█▉        | 14/73 [01:41<06:38,  6.75s/it]PR #23568 分析结果: isLogicError=True, confidence=high
+线程 4:  19%|█▉        | 14/73 [01:44<08:04,  8.22s/it]PR #21602 分析结果: isLogicError=True, confidence=high
+PR #3571 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  21%|██        | 15/73 [01:47<06:01,  6.24s/it]
+线程 2:  21%|██        | 15/73 [01:47<06:23,  6.62s/it]PR #23566 分析结果: isLogicError=True, confidence=high
+线程 4:  21%|██        | 15/73 [01:51<07:33,  7.82s/it]PR #3567 分析结果: isLogicError=True, confidence=high
+PR #9772 分析结果: isLogicError=True, confidence=medium
+PR #21594 分析结果: isLogicError=True, confidence=high
+
+线程 2:  22%|██▏       | 16/73 [01:54<06:23,  6.73s/it]
+
+线程 3:  19%|█▉        | 14/73 [01:54<09:41,  9.86s/it]
+
+
+线程 1:  22%|██▏       | 16/73 [01:55<06:28,  6.81s/it]PR #23562 分析结果: isLogicError=True, confidence=high
+PR #3523 分析结果: isLogicError=True, confidence=high
+PR #9753 分析结果: isLogicError=True, confidence=high
+线程 4:  22%|██▏       | 16/73 [01:59<07:28,  7.87s/it]
+线程 2:  23%|██▎       | 17/73 [02:00<06:05,  6.52s/it]PR #21503 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  21%|██        | 15/73 [02:00<08:24,  8.69s/it]
+
+
+线程 1:  23%|██▎       | 17/73 [02:01<06:12,  6.64s/it]PR #23560 分析结果: isLogicError=True, confidence=high
+线程 4:  23%|██▎       | 17/73 [02:03<06:09,  6.60s/it]PR #3518 分析结果: isLogicError=True, confidence=high
+
+线程 2:  25%|██▍       | 18/73 [02:07<06:08,  6.70s/it]PR #23558 分析结果: isLogicError=True, confidence=high
+PR #9747 分析结果: isLogicError=True, confidence=medium
+PR #21492 分析结果: isLogicError=True, confidence=high
+线程 4:  25%|██▍       | 18/73 [02:09<05:54,  6.44s/it]
+
+线程 3:  22%|██▏       | 16/73 [02:09<08:19,  8.77s/it]
+
+
+线程 1:  25%|██▍       | 18/73 [02:09<06:32,  7.13s/it]PR #3459 分析结果: isLogicError=True, confidence=high
+
+线程 2:  26%|██▌       | 19/73 [02:12<05:42,  6.34s/it]PR #23546 分析结果: isLogicError=True, confidence=high
+PR #21484 分析结果: isLogicError=True, confidence=high
+线程 4:  26%|██▌       | 19/73 [02:16<05:55,  6.59s/it]
+
+
+线程 1:  26%|██▌       | 19/73 [02:16<06:19,  7.02s/it]PR #9743 分析结果: isLogicError=True, confidence=medium
+
+
+线程 3:  23%|██▎       | 17/73 [02:19<08:26,  9.05s/it]PR #3426 分析结果: isLogicError=True, confidence=high
+
+线程 2:  27%|██▋       | 20/73 [02:21<06:11,  7.01s/it]PR #21464 分析结果: isLogicError=True, confidence=high
+PR #23542 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 4:  27%|██▋       | 20/73 [02:24<06:10,  7.00s/it]PR #3419 分析结果: isLogicError=True, confidence=high
+
+线程 2:  29%|██▉       | 21/73 [02:27<05:48,  6.70s/it]PR #23541 分析结果: isLogicError=True, confidence=medium
+PR #21446 分析结果: isLogicError=True, confidence=high
+线程 4:  29%|██▉       | 21/73 [02:29<05:37,  6.49s/it]
+
+
+线程 1:  29%|██▉       | 21/73 [02:30<05:55,  6.83s/it]PR #9698 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  25%|██▍       | 18/73 [02:31<09:06,  9.94s/it]PR #23535 分析结果: isLogicError=True, confidence=medium
+PR #21414 分析结果: isLogicError=True, confidence=high
+PR #4917 分析结果: isLogicError=False, confidence=high
+线程 4:  30%|███       | 22/73 [02:37<05:52,  6.91s/it]
+
+
+线程 1:  30%|███       | 22/73 [02:37<05:57,  7.02s/it]
+线程 2:  30%|███       | 22/73 [02:38<06:40,  7.85s/it]PR #9685 分析结果: isLogicError=True, confidence=low
+
+
+线程 3:  26%|██▌       | 19/73 [02:40<08:51,  9.84s/it]PR #4895 分析结果: isLogicError=False, confidence=low
+PR #23534 分析结果: isLogicError=False, confidence=high
+
+线程 4:  32%|███▏      | 23/73 [02:43<05:30,  6.62s/it]PR #22100 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  32%|███▏      | 23/73 [02:44<05:51,  7.02s/it]PR #23503 分析结果: isLogicError=True, confidence=high
+PR #9668 分析结果: isLogicError=True, confidence=high
+线程 4:  33%|███▎      | 24/73 [02:47<04:53,  5.99s/it]
+
+线程 3:  27%|██▋       | 20/73 [02:48<08:02,  9.10s/it]PR #22097 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  33%|███▎      | 24/73 [02:52<05:51,  7.18s/it]PR #4813 分析结果: isLogicError=False, confidence=medium
+
+线程 2:  33%|███▎      | 24/73 [02:53<06:36,  8.09s/it]PR #23501 分析结果: isLogicError=True, confidence=high
+线程 4:  34%|███▍      | 25/73 [02:55<05:04,  6.35s/it]PR #9646 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  29%|██▉       | 21/73 [02:56<07:34,  8.75s/it]PR #22078 分析结果: isLogicError=True, confidence=high
+PR #23484 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 4:  36%|███▌      | 26/73 [03:00<04:45,  6.06s/it]PR #9630 分析结果: isLogicError=False, confidence=medium
+
+
+线程 3:  30%|███       | 22/73 [03:02<06:41,  7.88s/it]PR #22057 分析结果: isLogicError=False, confidence=high
+PR #4790 分析结果: isLogicError=True, confidence=medium
+
+
+
+线程 1:  36%|███▌      | 26/73 [03:04<05:08,  6.57s/it]
+线程 2:  34%|███▍      | 25/73 [03:05<07:17,  9.11s/it]PR #23474 分析结果: isLogicError=True, confidence=high
+线程 4:  37%|███▋      | 27/73 [03:10<05:31,  7.21s/it]PR #4785 分析结果: isLogicError=False, confidence=high
+PR #21985 分析结果: isLogicError=True, confidence=high
+
+线程 2:  36%|███▌      | 26/73 [03:11<06:34,  8.39s/it]
+
+
+线程 1:  37%|███▋      | 27/73 [03:11<05:14,  6.84s/it]PR #10933 分析结果: isLogicError=True, confidence=medium
+
+
+线程 3:  32%|███▏      | 23/73 [03:13<07:20,  8.82s/it]PR #23437 分析结果: isLogicError=False, confidence=high
+线程 4:  38%|███▊      | 28/73 [03:15<05:03,  6.74s/it]PR #21963 分析结果: isLogicError=True, confidence=high
+PR #4770 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  38%|███▊      | 28/73 [03:19<05:24,  7.20s/it]
+线程 2:  37%|███▋      | 27/73 [03:20<06:30,  8.50s/it]PR #10912 分析结果: isLogicError=True, confidence=medium
+
+
+线程 3:  33%|███▎      | 24/73 [03:22<07:22,  9.03s/it]PR #23429 分析结果: isLogicError=True, confidence=medium
+线程 4:  40%|███▉      | 29/73 [03:24<05:22,  7.33s/it]PR #4726 分析结果: isLogicError=False, confidence=high
+
+线程 2:  38%|███▊      | 28/73 [03:25<05:40,  7.56s/it]PR #21904 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  40%|███▉      | 29/73 [03:27<05:23,  7.36s/it]PR #10842 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  34%|███▍      | 25/73 [03:29<06:42,  8.38s/it]PR #23396 分析结果: isLogicError=True, confidence=high
+PR #4649 分析结果: isLogicError=True, confidence=medium
+线程 4:  41%|████      | 30/73 [03:31<05:10,  7.21s/it]
+线程 2:  40%|███▉      | 29/73 [03:32<05:18,  7.24s/it]PR #10832 分析结果: isLogicError=False, confidence=high
+PR #21888 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  36%|███▌      | 26/73 [03:36<06:18,  8.05s/it]
+
+
+线程 1:  41%|████      | 30/73 [03:37<05:44,  8.02s/it]PR #4583 分析结果: isLogicError=True, confidence=high
+
+线程 2:  41%|████      | 30/73 [03:38<05:00,  6.99s/it]PR #24132 分析结果: isLogicError=True, confidence=high
+线程 4:  42%|████▏     | 31/73 [03:40<05:29,  7.85s/it]PR #10819 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  37%|███▋      | 27/73 [03:44<06:03,  7.89s/it]PR #21875 分析结果: isLogicError=False, confidence=medium
+
+
+
+线程 1:  42%|████▏     | 31/73 [03:45<05:39,  8.08s/it]PR #4581 分析结果: isLogicError=True, confidence=medium
+PR #24131 分析结果: isLogicError=False, confidence=high
+
+线程 4:  44%|████▍     | 32/73 [03:47<05:06,  7.47s/it]PR #21852 分析结果: isLogicError=False, confidence=high
+
+
+
+线程 1:  44%|████▍     | 32/73 [03:51<05:05,  7.44s/it]PR #4576 分析结果: isLogicError=False, confidence=medium
+PR #10773 分析结果: isLogicError=True, confidence=high
+
+线程 2:  44%|████▍     | 32/73 [03:52<04:38,  6.79s/it]
+
+线程 3:  38%|███▊      | 28/73 [03:53<06:12,  8.28s/it]PR #24115 分析结果: isLogicError=True, confidence=high
+线程 4:  45%|████▌     | 33/73 [03:55<05:01,  7.53s/it]PR #4540 分析结果: isLogicError=False, confidence=medium
+PR #21839 分析结果: isLogicError=False, confidence=high
+
+线程 2:  45%|████▌     | 33/73 [03:58<04:26,  6.67s/it]
+
+
+线程 1:  45%|████▌     | 33/73 [03:59<05:03,  7.58s/it]PR #10760 分析结果: isLogicError=True, confidence=high
+PR #24085 分析结果: isLogicError=True, confidence=high
+
+
+线程 4:  47%|████▋     | 34/73 [04:00<04:33,  7.01s/it]PR #21806 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  47%|████▋     | 34/73 [04:06<04:46,  7.36s/it]PR #10738 分析结果: isLogicError=False, confidence=high
+PR #24040 分析结果: isLogicError=True, confidence=high
+
+
+线程 4:  48%|████▊     | 35/73 [04:08<04:29,  7.09s/it]PR #4533 分析结果: isLogicError=True, confidence=high
+
+线程 2:  47%|████▋     | 34/73 [04:10<05:21,  8.25s/it]PR #21798 分析结果: isLogicError=True, confidence=medium
+
+
+
+线程 1:  48%|████▊     | 35/73 [04:12<04:23,  6.93s/it]PR #10726 分析结果: isLogicError=False, confidence=medium
+PR #23960 分析结果: isLogicError=True, confidence=high
+PR #4494 分析结果: isLogicError=True, confidence=medium
+
+
+线程 4:  49%|████▉     | 36/73 [04:16<04:36,  7.48s/it]
+线程 2:  48%|████▊     | 35/73 [04:16<04:47,  7.57s/it]PR #22533 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  49%|████▉     | 36/73 [04:19<04:18,  6.99s/it]PR #23907 分析结果: isLogicError=True, confidence=high
+PR #4478 分析结果: isLogicError=False, confidence=high
+PR #10721 分析结果: isLogicError=True, confidence=high
+线程 4:  51%|█████     | 37/73 [04:22<04:11,  6.99s/it]
+线程 2:  49%|████▉     | 36/73 [04:23<04:25,  7.18s/it]
+
+线程 3:  44%|████▍     | 32/73 [04:23<05:19,  7.80s/it]PR #22532 分析结果: isLogicError=True, confidence=high
+PR #10715 分析结果: isLogicError=False, confidence=high
+
+
+
+线程 1:  51%|█████     | 37/73 [04:28<04:31,  7.54s/it]PR #4472 分析结果: isLogicError=True, confidence=high
+PR #23873 分析结果: isLogicError=False, confidence=high
+
+
+线程 3:  45%|████▌     | 33/73 [04:28<04:42,  7.05s/it]
+线程 4:  52%|█████▏    | 38/73 [04:29<04:03,  6.96s/it]PR #4420 分析结果: isLogicError=True, confidence=high
+
+线程 2:  52%|█████▏    | 38/73 [04:34<03:47,  6.50s/it]PR #10632 分析结果: isLogicError=True, confidence=high
+PR #23855 分析结果: isLogicError=True, confidence=high
+
+
+线程 4:  53%|█████▎    | 39/73 [04:37<04:04,  7.20s/it]PR #22531 分析结果: isLogicError=True, confidence=medium
+
+
+
+线程 1:  52%|█████▏    | 38/73 [04:40<05:17,  9.08s/it]PR #23853 分析结果: isLogicError=True, confidence=high
+线程 4:  55%|█████▍    | 40/73 [04:43<03:47,  6.88s/it]PR #4363 分析结果: isLogicError=False, confidence=high
+PR #22519 分析结果: isLogicError=True, confidence=high
+
+线程 2:  53%|█████▎    | 39/73 [04:45<04:22,  7.72s/it]
+
+
+线程 1:  53%|█████▎    | 39/73 [04:45<04:29,  7.91s/it]PR #10628 分析结果: isLogicError=True, confidence=medium
+
+
+线程 3:  48%|████▊     | 35/73 [04:47<05:23,  8.51s/it]PR #23845 分析结果: isLogicError=True, confidence=high
+线程 4:  56%|█████▌    | 41/73 [04:49<03:32,  6.65s/it]PR #4347 分析结果: isLogicError=False, confidence=medium
+
+线程 2:  55%|█████▍    | 40/73 [04:51<04:00,  7.28s/it]PR #22518 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  55%|█████▍    | 40/73 [04:54<04:29,  8.17s/it]PR #4344 分析结果: isLogicError=False, confidence=medium
+PR #10611 分析结果: isLogicError=False, confidence=medium
+
+线程 2:  56%|█████▌    | 41/73 [05:00<04:09,  7.79s/it]
+
+线程 3:  49%|████▉     | 36/73 [05:00<06:03,  9.83s/it]PR #23839 分析结果: isLogicError=True, confidence=medium
+线程 4:  58%|█████▊    | 42/73 [05:02<04:29,  8.70s/it]PR #22511 分析结果: isLogicError=True, confidence=medium-high
+
+
+
+线程 1:  56%|█████▌    | 41/73 [05:04<04:37,  8.66s/it]PR #3404 分析结果: isLogicError=True, confidence=high
+PR #23838 分析结果: isLogicError=True, confidence=high
+PR #16646 分析结果: isLogicError=True, confidence=high
+
+
+线程 4:  59%|█████▉    | 43/73 [05:08<03:53,  7.78s/it]
+线程 2:  58%|█████▊    | 42/73 [05:08<04:05,  7.93s/it]PR #22469 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  58%|█████▊    | 42/73 [05:13<04:28,  8.66s/it]PR #2080 分析结果: isLogicError=True, confidence=high
+PR #23807 分析结果: isLogicError=True, confidence=high
+PR #16645 分析结果: isLogicError=False, confidence=medium
+
+
+线程 4:  60%|██████    | 44/73 [05:16<03:44,  7.74s/it]
+线程 2:  59%|█████▉    | 43/73 [05:16<03:57,  7.93s/it]PR #16635 分析结果: isLogicError=True, confidence=high
+
+线程 2:  60%|██████    | 44/73 [05:21<03:23,  7.00s/it]PR #2035 分析结果: isLogicError=True, confidence=medium
+PR #23797 分析结果: isLogicError=True, confidence=high
+
+
+线程 4:  62%|██████▏   | 45/73 [05:23<03:35,  7.68s/it]PR #22458 分析结果: isLogicError=True, confidence=medium
+
+
+
+线程 1:  59%|█████▉    | 43/73 [05:25<04:56,  9.89s/it]PR #16582 分析结果: isLogicError=True, confidence=medium
+PR #23775 分析结果: isLogicError=False, confidence=high
+
+线程 4:  63%|██████▎   | 46/73 [05:30<03:21,  7.47s/it]PR #2029 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  55%|█████▍    | 40/73 [05:32<04:43,  8.58s/it]PR #22455 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  60%|██████    | 44/73 [05:33<04:30,  9.32s/it]PR #16550 分析结果: isLogicError=False, confidence=high
+
+线程 2:  63%|██████▎   | 46/73 [05:37<03:22,  7.50s/it]PR #22434 分析结果: isLogicError=True, confidence=high
+PR #2028 分析结果: isLogicError=True, confidence=high
+PR #24377 分析结果: isLogicError=False, confidence=high
+
+
+
+线程 1:  62%|██████▏   | 45/73 [05:39<03:46,  8.08s/it]
+
+线程 4:  64%|██████▍   | 47/73 [05:39<03:23,  7.83s/it]PR #16499 分析结果: isLogicError=True, confidence=high
+
+线程 2:  64%|██████▍   | 47/73 [05:44<03:11,  7.36s/it]PR #2023 分析结果: isLogicError=True, confidence=medium
+PR #22413 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  58%|█████▊    | 42/73 [05:46<04:05,  7.92s/it]
+
+
+线程 1:  63%|██████▎   | 46/73 [05:47<03:42,  8.23s/it]PR #16400 分析结果: isLogicError=True, confidence=high
+PR #24335 分析结果: isLogicError=True, confidence=medium
+
+线程 4:  66%|██████▌   | 48/73 [05:51<03:47,  9.11s/it]PR #2011 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  59%|█████▉    | 43/73 [05:54<03:55,  7.86s/it]PR #24310 分析结果: isLogicError=True, confidence=high
+线程 4:  67%|██████▋   | 49/73 [05:58<03:21,  8.38s/it]PR #22394 分析结果: isLogicError=True, confidence=medium
+PR #22869 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  64%|██████▍   | 47/73 [06:00<04:13,  9.75s/it]
+
+线程 3:  60%|██████    | 44/73 [06:01<03:42,  7.67s/it]PR #24291 分析结果: isLogicError=False, confidence=medium
+线程 4:  68%|██████▊   | 50/73 [06:05<03:04,  8.01s/it]PR #22376 分析结果: isLogicError=True, confidence=medium
+
+
+
+线程 1:  66%|██████▌   | 48/73 [06:09<03:56,  9.48s/it]PR #22864 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  62%|██████▏   | 45/73 [06:12<03:58,  8.52s/it]PR #24253 分析结果: isLogicError=False, confidence=medium
+线程 4:  70%|██████▉   | 51/73 [06:14<03:06,  8.50s/it]PR #22863 分析结果: isLogicError=True, confidence=high
+PR #22346 分析结果: isLogicError=True, confidence=medium
+
+
+线程 3:  63%|██████▎   | 46/73 [06:19<03:36,  8.04s/it]
+
+
+线程 1:  67%|██████▋   | 49/73 [06:19<03:51,  9.63s/it]PR #24252 分析结果: isLogicError=False, confidence=high
+线程 4:  71%|███████   | 52/73 [06:21<02:46,  7.94s/it]PR #22856 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  64%|██████▍   | 47/73 [06:24<03:10,  7.31s/it]PR #22341 分析结果: isLogicError=True, confidence=high
+PR #24241 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 4:  73%|███████▎  | 53/73 [06:26<02:23,  7.18s/it]PR #22305 分析结果: isLogicError=True, confidence=high
+PR #22846 分析结果: isLogicError=True, confidence=high
+PR #24236 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  70%|██████▉   | 51/73 [06:32<02:56,  8.03s/it]
+
+线程 4:  74%|███████▍  | 54/73 [06:33<02:12,  6.99s/it]PR #24764 分析结果: isLogicError=False, confidence=high
+线程 4:  75%|███████▌  | 55/73 [06:39<01:58,  6.58s/it]PR #4121 分析结果: isLogicError=True, confidence=low
+
+
+
+线程 1:  71%|███████   | 52/73 [06:42<02:58,  8.51s/it]PR #22844 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  67%|██████▋   | 49/73 [06:44<03:29,  8.73s/it]PR #24642 分析结果: isLogicError=True, confidence=high
+PR #4081 分析结果: isLogicError=True, confidence=medium
+线程 4:  77%|███████▋  | 56/73 [06:48<02:07,  7.48s/it]
+
+
+线程 1:  73%|███████▎  | 53/73 [06:48<02:37,  7.90s/it]PR #22834 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  68%|██████▊   | 50/73 [06:52<03:16,  8.55s/it]PR #4078 分析结果: isLogicError=False, confidence=low
+
+
+
+线程 1:  74%|███████▍  | 54/73 [06:54<02:19,  7.34s/it]PR #24625 分析结果: isLogicError=True, confidence=high
+线程 4:  78%|███████▊  | 57/73 [06:56<01:58,  7.44s/it]PR #22833 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  70%|██████▉   | 51/73 [06:58<02:49,  7.68s/it]PR #4068 分析结果: isLogicError=True, confidence=high
+PR #24581 分析结果: isLogicError=False, confidence=high
+
+
+
+线程 4:  79%|███████▉  | 58/73 [07:02<01:46,  7.12s/it]PR #22778 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  71%|███████   | 52/73 [07:04<02:29,  7.11s/it]PR #24508 分析结果: isLogicError=True, confidence=high
+PR #22773 分析结果: isLogicError=True, confidence=high
+线程 4:  81%|████████  | 59/73 [07:09<01:41,  7.25s/it]PR #4065 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  73%|███████▎  | 53/73 [07:10<02:19,  6.98s/it]
+
+
+线程 1:  77%|███████▋  | 56/73 [07:11<02:15,  7.98s/it]PR #24484 分析结果: isLogicError=True, confidence=high
+线程 4:  82%|████████▏ | 60/73 [07:15<01:26,  6.68s/it]PR #22750 分析结果: isLogicError=True, confidence=high
+PR #4055 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  74%|███████▍  | 54/73 [07:18<02:14,  7.08s/it]
+
+
+线程 1:  78%|███████▊  | 57/73 [07:18<02:03,  7.71s/it]PR #4046 分析结果: isLogicError=True, confidence=high
+PR #22742 分析结果: isLogicError=True, confidence=high
+PR #24458 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  79%|███████▉  | 58/73 [07:24<01:45,  7.05s/it]
+
+线程 4:  84%|████████▎ | 61/73 [07:25<01:31,  7.61s/it]PR #22741 分析结果: isLogicError=True, confidence=high
+PR #4043 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  77%|███████▋  | 56/73 [07:30<01:50,  6.47s/it]
+
+
+线程 1:  81%|████████  | 59/73 [07:30<01:37,  6.93s/it]PR #24454 分析结果: isLogicError=True, confidence=high
+线程 4:  85%|████████▍ | 62/73 [07:31<01:20,  7.36s/it]PR #22731 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  78%|███████▊  | 57/73 [07:36<01:41,  6.35s/it]PR #4012 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  82%|████████▏ | 60/73 [07:38<01:32,  7.08s/it]PR #25134 分析结果: isLogicError=False, confidence=high
+线程 4:  86%|████████▋ | 63/73 [07:40<01:18,  7.88s/it]PR #22651 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  79%|███████▉  | 58/73 [07:42<01:34,  6.28s/it]PR #4000 分析结果: isLogicError=False, confidence=high
+
+
+
+线程 1:  84%|████████▎ | 61/73 [07:43<01:19,  6.60s/it]PR #22642 分析结果: isLogicError=True, confidence=high
+PR #3998 分析结果: isLogicError=False, confidence=low
+
+
+线程 3:  81%|████████  | 59/73 [07:49<01:33,  6.66s/it]
+
+
+线程 1:  85%|████████▍ | 62/73 [07:50<01:11,  6.54s/it]PR #25123 分析结果: isLogicError=True, confidence=high
+线程 4:  88%|████████▊ | 64/73 [07:51<01:19,  8.82s/it]PR #22624 分析结果: isLogicError=False, confidence=high
+
+
+线程 3:  82%|████████▏ | 60/73 [07:56<01:27,  6.73s/it]PR #3922 分析结果: isLogicError=True, confidence=medium
+PR #25083 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 4:  89%|████████▉ | 65/73 [07:59<01:06,  8.34s/it]PR #23319 分析结果: isLogicError=True, confidence=high
+PR #3908 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  84%|████████▎ | 61/73 [08:04<01:25,  7.14s/it]
+
+
+线程 1:  88%|████████▊ | 64/73 [08:05<01:02,  6.93s/it]PR #24985 分析结果: isLogicError=True, confidence=high
+线程 4:  90%|█████████ | 66/73 [08:08<01:00,  8.69s/it]PR #23295 分析结果: isLogicError=False, confidence=high
+
+
+线程 3:  85%|████████▍ | 62/73 [08:10<01:12,  6.56s/it]PR #3880 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  89%|████████▉ | 65/73 [08:12<00:57,  7.13s/it]PR #24946 分析结果: isLogicError=True, confidence=high
+线程 4:  92%|█████████▏| 67/73 [08:14<00:47,  7.84s/it]PR #23193 分析结果: isLogicError=False, confidence=medium
+
+
+线程 3:  86%|████████▋ | 63/73 [08:16<01:05,  6.57s/it]PR #3861 分析结果: isLogicError=False, confidence=high
+
+
+
+线程 1:  90%|█████████ | 66/73 [08:18<00:46,  6.69s/it]PR #24910 分析结果: isLogicError=True, confidence=high
+线程 4:  93%|█████████▎| 68/73 [08:21<00:37,  7.51s/it]PR #23181 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  88%|████████▊ | 64/73 [08:23<00:59,  6.64s/it]PR #3846 分析结果: isLogicError=True, confidence=high
+PR #25265 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 4:  95%|█████████▍| 69/73 [08:28<00:29,  7.43s/it]PR #23115 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  89%|████████▉ | 65/73 [08:30<00:53,  6.66s/it]PR #25191 分析结果: isLogicError=True, confidence=high
+线程 4:  96%|█████████▌| 70/73 [08:33<00:20,  6.77s/it]PR #23080 分析结果: isLogicError=True, confidence=medium
+
+
+线程 3:  90%|█████████ | 66/73 [08:37<00:47,  6.82s/it]PR #3814 分析结果: isLogicError=True, confidence=medium
+PR #6951 分析结果: isLogicError=False, confidence=high
+
+
+
+线程 4:  97%|█████████▋| 71/73 [08:40<00:13,  6.71s/it]PR #23065 分析结果: isLogicError=False, confidence=high
+
+
+线程 3:  92%|█████████▏| 67/73 [08:45<00:43,  7.29s/it]PR #3740 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 1:  95%|█████████▍| 69/73 [08:50<00:37,  9.26s/it]PR #6904 分析结果: isLogicError=True, confidence=medium
+线程 4:  99%|█████████▊| 72/73 [08:51<00:08,  8.12s/it]PR #23061 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  93%|█████████▎| 68/73 [08:53<00:37,  7.48s/it]PR #3736 分析结果: isLogicError=True, confidence=medium
+
+
+
+线程 1:  96%|█████████▌| 70/73 [08:58<00:27,  9.04s/it]PR #12382 分析结果: isLogicError=False, confidence=medium
+PR #23014 分析结果: isLogicError=True, confidence=high
+线程 4 完成处理
+线程 4: 100%|██████████| 73/73 [09:00<00:00,  7.40s/it]
+
+
+线程 3:  95%|█████████▍| 69/73 [09:00<00:28,  7.21s/it]PR #3730 分析结果: isLogicError=True, confidence=high
+线程 5:   0%|          | 0/3 [00:00<?, ?it/s]
+
+
+线程 1:  97%|█████████▋| 71/73 [09:05<00:16,  8.32s/it]线程 5 开始处理 3 个PR
+PR #23012 分析结果: isLogicError=False, confidence=high
+PR #16399 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  96%|█████████▌| 70/73 [09:07<00:21,  7.25s/it]
+线程 2:  67%|██████▋   | 49/73 [09:08<25:39, 64.13s/it]PR #3724 分析结果: isLogicError=True, confidence=high
+PR #12364 分析结果: isLogicError=True, confidence=high
+
+
+
+线程 5:  33%|███▎      | 1/3 [00:06<00:13,  6.79s/it]PR #23000 分析结果: isLogicError=True, confidence=high
+PR #16377 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  97%|█████████▋| 71/73 [09:15<00:15,  7.51s/it]
+线程 2:  68%|██████▊   | 50/73 [09:16<18:06, 47.23s/it]PR #18282 分析结果: isLogicError=True, confidence=high
+线程 5:  67%|██████▋   | 2/3 [00:14<00:07,  7.20s/it]PR #3706 分析结果: isLogicError=True, confidence=medium
+线程 1 完成处理
+
+
+
+线程 1: 100%|██████████| 73/73 [09:21<00:00,  7.69s/it]
+PR #22985 分析结果: isLogicError=True, confidence=high
+PR #16373 分析结果: isLogicError=True, confidence=high
+
+
+线程 3:  99%|█████████▊| 72/73 [09:23<00:07,  7.57s/it]
+线程 2:  70%|██████▉   | 51/73 [09:23<12:55, 35.25s/it]PR #18279 分析结果: isLogicError=False, confidence=high
+线程 5 完成处理
+线程 5: 100%|██████████| 3/3 [00:20<00:00,  6.86s/it]
+PR #16371 分析结果: isLogicError=True, confidence=high
+
+线程 2:  71%|███████   | 52/73 [09:29<09:19, 26.62s/it]PR #22984 分析结果: isLogicError=False, confidence=medium
+
+
+线程 3: 100%|██████████| 73/73 [09:36<00:00,  7.90s/it]
+线程 3 完成处理
+PR #16352 分析结果: isLogicError=True, confidence=high
+
+线程 2:  73%|███████▎  | 53/73 [09:38<07:01, 21.08s/it]PR #16335 分析结果: isLogicError=True, confidence=high
+
+线程 2:  74%|███████▍  | 54/73 [09:45<05:20, 16.87s/it]PR #16297 分析结果: isLogicError=True, confidence=high
+
+线程 2:  75%|███████▌  | 55/73 [09:51<04:08, 13.80s/it]PR #16255 分析结果: isLogicError=True, confidence=high
+
+线程 2:  77%|███████▋  | 56/73 [09:59<03:25, 12.10s/it]
+线程 2:  78%|███████▊  | 57/73 [10:05<02:42, 10.19s/it]分析PR #16175 时出错: Expecting value: line 1 column 1 (char 0)
+PR #16175 分析失败
+PR #17362 分析结果: isLogicError=True, confidence=medium
+
+线程 2:  79%|███████▉  | 58/73 [10:13<02:22,  9.47s/it]PR #17269 分析结果: isLogicError=True, confidence=high
+
+线程 2:  81%|████████  | 59/73 [10:20<02:00,  8.63s/it]PR #17209 分析结果: isLogicError=True, confidence=high
+
+线程 2:  82%|████████▏ | 60/73 [10:30<01:58,  9.09s/it]PR #17128 分析结果: isLogicError=True, confidence=medium
+
+线程 2:  84%|████████▎ | 61/73 [10:38<01:47,  8.96s/it]PR #17061 分析结果: isLogicError=True, confidence=medium
+
+线程 2:  85%|████████▍ | 62/73 [10:47<01:38,  8.94s/it]PR #17038 分析结果: isLogicError=False, confidence=medium
+
+线程 2:  86%|████████▋ | 63/73 [10:51<01:14,  7.46s/it]PR #17031 分析结果: isLogicError=True, confidence=medium
+
+线程 2:  88%|████████▊ | 64/73 [11:00<01:10,  7.88s/it]PR #17029 分析结果: isLogicError=False, confidence=high
+
+线程 2:  89%|████████▉ | 65/73 [11:07<01:00,  7.62s/it]PR #17017 分析结果: isLogicError=False, confidence=medium
+
+线程 2:  90%|█████████ | 66/73 [11:15<00:54,  7.78s/it]PR #10320 分析结果: isLogicError=True, confidence=high
+
+线程 2:  92%|█████████▏| 67/73 [11:24<00:47,  7.96s/it]PR #10297 分析结果: isLogicError=True, confidence=medium
+
+线程 2:  93%|█████████▎| 68/73 [11:33<00:41,  8.23s/it]PR #10294 分析结果: isLogicError=True, confidence=medium
+
+线程 2:  95%|█████████▍| 69/73 [11:42<00:33,  8.49s/it]PR #10291 分析结果: isLogicError=True, confidence=high
+
+线程 2:  96%|█████████▌| 70/73 [11:50<00:24,  8.32s/it]PR #10288 分析结果: isLogicError=True, confidence=medium
+
+线程 2:  97%|█████████▋| 71/73 [12:01<00:18,  9.29s/it]PR #10287 分析结果: isLogicError=True, confidence=medium
+
+线程 2:  99%|█████████▊| 72/73 [12:09<00:08,  8.79s/it]PR #10252 分析结果: isLogicError=True, confidence=high
+
+线程 2: 100%|██████████| 73/73 [12:16<00:00, 10.09s/it]
+线程 2 完成处理
+所有PR分析完成
+总耗时: 0小时 12分钟 22.04秒
+
+进程已结束，退出代码为 0

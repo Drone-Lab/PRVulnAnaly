@@ -1,0 +1,9 @@
+{
+  "title": "Add maximum height above ground (HAGL) check to all Navigator modes",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23542",
+  "number": 23542,
+  "created_at": "2024-08-14T12:46:19Z",
+  "merged": true,
+  "merged_at": "2024-08-16T14:26:20Z",
+  "state": "closed"
+}

@@ -1,0 +1,9 @@
+{
+  "title": "RTL: fix RTL time estimation of MC landing phase",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23807",
+  "number": 23807,
+  "created_at": "2024-10-12T18:24:15Z",
+  "merged": true,
+  "merged_at": "2024-10-24T15:22:19Z",
+  "state": "closed"
+}

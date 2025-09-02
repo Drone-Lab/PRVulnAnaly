@@ -1,0 +1,9 @@
+{
+  "title": "Navigator: add terrain collision avoidance during descents",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23429",
+  "number": 23429,
+  "created_at": "2024-07-19T09:35:31Z",
+  "merged": true,
+  "merged_at": "2024-07-30T15:50:54Z",
+  "state": "closed"
+}

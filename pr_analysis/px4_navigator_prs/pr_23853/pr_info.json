@@ -1,0 +1,9 @@
+{
+  "title": "Navigator: land: fix when flying without global position estimate",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23853",
+  "number": 23853,
+  "created_at": "2024-10-25T12:02:35Z",
+  "merged": true,
+  "merged_at": "2024-10-31T12:34:45Z",
+  "state": "closed"
+}

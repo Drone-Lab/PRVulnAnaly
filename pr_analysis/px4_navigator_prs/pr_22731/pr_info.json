@@ -1,0 +1,9 @@
+{
+  "title": "RTL: change when to set a heading setpoint, generally leave it up to executer",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22731",
+  "number": 22731,
+  "created_at": "2024-02-08T13:18:33Z",
+  "merged": true,
+  "merged_at": "2024-02-13T09:34:58Z",
+  "state": "closed"
+}

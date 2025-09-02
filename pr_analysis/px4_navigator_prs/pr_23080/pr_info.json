@@ -1,0 +1,9 @@
+{
+  "title": "vehicle_command: add initial frame support (GLOBAL & GLOBAL_RELATIVE_ALT)",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23080",
+  "number": 23080,
+  "created_at": "2024-05-01T22:20:17Z",
+  "merged": false,
+  "merged_at": null,
+  "state": "open"
+}

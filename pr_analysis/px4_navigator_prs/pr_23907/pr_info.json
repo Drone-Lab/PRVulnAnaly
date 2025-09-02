@@ -1,0 +1,9 @@
+{
+  "title": "Navigator: RTL: Enable precision landing for all RTL types but only start if enabled",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23907",
+  "number": 23907,
+  "created_at": "2024-11-07T16:30:41Z",
+  "merged": true,
+  "merged_at": "2025-01-08T08:31:55Z",
+  "state": "closed"
+}

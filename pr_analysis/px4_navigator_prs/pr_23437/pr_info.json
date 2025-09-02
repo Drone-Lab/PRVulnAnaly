@@ -1,0 +1,9 @@
+{
+  "title": "Navigator: increase stack by 40 bytes",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23437",
+  "number": 23437,
+  "created_at": "2024-07-22T11:38:58Z",
+  "merged": true,
+  "merged_at": "2024-07-25T07:22:23Z",
+  "state": "closed"
+}

@@ -1,0 +1,9 @@
+{
+  "title": "navigator: Change IF statement to SWITCH statement",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23534",
+  "number": 23534,
+  "created_at": "2024-08-12T03:50:47Z",
+  "merged": true,
+  "merged_at": "2024-08-14T07:40:36Z",
+  "state": "closed"
+}

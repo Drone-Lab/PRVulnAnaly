@@ -1,0 +1,9 @@
+{
+  "title": "fix navigator: prevent race condition when receiving multiple commands at once",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/22651",
+  "number": 22651,
+  "created_at": "2024-01-18T08:17:06Z",
+  "merged": true,
+  "merged_at": "2024-01-22T17:45:54Z",
+  "state": "closed"
+}

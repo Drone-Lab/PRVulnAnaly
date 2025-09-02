@@ -1,0 +1,9 @@
+{
+  "title": "Fix force heading to NaN on mission landing approach",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23587",
+  "number": 23587,
+  "created_at": "2024-08-21T10:50:33Z",
+  "merged": true,
+  "merged_at": "2024-08-22T10:58:45Z",
+  "state": "closed"
+}

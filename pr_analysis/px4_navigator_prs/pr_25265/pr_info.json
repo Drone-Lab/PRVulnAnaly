@@ -1,0 +1,9 @@
+{
+  "title": "Navigator/FW mode manager: fix handling of counter-clockwise loiter",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/25265",
+  "number": 25265,
+  "created_at": "2025-07-22T11:33:25Z",
+  "merged": true,
+  "merged_at": "2025-07-28T08:57:56Z",
+  "state": "closed"
+}

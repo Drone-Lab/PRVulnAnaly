@@ -1,0 +1,9 @@
+{
+  "title": "mission: skip a vtol takoff mission item if already in air",
+  "url": "https://github.com/PX4/PX4-Autopilot/pull/23319",
+  "number": 23319,
+  "created_at": "2024-06-24T14:32:08Z",
+  "merged": true,
+  "merged_at": "2024-06-25T14:33:45Z",
+  "state": "closed"
+}
