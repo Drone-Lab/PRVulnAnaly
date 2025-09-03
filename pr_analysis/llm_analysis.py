@@ -105,7 +105,7 @@ def analyze_pr_logic_error(llm: ChatOpenAI, pr_data: Dict) -> Optional[Dict]:
     
     # 系统消息定义分析要求
     system_message = SystemMessage(content="""
-    You are an expert code analyzer specializing in identifying logic errors in software systems. Your task is to analyze a GitHub pull request (PR) and determine if it fixes a logic error in the code.
+    You are an expert code analyzer specializing in identifying logic errors in software systems. Your task is to determine whether the issue discussed in the conversation is a logical error.
 
     **Definition of Logic Error:** 
     A logic error is a bug in a program that causes it to operate incorrectly but not terminate abnormally (or crash). Logic errors occur in both compiled and interpreted languages. A logic error produces unintended or undesired output or behavior. Examples include:
