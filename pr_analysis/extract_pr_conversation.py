@@ -5,28 +5,6 @@ from datetime import datetime
 import re
 import os
 
-def load_config(config_file="config.json"):
-    """
-    从配置文件加载GitHub token
-    """
-    try:
-        if not os.path.exists(config_file):
-            print(f"错误：找不到配置文件 {config_file}")
-            print("请创建配置文件并设置你的GitHub token")
-            return None
-            
-        with open(config_file, 'r', encoding='utf-8') as f:
-            config = json.load(f)
-            
-        if not config.get('github_token'):
-            print("错误：配置文件中未找到 github_token")
-            return None
-            
-        return config['github_token']
-    except Exception as e:
-        print(f"读取配置文件时出错: {str(e)}")
-        return None
-
 def get_pr_conversation(pr_number, headers):
     """
     获取PR的对话内容
@@ -226,14 +204,16 @@ def process_all_prs(base_dir="extracted_test_cases"):
     Args:
         base_dir: 基础目录
     """
-    # 加载GitHub token
-    token = load_config()
-    if not token:
+    # 从环境变量获取GitHub token
+    github_token = os.environ.get('GITHUB_TOKEN')
+    if not github_token:
+        print("错误: 未设置GITHUB_TOKEN环境变量")
+        print("请设置环境变量: export GITHUB_TOKEN=your_github_token_here")
         return
         
     # 设置请求头
     headers = {
-        "Authorization": f"{token}",
+        "Authorization": f"token {github_token}",
         "Accept": "application/vnd.github.v3+json",
         "User-Agent": "Github-PR-Conversation-Extractor"
     }
@@ -314,14 +294,16 @@ def process_ardu_changes_prs(base_dir="ardu_changes"):
     Args:
         base_dir: ardu_changes目录的路径
     """
-    # 加载GitHub token
-    token = load_config()
-    if not token:
+    # 从环境变量获取GitHub token
+    github_token = os.environ.get('GITHUB_TOKEN')
+    if not github_token:
+        print("错误: 未设置GITHUB_TOKEN环境变量")
+        print("请设置环境变量: export GITHUB_TOKEN=your_github_token_here")
         return
         
     # 设置请求头
     headers = {
-        "Authorization": f"{token}",
+        "Authorization": f"token {github_token}",
         "Accept": "application/vnd.github.v3+json",
         "User-Agent": "Github-PR-Conversation-Extractor"
     }

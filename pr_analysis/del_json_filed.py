@@ -82,13 +82,10 @@ def delete_fields_from_json(data, fields_to_delete):
     return data, modified_count
 
 def main():
-    # 记录开始时间
-    start_time = time.time()
-    print(f"开始运行时间: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     # 配置
     file_path = "px4_navigator_prs.json"
-    fields_to_delete = ["isLogicError", "logicErrorDescription"]
+    fields_to_delete = ["created_at"]
     backup_file = f"{file_path}.bak"
     
     # 检查文件是否存在
@@ -123,12 +120,7 @@ def main():
             print("保存修改后的文件失败")
     else:
         print("未找到需要删除的字段，文件未修改")
-    
-    # 记录结束时间并计算总耗时
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    print(f"结束运行时间: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"总耗时: {elapsed_time:.2f} 秒")
+
 
 if __name__ == "__main__":
     main()
