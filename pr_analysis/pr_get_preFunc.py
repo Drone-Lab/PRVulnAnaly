@@ -4,6 +4,7 @@ import json
 import re
 import time
 import datetime
+import threading
 from concurrent.futures import ThreadPoolExecutor
 
 def load_json_file(json_file):
@@ -19,11 +20,14 @@ def load_json_file(json_file):
     try:
         with open(json_file, 'r', encoding='utf-8') as f:
             data = json.load(f)
-        print(f"成功加载JSON文件，共有 {len(data)} 个PR记录")
+        print(f"成功加载JSON文件，共有 {len(data)} 个记录")
         return data
+    except FileNotFoundError:
+        print(f"文件不存在: {json_file}")
+        return {}
     except Exception as e:
         print(f"加载JSON文件失败: {str(e)}")
-        return None
+        return {}
 
 def save_json_file(data, output_file):
     """
@@ -160,6 +164,12 @@ def download_file_from_commit(commit_url, file_path):
                 print(f"获取文件内容失败，状态码: {file_response.status_code}")
                 return None
                 
+        # 添加日志验证
+        print(f"正在下载提交 {commit_sha} 中的文件 {file_path}")
+        
+        if file_response.status_code == 200:
+            print(f"成功下载提交 {commit_sha} 中的文件 {file_path}")
+            
         return file_response.text
         
     except Exception as e:
@@ -167,50 +177,58 @@ def download_file_from_commit(commit_url, file_path):
         return None
 
 def extract_cpp_function(content, function_name):
-    """
-    从C++文件内容中提取指定函数的完整定义
-    
-    Args:
-        content: 文件内容
-        function_name: 要提取的函数名，格式为 "类名::函数名" 或 "函数名"
-        
-    Returns:
-        函数定义字符串
-    """
     if not content:
         return None
-        
+
     try:
+        # 确定函数前缀模式，处理类方法和普通函数
         if "::" in function_name:
-            # 处理类方法
             class_name, method_name = function_name.split("::", 1)
-            # 匹配函数定义: 任何返回类型 + 类名::函数名 + 参数 + 函数体
-            pattern = r'(?:virtual|static|inline)?\s*[\w:<>\s\*&]+\s+' + re.escape(class_name) + r'::\s*' + re.escape(method_name) + r'\s*\([^\)]*\)(?:\s*const)?\s*(?:override|final)?\s*\{(?:[^{}]*|\{(?:[^{}]*|\{[^{}]*\})*\})*\}'
+            header_pattern = re.escape(class_name) + r'::\s*' + re.escape(method_name) + r'\s*\('
         else:
-            # 处理普通函数
-            pattern = r'(?:static|inline)?\s*[\w:<>\s\*&]+\s+' + re.escape(function_name) + r'\s*\([^\)]*\)(?:\s*const)?\s*\{(?:[^{}]*|\{(?:[^{}]*|\{[^{}]*\})*\})*\}'
-            
-        match = re.search(pattern, content, re.DOTALL)
-        if match:
-            return match.group(0).strip()
-            
-        # 尝试查找函数声明
-        declaration_pattern = r'(?:virtual|static|inline)?\s*[\w:<>\s\*&]+\s+' + re.escape(function_name) + r'\s*\([^\)]*\)(?:\s*const)?(?:\s*override|final)?;'
-        match = re.search(declaration_pattern, content, re.DOTALL)
-        if match:
-            return match.group(0).strip() + " // 仅函数声明，未找到定义"
-            
-        return None
+            header_pattern = r'(?:[\w\s\*&]+\s+)?' + re.escape(function_name) + r'\s*\('  # 更精确地匹配函数签名
+
+        # 找到函数头
+        header_match = re.search(header_pattern, content)
+        if not header_match:
+            return None
+
+        # 向前搜索找到函数签名的开始
+        start = header_match.start()
+        # 搜索函数签名开始 - 查找前面的返回类型和空白字符
+        line_start = content.rfind('\n', 0, start)
+        if line_start == -1:
+            line_start = 0
+        else:
+            line_start += 1  # 跳过换行符
+
+        # 从函数头部向后查找函数体的开始和结束
+        brace_start = content.find('{', start)
+        if brace_start == -1:
+            return None
+
+        # 使用栈匹配 {}
+        count = 0
+        for i in range(brace_start, len(content)):
+            if content[i] == '{':
+                count += 1
+            elif content[i] == '}':
+                count -= 1
+                if count == 0:
+                    return content[line_start:i+1].strip()  # 包含完整函数定义
+
+        return None  # 如果函数体未闭合，返回None
     except Exception as e:
         print(f"提取函数定义时出错: {str(e)}")
         return None
 
-def process_pr(pr):
+def process_pr(pr, existing_functions=None):
     """
     处理单个PR，提取修改的函数在之前版本中的定义
     
     Args:
         pr: PR数据对象
+        existing_functions: 已存在的函数定义字典
         
     Returns:
         {函数名: 函数定义} 字典
@@ -247,8 +265,17 @@ def process_pr(pr):
         for function in functions:
             function_file_map[function] = file_path
     
+    existing_functions = existing_functions or {}
+    pr_existing = existing_functions.get(str(pr_number), {})
+    
     # 处理每个函数
     for function_name in all_functions:
+        # 检查函数是否已存在于existing_functions中
+        if function_name in pr_existing:
+            print(f"函数 {function_name} 已存在于现有数据中，跳过处理")
+            result[function_name] = pr_existing[function_name]
+            continue
+            
         file_path = function_file_map.get(function_name)
         if not file_path:
             print(f"未找到函数 {function_name} 对应的文件")
@@ -307,32 +334,61 @@ def process_pr(pr):
     
     return result
 
-def process_all_prs(pr_data, output_file="previous_functions.json"):
+def process_all_prs(pr_data, output_file="previous_functions.json", thread_count=5):
     """
     处理所有PR
     
     Args:
         pr_data: PR数据列表
         output_file: 输出文件路径
+        thread_count: 线程数量
         
     Returns:
         处理结果字典
     """
     total = len(pr_data)
-    print(f"开始处理 {total} 个PR")
+    print(f"开始处理 {total} 个PR，使用 {thread_count} 个线程")
     
-    results = {}
+    # 加载已有的函数定义
+    existing_functions = load_json_file(output_file)
     
-    for i, pr in enumerate(pr_data):
+    results = existing_functions.copy()
+    results_lock = threading.Lock()  # 用于同步结果字典的锁
+    processed_count = 0
+    processed_lock = threading.Lock()  # 用于同步计数的锁
+    
+    def process_pr_thread(pr):
+        """线程函数，处理单个PR并更新结果"""
+        nonlocal processed_count
         pr_number = str(pr.get('number'))
-        pr_result = process_pr(pr)
+        
+        # 调用process_pr函数，传入已存在的函数定义
+        pr_result = process_pr(pr, existing_functions)
+        
         if pr_result:
-            results[pr_number] = pr_result
+            # 使用锁保护结果字典的更新
+            with results_lock:
+                results[pr_number] = pr_result
+        
+        # 更新处理计数并保存中间结果
+        with processed_lock:
+            processed_count += 1
+            current_count = processed_count
             
-        # 每处理完10个PR，保存一次中间结果
-        if (i + 1) % 10 == 0:
-            save_json_file(results, f"{output_file}.temp")
-            print(f"已处理 {i + 1}/{total} 个PR")
+            # 每处理完5个PR，保存一次中间结果
+            if current_count % 5 == 0:
+                with results_lock:  # 确保在保存时没有其他线程在修改结果
+                    save_json_file(results, f"{output_file}.temp")
+                print(f"已处理 {current_count}/{total} 个PR")
+    
+    # 创建线程池
+    with ThreadPoolExecutor(max_workers=thread_count) as executor:
+        # 提交所有PR到线程池
+        futures = [executor.submit(process_pr_thread, pr) for pr in pr_data]
+        
+        # 等待所有任务完成
+        for future in futures:
+            future.result()
     
     # 保存最终结果
     save_json_file(results, output_file)
@@ -347,13 +403,14 @@ def main():
     # 加载PR数据
     input_file = "px4_navigator_prs.json"
     output_file = "previous_functions.json"
+    thread_count = 5  # 使用5个线程
     
     pr_data = load_json_file(input_file)
     if not pr_data:
         return
     
-    # 处理所有PR
-    process_all_prs(pr_data, output_file)
+    # 处理所有PR，使用多线程并进行增量更新
+    process_all_prs(pr_data, output_file, thread_count)
     
     # 记录结束时间
     end_time = time.time()

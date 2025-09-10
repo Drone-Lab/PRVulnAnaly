@@ -116,16 +116,16 @@
     },
     "modified_functions": {
       "all": [
-        "Loiter::Loiter",
-        "on_inactive",
+        "Loiter::set_loiter_position",
         "Loiter::on_active",
-        "Loiter::set_loiter_position"
+        "Loiter::Loiter",
+        "on_inactive"
       ],
       "by_file": {
         "src/modules/navigator/loiter.cpp": [
-          "Loiter::Loiter",
+          "Loiter::set_loiter_position",
           "Loiter::on_active",
-          "Loiter::set_loiter_position"
+          "Loiter::Loiter"
         ],
         "src/modules/navigator/loiter.h": [
           "on_inactive"
@@ -178,13 +178,13 @@
     },
     "modified_functions": {
       "all": [
-        "Loiter::set_loiter_position",
-        "Loiter::on_activation"
+        "Loiter::on_activation",
+        "Loiter::set_loiter_position"
       ],
       "by_file": {
         "src/modules/navigator/loiter.cpp": [
-          "Loiter::set_loiter_position",
-          "Loiter::on_activation"
+          "Loiter::on_activation",
+          "Loiter::set_loiter_position"
         ]
       }
     }
@@ -421,28 +421,28 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::on_active",
-        "Navigator::run",
+        "Mission::cacheItem",
         "Mission::on_activation",
         "Mission::replayCachedTriggerItems",
-        "Mission::cacheItem",
-        "only",
-        "set_cruising_speed",
-        "get_cruising_speed",
-        "Navigator::get_altitude_acceptance_radius",
         "Navigator::set_cruising_speed",
+        "only",
+        "Mission::on_active",
         "Navigator::get_cruising_speed",
-        "Mission::heading_sp_update",
-        "cruising_speed_sp_update",
+        "Navigator::get_altitude_acceptance_radius",
+        "set_cruising_speed",
         "reset_cruising_speed",
-        "Navigator::reset_cruising_speed"
+        "Navigator::reset_cruising_speed",
+        "get_cruising_speed",
+        "cruising_speed_sp_update",
+        "Navigator::run",
+        "Mission::heading_sp_update"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::on_active",
+          "Mission::cacheItem",
           "Mission::on_activation",
           "Mission::replayCachedTriggerItems",
-          "Mission::cacheItem",
+          "Mission::on_active",
           "Mission::heading_sp_update"
         ],
         "src/modules/navigator/mission.h": [
@@ -451,15 +451,15 @@
         "src/modules/navigator/navigator.h": [
           "only",
           "set_cruising_speed",
-          "get_cruising_speed",
-          "reset_cruising_speed"
+          "reset_cruising_speed",
+          "get_cruising_speed"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::run",
-          "Navigator::get_altitude_acceptance_radius",
           "Navigator::set_cruising_speed",
           "Navigator::get_cruising_speed",
-          "Navigator::reset_cruising_speed"
+          "Navigator::get_altitude_acceptance_radius",
+          "Navigator::reset_cruising_speed",
+          "Navigator::run"
         ]
       }
     }
@@ -634,34 +634,34 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::reset_mission",
-        "Mission::update_mission",
-        "Mission::on_active",
-        "Navigator::mode_completed",
-        "Mission::on_inactive",
         "Mission::on_activation",
         "Mission::publish_navigator_mission_item",
         "calculate_breaking_stop",
-        "stop_capturing_images",
         "Mission::set_execution_mode",
+        "Mission::on_active",
+        "Mission::update_mission",
+        "Navigator::mode_completed",
+        "Mission::on_inactive",
+        "Mission::on_inactivation",
+        "stop_capturing_images",
         "Mission::set_current_mission_index",
-        "Mission::on_inactivation"
+        "Mission::reset_mission"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::reset_mission",
-          "Mission::update_mission",
-          "Mission::on_active",
-          "Mission::on_inactive",
           "Mission::on_activation",
           "Mission::publish_navigator_mission_item",
           "Mission::set_execution_mode",
+          "Mission::on_active",
+          "Mission::update_mission",
+          "Mission::on_inactive",
+          "Mission::on_inactivation",
           "Mission::set_current_mission_index",
-          "Mission::on_inactivation"
+          "Mission::reset_mission"
         ],
         "src/modules/navigator/navigator.h": [
-          "calculate_breaking_stop",
-          "stop_capturing_images"
+          "stop_capturing_images",
+          "calculate_breaking_stop"
         ],
         "src/modules/navigator/navigator_main.cpp": [
           "Navigator::mode_completed"
@@ -833,9 +833,9 @@
     },
     "modified_functions": {
       "all": [
-        "RTL::set_rtl_item",
+        "Mission::set_mission_items",
         "VtolTakeoff::on_active",
-        "Mission::set_mission_items"
+        "RTL::set_rtl_item"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
@@ -1212,34 +1212,34 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::reset_mission",
-        "Mission::update_mission",
-        "Mission::on_active",
-        "Navigator::stop_capturing_images",
-        "Mission::on_inactive",
         "Mission::on_activation",
         "Mission::publish_navigator_mission_item",
         "calculate_breaking_stop",
-        "stop_capturing_images",
         "Mission::set_execution_mode",
+        "Mission::on_active",
+        "Mission::update_mission",
+        "Mission::on_inactive",
+        "Mission::on_inactivation",
+        "Navigator::stop_capturing_images",
+        "stop_capturing_images",
         "Mission::set_current_mission_index",
-        "Mission::on_inactivation"
+        "Mission::reset_mission"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::reset_mission",
-          "Mission::update_mission",
-          "Mission::on_active",
-          "Mission::on_inactive",
           "Mission::on_activation",
           "Mission::publish_navigator_mission_item",
           "Mission::set_execution_mode",
+          "Mission::on_active",
+          "Mission::update_mission",
+          "Mission::on_inactive",
+          "Mission::on_inactivation",
           "Mission::set_current_mission_index",
-          "Mission::on_inactivation"
+          "Mission::reset_mission"
         ],
         "src/modules/navigator/navigator.h": [
-          "calculate_breaking_stop",
-          "stop_capturing_images"
+          "stop_capturing_images",
+          "calculate_breaking_stop"
         ],
         "src/modules/navigator/navigator_main.cpp": [
           "Navigator::stop_capturing_images"
@@ -1310,9 +1310,9 @@
     },
     "modified_functions": {
       "all": [
-        "RTL::set_rtl_item",
+        "Mission::set_mission_items",
         "VtolTakeoff::on_active",
-        "Mission::set_mission_items"
+        "RTL::set_rtl_item"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
@@ -1648,78 +1648,78 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::Mission",
-        "Mission::reset_mission",
-        "Mission::update_mission",
-        "Mission::need_to_reset_mission",
-        "type",
-        "Geofence::Geofence",
-        "Mission::cameraWasTriggering",
-        "Geofence::updateFence",
-        "Mission::save_mission_state",
-        "Mission::advance_mission",
-        "Mission::index_closest_mission_item",
-        "_missionFeasibilityChecker",
-        "Mission::publish_navigator_mission_item",
-        "Mission::getNextPositionMissionItem",
         "readMissionItemAtIndex",
-        "Mission::check_mission_valid",
-        "index_closest_mission_item",
-        "Geofence::loadFromFile",
-        "Geofence::insideCircle",
-        "Geofence::_updateFence",
-        "Geofence::isBelowMaxAltitude",
-        "Mission::readMissionItemAtIndex",
-        "MissionBlock::item_contains_position",
-        "Mission::read_mission_item",
-        "getNextPositionMissionItem",
-        "Mission::on_inactive",
-        "isEmpty",
-        "Copyright",
         "Mission::find_mission_land_start",
-        "Mission::getPreviousPositionItemIndex",
-        "Geofence::insidePolygon",
+        "Mission::index_closest_mission_item",
+        "Mission::publish_navigator_mission_item",
+        "Mission::advance_mission",
+        "Geofence::loadFromFile",
         "updateFence",
-        "Geofence::isInsidePolygonOrCircle"
+        "Mission::update_mission",
+        "Mission::save_mission_state",
+        "Mission::check_mission_valid",
+        "Geofence::Geofence",
+        "index_closest_mission_item",
+        "Geofence::isBelowMaxAltitude",
+        "Geofence::insideCircle",
+        "Copyright",
+        "Mission::need_to_reset_mission",
+        "Geofence::updateFence",
+        "Mission::readMissionItemAtIndex",
+        "type",
+        "_missionFeasibilityChecker",
+        "getNextPositionMissionItem",
+        "Mission::cameraWasTriggering",
+        "Mission::on_inactive",
+        "Mission::Mission",
+        "Geofence::insidePolygon",
+        "Geofence::isInsidePolygonOrCircle",
+        "Mission::getPreviousPositionItemIndex",
+        "Mission::read_mission_item",
+        "MissionBlock::item_contains_position",
+        "isEmpty",
+        "Mission::getNextPositionMissionItem",
+        "Mission::reset_mission",
+        "Geofence::_updateFence"
       ],
       "by_file": {
         "src/modules/navigator/GeofenceBreachAvoidance/dataman_mocks.hpp": [
-          "type",
-          "Copyright"
+          "Copyright",
+          "type"
         ],
         "src/modules/navigator/geofence.cpp": [
-          "Geofence::Geofence",
-          "Geofence::updateFence",
-          "Geofence::insidePolygon",
-          "Geofence::isInsidePolygonOrCircle",
           "Geofence::loadFromFile",
-          "Geofence::_updateFence",
+          "Geofence::insideCircle",
+          "Geofence::Geofence",
+          "Geofence::insidePolygon",
           "Geofence::isBelowMaxAltitude",
-          "Geofence::insideCircle"
+          "Geofence::isInsidePolygonOrCircle",
+          "Geofence::updateFence",
+          "Geofence::_updateFence"
         ],
         "src/modules/navigator/geofence.h": [
-          "updateFence",
-          "isEmpty"
+          "isEmpty",
+          "updateFence"
         ],
         "src/modules/navigator/mission.cpp": [
-          "Mission::Mission",
-          "Mission::reset_mission",
-          "Mission::update_mission",
-          "Mission::need_to_reset_mission",
-          "MissionBlock::item_contains_position",
-          "Mission::read_mission_item",
-          "Mission::cameraWasTriggering",
-          "Mission::save_mission_state",
-          "Mission::on_inactive",
-          "Mission::advance_mission",
-          "Mission::index_closest_mission_item",
-          "_missionFeasibilityChecker",
-          "Mission::publish_navigator_mission_item",
           "Mission::find_mission_land_start",
-          "Mission::getNextPositionMissionItem",
-          "Mission::getPreviousPositionItemIndex",
+          "Mission::index_closest_mission_item",
+          "Mission::publish_navigator_mission_item",
+          "Mission::advance_mission",
+          "Mission::readMissionItemAtIndex",
+          "_missionFeasibilityChecker",
+          "Mission::update_mission",
+          "Mission::save_mission_state",
           "Mission::check_mission_valid",
-          "Mission::readMissionItemAtIndex"
+          "Mission::cameraWasTriggering",
+          "Mission::on_inactive",
+          "Mission::Mission",
+          "Mission::need_to_reset_mission",
+          "Mission::getPreviousPositionItemIndex",
+          "Mission::read_mission_item",
+          "MissionBlock::item_contains_position",
+          "Mission::getNextPositionMissionItem",
+          "Mission::reset_mission"
         ],
         "src/modules/navigator/mission.h": [
           "readMissionItemAtIndex",
@@ -1988,11 +1988,11 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::land_start",
+        "Navigator::run",
         "getShouldEngageMissionForLanding",
         "RTL::on_activation",
-        "on_mission_landing",
-        "Navigator::run"
+        "Mission::land_start",
+        "on_mission_landing"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
@@ -2160,11 +2160,11 @@
     },
     "modified_functions": {
       "all": [
-        "Land::on_activation",
-        "RTL::on_activation",
+        "Loiter::on_activation",
         "Takeoff::on_activation",
         "Mission::on_activation",
-        "Loiter::on_activation"
+        "Land::on_activation",
+        "RTL::on_activation"
       ],
       "by_file": {
         "src/modules/navigator/land.cpp": [
@@ -2223,13 +2223,13 @@
     },
     "modified_functions": {
       "all": [
-        "Loiter::on_inactive",
-        "Loiter::on_activation"
+        "Loiter::on_activation",
+        "Loiter::on_inactive"
       ],
       "by_file": {
         "src/modules/navigator/loiter.cpp": [
-          "Loiter::on_inactive",
-          "Loiter::on_activation"
+          "Loiter::on_activation",
+          "Loiter::on_inactive"
         ]
       }
     }
@@ -2290,14 +2290,14 @@
     "modified_functions": {
       "all": [
         "VtolTakeoff::VtolTakeoff",
-        "VtolTakeoff::set_takeoff_position",
-        "VtolTakeoff::on_active"
+        "VtolTakeoff::on_active",
+        "VtolTakeoff::set_takeoff_position"
       ],
       "by_file": {
         "src/modules/navigator/vtol_takeoff.cpp": [
           "VtolTakeoff::VtolTakeoff",
-          "VtolTakeoff::set_takeoff_position",
-          "VtolTakeoff::on_active"
+          "VtolTakeoff::on_active",
+          "VtolTakeoff::set_takeoff_position"
         ]
       }
     }
@@ -2340,13 +2340,13 @@
     },
     "modified_functions": {
       "all": [
-        "Loiter::Loiter",
-        "Loiter::on_activation"
+        "Loiter::on_activation",
+        "Loiter::Loiter"
       ],
       "by_file": {
         "src/modules/navigator/loiter.cpp": [
-          "Loiter::Loiter",
-          "Loiter::on_activation"
+          "Loiter::on_activation",
+          "Loiter::Loiter"
         ]
       }
     }
@@ -2539,8 +2539,8 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBlock::is_mission_item_reached_or_completed",
-        "Mission::set_mission_items"
+        "Mission::set_mission_items",
+        "MissionBlock::is_mission_item_reached_or_completed"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
@@ -2676,19 +2676,19 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBlock::item_contains_position",
-        "FeasibilityChecker::checkIfBelowHomeAltitude",
-        "FeasibilityChecker::reset",
         "FeasibilityChecker::doCommonChecks",
+        "FeasibilityChecker::reset",
+        "FeasibilityChecker::checkIfBelowHomeAltitude",
         "checkIfBelowHomeAltitude",
+        "MissionBlock::item_contains_position",
         "FeasibilityChecker::checkDistancesBetweenWaypoints"
       ],
       "by_file": {
         "src/modules/navigator/MissionFeasibility/FeasibilityChecker.cpp": [
-          "MissionBlock::item_contains_position",
-          "FeasibilityChecker::checkIfBelowHomeAltitude",
           "FeasibilityChecker::doCommonChecks",
           "FeasibilityChecker::reset",
+          "FeasibilityChecker::checkIfBelowHomeAltitude",
+          "MissionBlock::item_contains_position",
           "FeasibilityChecker::checkDistancesBetweenWaypoints"
         ],
         "src/modules/navigator/MissionFeasibility/FeasibilityChecker.hpp": [
@@ -3145,30 +3145,30 @@
     },
     "modified_functions": {
       "all": [
+        "MissionBase::resetMission",
+        "Geofence::loadFromFile",
+        "Geofence::run",
         "MissionBase::updateMavlinkMission",
         "Mission::save_mission_state",
-        "Geofence::run",
         "MissionBase::checkMissionRestart",
-        "Navigator::run",
-        "RTL::updateDatamanCache",
         "MissionBase::checkClimbRequired",
-        "MissionBase::resetMission",
-        "mission_instance_count",
-        "Geofence::loadFromFile"
+        "RTL::updateDatamanCache",
+        "Navigator::run",
+        "mission_instance_count"
       ],
       "by_file": {
         "src/modules/navigator/geofence.cpp": [
-          "Geofence::loadFromFile",
-          "Geofence::run"
+          "Geofence::run",
+          "Geofence::loadFromFile"
         ],
         "src/modules/navigator/mission.cpp": [
           "Mission::save_mission_state"
         ],
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::checkClimbRequired",
           "MissionBase::checkMissionRestart",
           "MissionBase::updateMavlinkMission",
-          "MissionBase::resetMission"
+          "MissionBase::resetMission",
+          "MissionBase::checkClimbRequired"
         ],
         "src/modules/navigator/navigator.h": [
           "mission_instance_count"
@@ -3267,13 +3267,13 @@
     },
     "modified_functions": {
       "all": [
-        "Loiter::set_loiter_position",
-        "Loiter::on_activation"
+        "Loiter::on_activation",
+        "Loiter::set_loiter_position"
       ],
       "by_file": {
         "src/modules/navigator/loiter.cpp": [
-          "Loiter::set_loiter_position",
-          "Loiter::on_activation"
+          "Loiter::on_activation",
+          "Loiter::set_loiter_position"
         ]
       }
     }
@@ -3452,76 +3452,76 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBase::updateCachedItemsUpToIndex",
-        "Mission::save_mission_state",
-        "MissionBase::set_mission_items",
-        "RTL::updateDatamanCache",
-        "MissionBase::checkClimbRequired",
-        "Mission::setActiveMissionItems",
-        "math::max",
-        "MissionBase::updateDatamanCache",
-        "MissionFeasibilityChecker::checkMissionAgainstGeofence",
-        "Geofence::insideCircle",
-        "MissionBase::do_abort_landing",
-        "clearDm",
-        "MissionBase::on_active",
-        "MissionBase::isMissionValid",
-        "Geofence::_updateFence",
-        "MissionBase::getNonJumpItem",
-        "RTL::readVtolLandApproaches",
-        "RTL::findRtlDestination",
-        "RtlMissionFast::setActiveMissionItems",
-        "RtlMissionFastReverse::setActiveMissionItems",
-        "MissionBase::updateMavlinkMission",
         "Geofence::clearDm",
-        "Geofence::run",
-        "MissionFeasibilityChecker::checkMissionFeasible",
-        "Geofence::insidePolygon",
-        "MissionBase::resetMissionJumpCounter",
-        "MissionBase::resetMission",
+        "MissionBase::getNonJumpItem",
         "Geofence::loadFromFile",
+        "math::max",
+        "MissionBase::updateMavlinkMission",
+        "Mission::save_mission_state",
+        "MissionBase::do_abort_landing",
+        "MissionBase::set_mission_items",
+        "MissionFeasibilityChecker::checkMissionFeasible",
+        "clearDm",
+        "Mission::setActiveMissionItems",
+        "Geofence::insideCircle",
+        "MissionFeasibilityChecker::checkMissionAgainstGeofence",
+        "MissionBase::checkClimbRequired",
+        "RtlMissionFast::setActiveMissionItems",
+        "RTL::findRtlDestination",
+        "MissionBase::resetMission",
+        "MissionBase::updateDatamanCache",
+        "MissionBase::isMissionValid",
+        "MissionBase::on_active",
+        "MissionBase::resetMissionJumpCounter",
+        "Geofence::run",
         "RtlDirectMissionLand::setActiveMissionItems",
-        "MissionBase::setMissionToClosestItem"
+        "MissionBase::setMissionToClosestItem",
+        "RTL::readVtolLandApproaches",
+        "Geofence::insidePolygon",
+        "MissionBase::updateCachedItemsUpToIndex",
+        "RTL::updateDatamanCache",
+        "RtlMissionFastReverse::setActiveMissionItems",
+        "Geofence::_updateFence"
       ],
       "by_file": {
         "src/modules/navigator/geofence.cpp": [
           "Geofence::clearDm",
+          "Geofence::loadFromFile",
           "Geofence::run",
           "Geofence::insidePolygon",
           "Geofence::insideCircle",
-          "Geofence::loadFromFile",
           "Geofence::_updateFence"
         ],
         "src/modules/navigator/geofence.h": [
           "clearDm"
         ],
         "src/modules/navigator/mission.cpp": [
-          "Mission::save_mission_state",
-          "Mission::setActiveMissionItems"
+          "Mission::setActiveMissionItems",
+          "Mission::save_mission_state"
         ],
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::updateCachedItemsUpToIndex",
-          "MissionBase::updateMavlinkMission",
-          "MissionBase::set_mission_items",
-          "MissionBase::do_abort_landing",
-          "MissionBase::checkClimbRequired",
-          "math::max",
-          "MissionBase::updateDatamanCache",
           "MissionBase::resetMission",
-          "MissionBase::resetMissionJumpCounter",
+          "MissionBase::updateDatamanCache",
+          "MissionBase::isMissionValid",
           "MissionBase::on_active",
-          "MissionBase::setMissionToClosestItem",
           "MissionBase::getNonJumpItem",
-          "MissionBase::isMissionValid"
+          "MissionBase::resetMissionJumpCounter",
+          "MissionBase::updateMavlinkMission",
+          "MissionBase::do_abort_landing",
+          "math::max",
+          "MissionBase::set_mission_items",
+          "MissionBase::setMissionToClosestItem",
+          "MissionBase::updateCachedItemsUpToIndex",
+          "MissionBase::checkClimbRequired"
         ],
         "src/modules/navigator/mission_feasibility_checker.cpp": [
           "MissionFeasibilityChecker::checkMissionAgainstGeofence",
           "MissionFeasibilityChecker::checkMissionFeasible"
         ],
         "src/modules/navigator/rtl.cpp": [
+          "RTL::findRtlDestination",
           "RTL::readVtolLandApproaches",
-          "RTL::updateDatamanCache",
-          "RTL::findRtlDestination"
+          "RTL::updateDatamanCache"
         ],
         "src/modules/navigator/rtl_direct_mission_land.cpp": [
           "RtlDirectMissionLand::setActiveMissionItems"
@@ -3728,62 +3728,62 @@
     },
     "modified_functions": {
       "all": [
-        "Navigator::calculate_breaking_stop",
-        "VtolTakeoff::on_active",
-        "Mission::handleTakeoff",
-        "MissionBlock::set_takeoff_item",
-        "Takeoff::set_takeoff_position",
-        "MissionBlock::set_land_item",
-        "Navigator::get_yaw_acceptance",
-        "MissionBlock::set_vtol_transition_item",
-        "VtolTakeoff::set_takeoff_position",
-        "MissionBlock::mission_item_to_position_setpoint",
-        "MissionBlock::setLoiterItemFromCurrentPositionSetpoint",
+        "Navigator::reset_position_setpoint",
         "MissionBlock::setLoiterItemFromCurrentPosition",
-        "Navigator::run",
-        "MissionBase::heading_sp_update",
+        "MissionBlock::set_takeoff_item",
         "Navigator::geofence_allows_position",
+        "MissionBlock::set_land_item",
+        "MissionBlock::setLoiterItemFromCurrentPositionSetpoint",
+        "Takeoff::set_takeoff_position",
+        "Navigator::get_yaw_acceptance",
+        "get_yaw_acceptance",
+        "Mission::handleTakeoff",
+        "MissionBlock::is_mission_item_reached_or_completed",
+        "MissionBlock::set_vtol_transition_item",
+        "MissionBlock::mission_item_to_position_setpoint",
+        "MissionBase::heading_sp_update",
+        "PX4_ISFINITE",
+        "Navigator::get_acceptance_radius",
         "calculate_breaking_stop",
         "Navigator::geofence_breach_check",
-        "get_yaw_acceptance",
-        "Navigator::reset_position_setpoint",
-        "PX4_ISFINITE",
-        "MissionBase::position_setpoint_equal",
-        "MissionBlock::is_mission_item_reached_or_completed",
-        "Navigator::get_acceptance_radius",
-        "Mission::handleVtolTransition"
+        "Mission::handleVtolTransition",
+        "VtolTakeoff::set_takeoff_position",
+        "Navigator::calculate_breaking_stop",
+        "Navigator::run",
+        "VtolTakeoff::on_active",
+        "MissionBase::position_setpoint_equal"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::handleVtolTransition",
-          "Mission::handleTakeoff"
+          "Mission::handleTakeoff",
+          "Mission::handleVtolTransition"
         ],
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::position_setpoint_equal",
-          "MissionBase::heading_sp_update"
+          "MissionBase::heading_sp_update",
+          "MissionBase::position_setpoint_equal"
         ],
         "src/modules/navigator/mission_block.cpp": [
+          "MissionBlock::set_vtol_transition_item",
+          "MissionBlock::mission_item_to_position_setpoint",
           "MissionBlock::setLoiterItemFromCurrentPosition",
           "MissionBlock::set_takeoff_item",
-          "MissionBlock::set_land_item",
-          "MissionBlock::set_vtol_transition_item",
           "PX4_ISFINITE",
-          "MissionBlock::is_mission_item_reached_or_completed",
-          "MissionBlock::mission_item_to_position_setpoint",
-          "MissionBlock::setLoiterItemFromCurrentPositionSetpoint"
+          "MissionBlock::set_land_item",
+          "MissionBlock::setLoiterItemFromCurrentPositionSetpoint",
+          "MissionBlock::is_mission_item_reached_or_completed"
         ],
         "src/modules/navigator/navigator.h": [
-          "calculate_breaking_stop",
-          "get_yaw_acceptance"
+          "get_yaw_acceptance",
+          "calculate_breaking_stop"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::calculate_breaking_stop",
-          "Navigator::run",
-          "Navigator::geofence_allows_position",
-          "Navigator::geofence_breach_check",
+          "Navigator::get_acceptance_radius",
           "Navigator::reset_position_setpoint",
+          "Navigator::geofence_breach_check",
+          "Navigator::geofence_allows_position",
           "Navigator::get_yaw_acceptance",
-          "Navigator::get_acceptance_radius"
+          "Navigator::calculate_breaking_stop",
+          "Navigator::run"
         ],
         "src/modules/navigator/takeoff.cpp": [
           "Takeoff::set_takeoff_position"
@@ -4191,8 +4191,8 @@
           "Geofence::_updateFence"
         ],
         "src/modules/navigator/rtl.cpp": [
-          "RTL::readVtolLandApproaches",
-          "RTL::on_activation"
+          "RTL::on_activation",
+          "RTL::readVtolLandApproaches"
         ]
       }
     }
@@ -4284,19 +4284,19 @@
     },
     "modified_functions": {
       "all": [
-        "Land::on_activation",
-        "RTL::on_activation",
-        "Navigator::disable_camera_trigger",
         "MissionBase::on_inactivation",
-        "MissionBase::handleLanding"
+        "MissionBase::handleLanding",
+        "Land::on_activation",
+        "Navigator::disable_camera_trigger",
+        "RTL::on_activation"
       ],
       "by_file": {
         "src/modules/navigator/land.cpp": [
           "Land::on_activation"
         ],
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::on_inactivation",
-          "MissionBase::handleLanding"
+          "MissionBase::handleLanding",
+          "MissionBase::on_inactivation"
         ],
         "src/modules/navigator/navigator_main.cpp": [
           "Navigator::disable_camera_trigger"
@@ -4682,57 +4682,57 @@
     },
     "modified_functions": {
       "all": [
+        "altitude",
+        "Navigator::geofence_allows_position",
+        "getMaxVerDistanceHome",
+        "checkAll",
+        "MissionFeasibilityChecker::checkMissionFeasible",
+        "geofence_breach_check",
+        "Geofence::isBelowMaxAltitude",
+        "Copyright",
         "matrix::Vector2d",
         "setMaxVerDistHome",
-        "Geofence::printStatus",
-        "check",
-        "altitude",
+        "GeofenceBreachAvoidance::setHomePosition",
         "MissionFeasibilityChecker::checkGeofence",
-        "Geofence::_updateFence",
-        "Geofence::isBelowMaxAltitude",
-        "Navigator::params_update",
-        "isCloserThanMaxDistToHome",
-        "getMaxVerDistanceHome",
-        "checkGeofence",
-        "geofence_breach_check",
-        "checkAll",
-        "Navigator::run",
-        "Navigator::geofence_allows_position",
-        "Copyright",
-        "Geofence::checkAll",
-        "Geofence::check",
-        "MissionFeasibilityChecker::checkMissionFeasible",
-        "checkPolygons",
         "Navigator::geofence_breach_check",
+        "check",
+        "isCloserThanMaxDistToHome",
+        "Geofence::check",
+        "Geofence::checkAll",
+        "checkGeofence",
+        "checkPolygons",
         "Geofence::isInsidePolygonOrCircle",
-        "GeofenceBreachAvoidance::setHomePosition"
+        "Navigator::run",
+        "Navigator::params_update",
+        "Geofence::printStatus",
+        "Geofence::_updateFence"
       ],
       "by_file": {
         "src/modules/navigator/GeofenceBreachAvoidance/geofence_breach_avoidance.cpp": [
-          "GeofenceBreachAvoidance::setHomePosition",
-          "Copyright"
+          "Copyright",
+          "GeofenceBreachAvoidance::setHomePosition"
         ],
         "src/modules/navigator/GeofenceBreachAvoidance/geofence_breach_avoidance.h": [
-          "setMaxVerDistHome",
-          "Copyright"
+          "Copyright",
+          "setMaxVerDistHome"
         ],
         "src/modules/navigator/geofence.cpp": [
           "checkAll",
-          "Copyright",
-          "Geofence::checkAll",
           "Geofence::check",
-          "Geofence::printStatus",
+          "Geofence::checkAll",
           "Geofence::isInsidePolygonOrCircle",
-          "Geofence::_updateFence",
-          "Geofence::isBelowMaxAltitude"
+          "Geofence::isBelowMaxAltitude",
+          "Copyright",
+          "Geofence::printStatus",
+          "Geofence::_updateFence"
         ],
         "src/modules/navigator/geofence.h": [
-          "isCloserThanMaxDistToHome",
+          "check",
           "getMaxVerDistanceHome",
+          "isCloserThanMaxDistToHome",
           "checkAll",
-          "Copyright",
           "checkPolygons",
-          "check"
+          "Copyright"
         ],
         "src/modules/navigator/geofence_params.c": [
           "altitude"
@@ -4748,10 +4748,10 @@
           "geofence_breach_check"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "matrix::Vector2d",
-          "Navigator::run",
-          "Navigator::geofence_allows_position",
           "Navigator::geofence_breach_check",
+          "Navigator::geofence_allows_position",
+          "Navigator::run",
+          "matrix::Vector2d",
           "Navigator::params_update"
         ]
       }
@@ -4922,24 +4922,24 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBase::setEndOfMissionItems",
-        "VtolTakeoff::on_active",
-        "mission_apply_limitation",
-        "get_lndmc_alt_max",
-        "MissionBase::on_active",
-        "Land::on_activation",
-        "Takeoff::on_active",
-        "Mission::setActiveMissionItems",
-        "RtlDirect::set_rtl_item",
-        "Takeoff::set_takeoff_position",
         "MissionBlock::set_vtol_transition_item",
-        "VtolTakeoff::set_takeoff_position",
-        "MissionBase::do_abort_landing",
         "RtlDirectMissionLand::setActiveMissionItems",
+        "MissionBase::on_active",
+        "MissionBase::do_abort_landing",
+        "Mission::handleVtolTransition",
+        "Land::on_activation",
+        "mission_apply_limitation",
+        "RtlDirect::set_rtl_item",
+        "VtolTakeoff::set_takeoff_position",
+        "MissionBase::setEndOfMissionItems",
+        "Mission::setActiveMissionItems",
+        "get_lndmc_alt_max",
+        "Takeoff::on_active",
+        "Takeoff::set_takeoff_position",
         "RtlMissionFastReverse::setActiveMissionItems",
-        "RtlMissionFast::setActiveMissionItems",
         "Loiter::set_loiter_position",
-        "Mission::handleVtolTransition"
+        "RtlMissionFast::setActiveMissionItems",
+        "VtolTakeoff::on_active"
       ],
       "by_file": {
         "src/modules/navigator/land.cpp": [
@@ -4953,9 +4953,9 @@
           "Mission::handleVtolTransition"
         ],
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::on_active",
+          "MissionBase::setEndOfMissionItems",
           "MissionBase::do_abort_landing",
-          "MissionBase::setEndOfMissionItems"
+          "MissionBase::on_active"
         ],
         "src/modules/navigator/mission_block.cpp": [
           "MissionBlock::set_vtol_transition_item"
@@ -5162,13 +5162,13 @@
     },
     "modified_functions": {
       "all": [
-        "RTL::setRtlTypeAndDestination",
-        "RTL::findRtlDestination"
+        "RTL::findRtlDestination",
+        "RTL::setRtlTypeAndDestination"
       ],
       "by_file": {
         "src/modules/navigator/rtl.cpp": [
-          "RTL::setRtlTypeAndDestination",
-          "RTL::findRtlDestination"
+          "RTL::findRtlDestination",
+          "RTL::setRtlTypeAndDestination"
         ]
       }
     }
@@ -5655,11 +5655,11 @@
     },
     "modified_functions": {
       "all": [
-        "Navigator::Navigator",
-        "control::SuperBlock",
-        "MissionBlock::set_loiter_item",
+        "Loiter::on_activation",
         "Navigator::task_main",
-        "Loiter::on_activation"
+        "MissionBlock::set_loiter_item",
+        "control::SuperBlock",
+        "Navigator::Navigator"
       ],
       "by_file": {
         "src/modules/navigator/loiter.cpp": [
@@ -5894,30 +5894,30 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::Mission",
-        "Mission::altitude_sp_foh_update",
-        "MissionBlock::item_contains_position",
-        "Mission::reset_offboard_mission",
-        "Mission::read_mission_item",
-        "Mission::do_need_move_to_land",
-        "MissionBlock::is_mission_item_reached",
-        "MissionFeasibilityChecker::checkMissionItemValidity",
-        "copy_positon_if_valid",
         "MissionBlock::mission_item_to_position_setpoint",
-        "Mission::heading_sp_update",
+        "copy_positon_if_valid",
+        "Mission::reset_offboard_mission",
         "Mission::do_need_takeoff",
-        "Mission::set_mission_items"
+        "Mission::set_mission_items",
+        "MissionFeasibilityChecker::checkMissionItemValidity",
+        "Mission::Mission",
+        "Mission::do_need_move_to_land",
+        "Mission::altitude_sp_foh_update",
+        "MissionBlock::is_mission_item_reached",
+        "Mission::read_mission_item",
+        "MissionBlock::item_contains_position",
+        "Mission::heading_sp_update"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::Mission",
-          "Mission::altitude_sp_foh_update",
           "Mission::reset_offboard_mission",
-          "Mission::read_mission_item",
-          "Mission::do_need_move_to_land",
-          "Mission::heading_sp_update",
           "Mission::do_need_takeoff",
-          "Mission::set_mission_items"
+          "Mission::set_mission_items",
+          "Mission::Mission",
+          "Mission::do_need_move_to_land",
+          "Mission::altitude_sp_foh_update",
+          "Mission::read_mission_item",
+          "Mission::heading_sp_update"
         ],
         "src/modules/navigator/mission.h": [
           "copy_positon_if_valid"
@@ -6015,9 +6015,9 @@
     },
     "modified_functions": {
       "all": [
-        "item_contains_position",
         "MissionBlock::item_contains_position",
-        "MissionFeasibilityChecker::checkGeofence"
+        "MissionFeasibilityChecker::checkGeofence",
+        "item_contains_position"
       ],
       "by_file": {
         "src/modules/navigator/mission_block.cpp": [
@@ -6127,15 +6127,15 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::Mission",
         "Mission::on_inactive",
+        "Mission::Mission",
         "Mission::on_active",
         "Mission::check_mission_valid"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::Mission",
           "Mission::on_inactive",
+          "Mission::Mission",
           "Mission::on_active",
           "Mission::check_mission_valid"
         ]
@@ -6210,16 +6210,16 @@
     "modified_functions": {
       "all": [
         "MissionBlock::set_land_item",
-        "RTL::on_inactive",
-        "RTL::on_activation"
+        "RTL::on_activation",
+        "RTL::on_inactive"
       ],
       "by_file": {
         "src/modules/navigator/mission_block.cpp": [
           "MissionBlock::set_land_item"
         ],
         "src/modules/navigator/rtl.cpp": [
-          "RTL::on_inactive",
-          "RTL::on_activation"
+          "RTL::on_activation",
+          "RTL::on_inactive"
         ]
       }
     }
@@ -6596,17 +6596,17 @@
     },
     "modified_functions": {
       "all": [
+        "Copyright",
         "Loiter::Loiter",
-        "location",
-        "Copyright"
+        "location"
       ],
       "by_file": {
         "src/modules/navigator/loiter.cpp": [
           "Loiter::Loiter"
         ],
         "src/modules/navigator/mission_params.c": [
-          "location",
-          "Copyright"
+          "Copyright",
+          "location"
         ]
       }
     }
@@ -6958,21 +6958,21 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::update_offboard_mission",
-        "Mission::check_mission_valid",
         "Mission::on_inactive",
         "Mission::do_need_takeoff",
+        "Mission::set_mission_items",
+        "Mission::check_mission_valid",
         "Mission::calculate_takeoff_altitude",
-        "Mission::set_mission_items"
+        "Mission::update_offboard_mission"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::on_inactive",
-          "Mission::update_offboard_mission",
-          "Mission::check_mission_valid",
           "Mission::do_need_takeoff",
+          "Mission::set_mission_items",
+          "Mission::check_mission_valid",
           "Mission::calculate_takeoff_altitude",
-          "Mission::set_mission_items"
+          "Mission::update_offboard_mission",
+          "Mission::on_inactive"
         ]
       }
     }
@@ -7270,21 +7270,21 @@
     },
     "modified_functions": {
       "all": [
-        "Navigator::Navigator",
-        "mission_item_to_vehicle_command",
-        "control::SuperBlock",
-        "MissionBlock::is_mission_item_reached",
-        "MissionBlock::set_loiter_item",
+        "Loiter::on_activation",
         "Navigator::task_main",
-        "Loiter::on_activation"
+        "MissionBlock::set_loiter_item",
+        "mission_item_to_vehicle_command",
+        "MissionBlock::is_mission_item_reached",
+        "control::SuperBlock",
+        "Navigator::Navigator"
       ],
       "by_file": {
         "src/modules/navigator/loiter.cpp": [
           "Loiter::on_activation"
         ],
         "src/modules/navigator/mission_block.cpp": [
-          "MissionBlock::is_mission_item_reached",
-          "MissionBlock::set_loiter_item"
+          "MissionBlock::set_loiter_item",
+          "MissionBlock::is_mission_item_reached"
         ],
         "src/modules/navigator/mission_block.h": [
           "mission_item_to_vehicle_command"
@@ -7452,24 +7452,24 @@
     },
     "modified_functions": {
       "all": [
+        "Navigator::publish_att_sp",
+        "MissionBlock::is_mission_item_reached",
         "Mission::update_offboard_mission",
         "Mission::update_onboard_mission",
-        "MissionBlock::is_mission_item_reached",
-        "Navigator::publish_att_sp",
+        "MissionBlock::reset_mission_item_reached",
         "MissionBlock::MissionBlock",
-        "Mission::set_mission_items",
-        "MissionBlock::reset_mission_item_reached"
+        "Mission::set_mission_items"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::update_offboard_mission",
           "Mission::update_onboard_mission",
-          "Mission::set_mission_items"
+          "Mission::set_mission_items",
+          "Mission::update_offboard_mission"
         ],
         "src/modules/navigator/mission_block.cpp": [
           "MissionBlock::is_mission_item_reached",
-          "MissionBlock::MissionBlock",
-          "MissionBlock::reset_mission_item_reached"
+          "MissionBlock::reset_mission_item_reached",
+          "MissionBlock::MissionBlock"
         ],
         "src/modules/navigator/navigator_main.cpp": [
           "Navigator::publish_att_sp"
@@ -7988,20 +7988,20 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::altitude_sp_foh_update",
         "MissionFeasibilityChecker::isPositionCommand",
-        "MissionBlock::is_mission_item_reached",
-        "Mission::heading_sp_update",
-        "MissionFeasibilityChecker::checkMissionItemValidity",
         "MissionBlock::mission_item_to_position_setpoint",
+        "Mission::altitude_sp_foh_update",
+        "MissionBlock::is_mission_item_reached",
+        "Mission::set_mission_items",
+        "MissionFeasibilityChecker::checkMissionItemValidity",
         "MissionBlock::MissionBlock",
-        "Mission::set_mission_items"
+        "Mission::heading_sp_update"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::heading_sp_update",
+          "Mission::set_mission_items",
           "Mission::altitude_sp_foh_update",
-          "Mission::set_mission_items"
+          "Mission::heading_sp_update"
         ],
         "src/modules/navigator/mission_block.cpp": [
           "MissionBlock::is_mission_item_reached",
@@ -8009,8 +8009,8 @@
           "MissionBlock::MissionBlock"
         ],
         "src/modules/navigator/mission_feasibility_checker.cpp": [
-          "MissionFeasibilityChecker::checkMissionItemValidity",
-          "MissionFeasibilityChecker::isPositionCommand"
+          "MissionFeasibilityChecker::isPositionCommand",
+          "MissionFeasibilityChecker::checkMissionItemValidity"
         ]
       }
     }
@@ -8200,47 +8200,47 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::Mission",
-        "Mission::altitude_sp_foh_reset",
-        "Mission::altitude_sp_foh_update",
-        "read_mission_item",
-        "MissionFeasibilityChecker::checkFixedWingLanding",
-        "Mission::on_active",
-        "Mission::read_mission_item",
-        "waypoint",
-        "MissionBlock::is_mission_item_reached",
-        "MissionBlock::set_takeoff_item",
-        "Mission::update_offboard_mission",
-        "MissionBlock::mission_item_to_vehicle_command",
-        "MissionFeasibilityChecker::check_dist_1wp",
         "MissionBlock::mission_item_to_position_setpoint",
-        "MissionBlock::MissionBlock",
-        "Mission::set_mission_items"
+        "MissionBlock::set_takeoff_item",
+        "Mission::set_mission_items",
+        "Mission::on_active",
+        "MissionFeasibilityChecker::check_dist_1wp",
+        "Mission::update_offboard_mission",
+        "waypoint",
+        "Mission::Mission",
+        "read_mission_item",
+        "Mission::altitude_sp_foh_update",
+        "MissionBlock::is_mission_item_reached",
+        "Mission::read_mission_item",
+        "MissionFeasibilityChecker::checkFixedWingLanding",
+        "Mission::altitude_sp_foh_reset",
+        "MissionBlock::mission_item_to_vehicle_command",
+        "MissionBlock::MissionBlock"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::Mission",
-          "Mission::altitude_sp_foh_reset",
-          "Mission::altitude_sp_foh_update",
+          "Mission::set_mission_items",
           "Mission::on_active",
-          "Mission::read_mission_item",
-          "waypoint",
           "Mission::update_offboard_mission",
-          "Mission::set_mission_items"
+          "waypoint",
+          "Mission::Mission",
+          "Mission::altitude_sp_foh_update",
+          "Mission::read_mission_item",
+          "Mission::altitude_sp_foh_reset"
         ],
         "src/modules/navigator/mission.h": [
           "read_mission_item"
         ],
         "src/modules/navigator/mission_block.cpp": [
-          "MissionBlock::is_mission_item_reached",
-          "MissionBlock::set_takeoff_item",
-          "MissionBlock::mission_item_to_vehicle_command",
           "MissionBlock::mission_item_to_position_setpoint",
+          "MissionBlock::set_takeoff_item",
+          "MissionBlock::is_mission_item_reached",
+          "MissionBlock::mission_item_to_vehicle_command",
           "MissionBlock::MissionBlock"
         ],
         "src/modules/navigator/mission_feasibility_checker.cpp": [
-          "MissionFeasibilityChecker::checkFixedWingLanding",
-          "MissionFeasibilityChecker::check_dist_1wp"
+          "MissionFeasibilityChecker::check_dist_1wp",
+          "MissionFeasibilityChecker::checkFixedWingLanding"
         ]
       }
     }
@@ -8737,22 +8737,22 @@
     "modified_functions": {
       "all": [
         "Mission::Mission",
-        "Mission::update_offboard_mission",
-        "Mission::check_mission_valid",
         "MissionFeasibilityChecker::checkHomePositionAltitude",
         "MissionFeasibilityChecker::checkMissionItemValidity",
-        "MissionFeasibilityChecker::check_dist_1wp"
+        "MissionFeasibilityChecker::check_dist_1wp",
+        "Mission::check_mission_valid",
+        "Mission::update_offboard_mission"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
           "Mission::Mission",
-          "Mission::update_offboard_mission",
-          "Mission::check_mission_valid"
+          "Mission::check_mission_valid",
+          "Mission::update_offboard_mission"
         ],
         "src/modules/navigator/mission_feasibility_checker.cpp": [
-          "MissionFeasibilityChecker::checkHomePositionAltitude",
           "MissionFeasibilityChecker::checkMissionItemValidity",
-          "MissionFeasibilityChecker::check_dist_1wp"
+          "MissionFeasibilityChecker::check_dist_1wp",
+          "MissionFeasibilityChecker::checkHomePositionAltitude"
         ]
       }
     }
@@ -8812,13 +8812,13 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::update_offboard_mission",
-        "Mission::check_mission_valid"
+        "Mission::check_mission_valid",
+        "Mission::update_offboard_mission"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::update_offboard_mission",
-          "Mission::check_mission_valid"
+          "Mission::check_mission_valid",
+          "Mission::update_offboard_mission"
         ]
       }
     }
@@ -9213,31 +9213,31 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::Mission",
-        "Mission::altitude_sp_foh_reset",
-        "Mission::altitude_sp_foh_update",
-        "read_mission_item",
-        "Mission::on_active",
-        "Mission::read_mission_item",
-        "waypoint",
-        "MissionBlock::is_mission_item_reached",
-        "Mission::update_offboard_mission",
-        "MissionBlock::mission_item_to_vehicle_command",
-        "MissionFeasibilityChecker::check_dist_1wp",
         "MissionBlock::mission_item_to_position_setpoint",
-        "MissionBlock::MissionBlock",
-        "Mission::set_mission_items"
+        "Mission::set_mission_items",
+        "Mission::on_active",
+        "MissionFeasibilityChecker::check_dist_1wp",
+        "Mission::update_offboard_mission",
+        "waypoint",
+        "Mission::Mission",
+        "read_mission_item",
+        "Mission::altitude_sp_foh_update",
+        "MissionBlock::is_mission_item_reached",
+        "Mission::read_mission_item",
+        "Mission::altitude_sp_foh_reset",
+        "MissionBlock::mission_item_to_vehicle_command",
+        "MissionBlock::MissionBlock"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::Mission",
-          "Mission::altitude_sp_foh_reset",
-          "Mission::altitude_sp_foh_update",
+          "Mission::set_mission_items",
           "Mission::on_active",
-          "Mission::read_mission_item",
-          "waypoint",
           "Mission::update_offboard_mission",
-          "Mission::set_mission_items"
+          "waypoint",
+          "Mission::Mission",
+          "Mission::altitude_sp_foh_update",
+          "Mission::read_mission_item",
+          "Mission::altitude_sp_foh_reset"
         ],
         "src/modules/navigator/mission.h": [
           "read_mission_item"
@@ -9245,8 +9245,8 @@
         "src/modules/navigator/mission_block.cpp": [
           "MissionBlock::is_mission_item_reached",
           "MissionBlock::mission_item_to_position_setpoint",
-          "MissionBlock::MissionBlock",
-          "MissionBlock::mission_item_to_vehicle_command"
+          "MissionBlock::mission_item_to_vehicle_command",
+          "MissionBlock::MissionBlock"
         ],
         "src/modules/navigator/mission_feasibility_checker.cpp": [
           "MissionFeasibilityChecker::check_dist_1wp"
@@ -9333,16 +9333,16 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBlock::mission_item_to_vehicle_command",
-        "mission_item_to_position_setpoint",
-        "Mission::heading_sp_update",
         "MissionBlock::mission_item_to_position_setpoint",
-        "Mission::set_mission_items"
+        "mission_item_to_position_setpoint",
+        "Mission::set_mission_items",
+        "MissionBlock::mission_item_to_vehicle_command",
+        "Mission::heading_sp_update"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::heading_sp_update",
-          "Mission::set_mission_items"
+          "Mission::set_mission_items",
+          "Mission::heading_sp_update"
         ],
         "src/modules/navigator/mission_block.cpp": [
           "MissionBlock::mission_item_to_position_setpoint",
@@ -9478,23 +9478,23 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::update_offboard_mission",
-        "Mission::check_mission_valid",
         "MissionFeasibilityChecker::MissionFeasibilityChecker",
-        "MissionFeasibilityChecker::checkHomePositionAltitude",
-        "MissionFeasibilityChecker::checkMissionItemValidity",
         "checkMissionItemValidity",
-        "MissionFeasibilityChecker::checkMissionFeasible"
+        "MissionFeasibilityChecker::checkHomePositionAltitude",
+        "MissionFeasibilityChecker::checkMissionFeasible",
+        "MissionFeasibilityChecker::checkMissionItemValidity",
+        "Mission::check_mission_valid",
+        "Mission::update_offboard_mission"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::update_offboard_mission",
-          "Mission::check_mission_valid"
+          "Mission::check_mission_valid",
+          "Mission::update_offboard_mission"
         ],
         "src/modules/navigator/mission_feasibility_checker.cpp": [
-          "MissionFeasibilityChecker::checkHomePositionAltitude",
-          "MissionFeasibilityChecker::checkMissionItemValidity",
           "MissionFeasibilityChecker::MissionFeasibilityChecker",
+          "MissionFeasibilityChecker::checkMissionItemValidity",
+          "MissionFeasibilityChecker::checkHomePositionAltitude",
           "MissionFeasibilityChecker::checkMissionFeasible"
         ],
         "src/modules/navigator/mission_feasibility_checker.h": [
@@ -9697,12 +9697,12 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBlock::item_contains_position",
-        "MissionBlock::is_mission_item_reached",
-        "Navigator::Navigator",
-        "MissionFeasibilityChecker::checkMissionItemValidity",
         "MissionBlock::mission_item_to_position_setpoint",
-        "Navigator::get_acceptance_radius"
+        "Navigator::get_acceptance_radius",
+        "MissionBlock::is_mission_item_reached",
+        "MissionBlock::item_contains_position",
+        "MissionFeasibilityChecker::checkMissionItemValidity",
+        "Navigator::Navigator"
       ],
       "by_file": {
         "src/modules/navigator/mission_block.cpp": [
@@ -9921,21 +9921,21 @@
     },
     "modified_functions": {
       "all": [
-        "checkMissionFeasibleRotarywing",
-        "Mission::update_offboard_mission",
-        "Mission::check_mission_valid",
         "MissionFeasibilityChecker::MissionFeasibilityChecker",
         "MissionFeasibilityChecker::checkMissionFeasibleRotarywing",
-        "MissionFeasibilityChecker::checkMissionFeasible"
+        "MissionFeasibilityChecker::checkMissionFeasible",
+        "checkMissionFeasibleRotarywing",
+        "Mission::check_mission_valid",
+        "Mission::update_offboard_mission"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::update_offboard_mission",
-          "Mission::check_mission_valid"
+          "Mission::check_mission_valid",
+          "Mission::update_offboard_mission"
         ],
         "src/modules/navigator/mission_feasibility_checker.cpp": [
-          "MissionFeasibilityChecker::checkMissionFeasibleRotarywing",
           "MissionFeasibilityChecker::MissionFeasibilityChecker",
+          "MissionFeasibilityChecker::checkMissionFeasibleRotarywing",
           "MissionFeasibilityChecker::checkMissionFeasible"
         ],
         "src/modules/navigator/mission_feasibility_checker.h": [
@@ -9990,13 +9990,13 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::advance_mission",
-        "Mission::set_mission_items"
+        "Mission::set_mission_items",
+        "Mission::advance_mission"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::advance_mission",
-          "Mission::set_mission_items"
+          "Mission::set_mission_items",
+          "Mission::advance_mission"
         ]
       }
     }
@@ -10101,21 +10101,21 @@
     },
     "modified_functions": {
       "all": [
+        "get_control_mode",
+        "MissionBlock::set_land_item",
         "Navigator::navigation_capabilities_update",
         "MissionFeasibilityChecker::checkMissionItemValidity",
-        "Navigator::task_main",
-        "MissionBlock::set_land_item",
-        "Navigator::Navigator",
         "Navigator::vehicle_status_update",
-        "get_control_mode",
-        "MissionBlock::MissionBlock",
-        "MissionBlock::reset_mission_item_reached"
+        "MissionBlock::reset_mission_item_reached",
+        "Navigator::task_main",
+        "Navigator::Navigator",
+        "MissionBlock::MissionBlock"
       ],
       "by_file": {
         "src/modules/navigator/mission_block.cpp": [
           "MissionBlock::set_land_item",
-          "MissionBlock::MissionBlock",
-          "MissionBlock::reset_mission_item_reached"
+          "MissionBlock::reset_mission_item_reached",
+          "MissionBlock::MissionBlock"
         ],
         "src/modules/navigator/mission_feasibility_checker.cpp": [
           "MissionFeasibilityChecker::checkMissionItemValidity"
@@ -10124,9 +10124,9 @@
           "get_control_mode"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::vehicle_status_update",
-          "Navigator::navigation_capabilities_update",
           "Navigator::task_main",
+          "Navigator::navigation_capabilities_update",
+          "Navigator::vehicle_status_update",
           "Navigator::Navigator"
         ]
       }
@@ -10245,13 +10245,13 @@
     "modified_functions": {
       "all": [
         "MissionFeasibilityChecker::checkMissionItemValidity",
-        "MissionBlock::MissionBlock",
-        "MissionBlock::reset_mission_item_reached"
+        "MissionBlock::reset_mission_item_reached",
+        "MissionBlock::MissionBlock"
       ],
       "by_file": {
         "src/modules/navigator/mission_block.cpp": [
-          "MissionBlock::MissionBlock",
-          "MissionBlock::reset_mission_item_reached"
+          "MissionBlock::reset_mission_item_reached",
+          "MissionBlock::MissionBlock"
         ],
         "src/modules/navigator/mission_feasibility_checker.cpp": [
           "MissionFeasibilityChecker::checkMissionItemValidity"
@@ -10512,10 +10512,10 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBlock::mission_item_to_position_setpoint",
         "Navigator::get_cruising_speed",
-        "MissionBlock::is_mission_item_reached",
-        "Navigator::Navigator"
+        "MissionBlock::mission_item_to_position_setpoint",
+        "Navigator::Navigator",
+        "MissionBlock::is_mission_item_reached"
       ],
       "by_file": {
         "src/modules/navigator/mission_block.cpp": [
@@ -10679,10 +10679,10 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBlock::mission_item_to_position_setpoint",
         "Navigator::get_cruising_speed",
-        "MissionBlock::is_mission_item_reached",
-        "Navigator::Navigator"
+        "MissionBlock::mission_item_to_position_setpoint",
+        "Navigator::Navigator",
+        "MissionBlock::is_mission_item_reached"
       ],
       "by_file": {
         "src/modules/navigator/mission_block.cpp": [
@@ -10944,10 +10944,10 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBlock::mission_item_to_position_setpoint",
         "Navigator::get_cruising_speed",
-        "MissionBlock::is_mission_item_reached",
-        "Navigator::Navigator"
+        "MissionBlock::mission_item_to_position_setpoint",
+        "Navigator::Navigator",
+        "MissionBlock::is_mission_item_reached"
       ],
       "by_file": {
         "src/modules/navigator/mission_block.cpp": [
@@ -11091,13 +11091,13 @@
     },
     "modified_functions": {
       "all": [
-        "Navigator::Navigator",
         "Navigator::task_main",
         "Navigator::home_position_update",
         "Navigator::global_position_update",
-        "Navigator::status",
+        "Navigator::vehicle_land_detected_update",
         "rules",
-        "Navigator::vehicle_land_detected_update"
+        "Navigator::Navigator",
+        "Navigator::status"
       ],
       "by_file": {
         "src/modules/navigator/navigator.h": [
@@ -11105,8 +11105,8 @@
         ],
         "src/modules/navigator/navigator_main.cpp": [
           "Navigator::home_position_update",
-          "Navigator::status",
           "Navigator::vehicle_land_detected_update",
+          "Navigator::status",
           "Navigator::task_main",
           "Navigator::global_position_update",
           "Navigator::Navigator"
@@ -11160,19 +11160,19 @@
     },
     "modified_functions": {
       "all": [
-        "math::constrain",
         "FollowTarget::update_position_sp",
-        "FollowTarget::on_active",
         "FollowTarget::FollowTarget",
-        "math::radians"
+        "FollowTarget::on_active",
+        "math::radians",
+        "math::constrain"
       ],
       "by_file": {
         "src/modules/navigator/follow_target.cpp": [
-          "FollowTarget::on_active",
-          "FollowTarget::FollowTarget",
-          "math::constrain",
           "FollowTarget::update_position_sp",
-          "math::radians"
+          "FollowTarget::FollowTarget",
+          "math::radians",
+          "math::constrain",
+          "FollowTarget::on_active"
         ]
       }
     }
@@ -11599,25 +11599,25 @@
     },
     "modified_functions": {
       "all": [
-        "Loiter::Loiter",
-        "set_loiter_position",
         "Takeoff::Takeoff",
-        "Loiter::reposition",
-        "Navigator::task_main",
-        "Loiter::on_activation",
-        "Loiter::on_active",
-        "Takeoff::set_takeoff_position",
-        "get_takeoff_triplet",
         "Takeoff::on_inactive",
-        "Navigator::Navigator",
-        "set_takeoff_position"
+        "get_takeoff_triplet",
+        "Loiter::on_active",
+        "set_takeoff_position",
+        "Loiter::on_activation",
+        "Navigator::task_main",
+        "set_loiter_position",
+        "Takeoff::set_takeoff_position",
+        "Loiter::Loiter",
+        "Loiter::reposition",
+        "Navigator::Navigator"
       ],
       "by_file": {
         "src/modules/navigator/loiter.cpp": [
-          "Loiter::Loiter",
-          "Loiter::reposition",
+          "Loiter::on_activation",
           "Loiter::on_active",
-          "Loiter::on_activation"
+          "Loiter::Loiter",
+          "Loiter::reposition"
         ],
         "src/modules/navigator/loiter.h": [
           "set_loiter_position"
@@ -11630,9 +11630,9 @@
           "Navigator::Navigator"
         ],
         "src/modules/navigator/takeoff.cpp": [
-          "Takeoff::set_takeoff_position",
+          "Takeoff::Takeoff",
           "Takeoff::on_inactive",
-          "Takeoff::Takeoff"
+          "Takeoff::set_takeoff_position"
         ],
         "src/modules/navigator/takeoff.h": [
           "set_takeoff_position"
@@ -11677,13 +11677,13 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::altitude_sp_foh_update",
-        "Copyright"
+        "Copyright",
+        "Mission::altitude_sp_foh_update"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::altitude_sp_foh_update",
-          "Copyright"
+          "Copyright",
+          "Mission::altitude_sp_foh_update"
         ]
       }
     }
@@ -11953,31 +11953,31 @@
     },
     "modified_functions": {
       "all": [
-        "MissionFeasibilityChecker::checkFixedWingLanding",
-        "Navigator::home_position_update",
         "MissionFeasibilityChecker::isPositionCommand",
         "MissionFeasibilityChecker::MissionFeasibilityChecker",
-        "Navigator::task_main",
         "navigation_capabilities_update",
-        "Landingslope::getLandingSlopeAbsoluteAltitude",
-        "Navigator::Navigator",
+        "Navigator::home_position_update",
+        "Navigator::get_acceptance_radius",
         "Landingslope::getLandingSlopeWPDistance",
-        "Navigator::get_acceptance_radius"
+        "Navigator::task_main",
+        "MissionFeasibilityChecker::checkFixedWingLanding",
+        "Landingslope::getLandingSlopeAbsoluteAltitude",
+        "Navigator::Navigator"
       ],
       "by_file": {
         "src/modules/navigator/mission_feasibility_checker.cpp": [
-          "MissionFeasibilityChecker::checkFixedWingLanding",
           "MissionFeasibilityChecker::isPositionCommand",
           "MissionFeasibilityChecker::MissionFeasibilityChecker",
-          "Landingslope::getLandingSlopeAbsoluteAltitude",
-          "Landingslope::getLandingSlopeWPDistance"
+          "Landingslope::getLandingSlopeWPDistance",
+          "MissionFeasibilityChecker::checkFixedWingLanding",
+          "Landingslope::getLandingSlopeAbsoluteAltitude"
         ],
         "src/modules/navigator/navigator.h": [
           "navigation_capabilities_update"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::home_position_update",
           "Navigator::task_main",
+          "Navigator::home_position_update",
           "Navigator::get_acceptance_radius",
           "Navigator::Navigator"
         ]
@@ -12041,15 +12041,15 @@
     },
     "modified_functions": {
       "all": [
-        "Loiter::Loiter",
-        "Loiter::on_inactive",
         "Navigator::task_main",
-        "Navigator::Navigator"
+        "Loiter::on_inactive",
+        "Navigator::Navigator",
+        "Loiter::Loiter"
       ],
       "by_file": {
         "src/modules/navigator/loiter.cpp": [
-          "Loiter::Loiter",
-          "Loiter::on_inactive"
+          "Loiter::on_inactive",
+          "Loiter::Loiter"
         ],
         "src/modules/navigator/navigator_main.cpp": [
           "Navigator::task_main",
@@ -12392,26 +12392,26 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBlock::is_mission_item_reached",
-        "Navigator::get_default_acceptance_radius",
-        "get_acceptance_radius",
-        "PX4_ISFINITE",
+        "Navigator::get_cruising_throttle",
         "radius",
         "MissionBlock::mission_item_to_position_setpoint",
-        "Navigator::get_cruising_throttle",
+        "PX4_ISFINITE",
         "Mission::set_mission_items",
-        "MissionBlock::reset_mission_item_reached"
+        "MissionBlock::reset_mission_item_reached",
+        "MissionBlock::is_mission_item_reached",
+        "get_acceptance_radius",
+        "Navigator::get_default_acceptance_radius"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
           "Mission::set_mission_items"
         ],
         "src/modules/navigator/mission_block.cpp": [
-          "MissionBlock::is_mission_item_reached",
-          "PX4_ISFINITE",
           "radius",
           "MissionBlock::mission_item_to_position_setpoint",
-          "MissionBlock::reset_mission_item_reached"
+          "PX4_ISFINITE",
+          "MissionBlock::reset_mission_item_reached",
+          "MissionBlock::is_mission_item_reached"
         ],
         "src/modules/navigator/navigator.h": [
           "get_acceptance_radius"
@@ -12616,13 +12616,13 @@
     },
     "modified_functions": {
       "all": [
-        "RTL::set_rtl_item",
-        "RTL::advance_rtl"
+        "RTL::advance_rtl",
+        "RTL::set_rtl_item"
       ],
       "by_file": {
         "src/modules/navigator/rtl.cpp": [
-          "RTL::set_rtl_item",
-          "RTL::advance_rtl"
+          "RTL::advance_rtl",
+          "RTL::set_rtl_item"
         ]
       }
     }
@@ -12958,8 +12958,8 @@
     "modified_functions": {
       "all": [
         "MissionBlock::issue_command",
-        "MissionBlock::is_mission_item_reached",
-        "Mission::set_mission_items"
+        "Mission::set_mission_items",
+        "MissionBlock::is_mission_item_reached"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
@@ -13286,25 +13286,25 @@
     },
     "modified_functions": {
       "all": [
+        "Geofence::Geofence",
         "Geofence::check",
         "Geofence::checkAll",
-        "Navigator::Navigator",
         "checkPolygons",
-        "Geofence::Geofence",
-        "checkAll",
+        "Geofence::checkPolygons",
         "Navigator::run",
-        "Geofence::checkPolygons"
+        "Navigator::Navigator",
+        "checkAll"
       ],
       "by_file": {
         "src/modules/navigator/geofence.cpp": [
+          "Geofence::Geofence",
           "Geofence::check",
-          "Geofence::checkPolygons",
           "Geofence::checkAll",
-          "Geofence::Geofence"
+          "Geofence::checkPolygons"
         ],
         "src/modules/navigator/geofence.h": [
-          "checkAll",
-          "checkPolygons"
+          "checkPolygons",
+          "checkAll"
         ],
         "src/modules/navigator/navigator_main.cpp": [
           "Navigator::run",
@@ -13787,30 +13787,30 @@
     },
     "modified_functions": {
       "all": [
-        "RTL::set_rtl_item",
-        "math::min",
         "landing",
-        "Mission::on_inactive",
-        "journey",
-        "Navigator::run",
-        "RTL::calculate_return_alt_from_cone_half_angle",
         "Mission::find_mission_land_start",
         "Mission::set_mission_item_reached",
-        "math::constrain",
+        "RTL::set_rtl_item",
         "math::max",
-        "math::radians",
-        "RTL::on_activation",
-        "RTL::find_RTL_destination",
         "Mission::set_mission_items",
-        "Mission::on_inactivation"
+        "math::radians",
+        "math::constrain",
+        "math::min",
+        "RTL::calculate_return_alt_from_cone_half_angle",
+        "Mission::on_inactive",
+        "Mission::on_inactivation",
+        "Navigator::run",
+        "RTL::find_RTL_destination",
+        "journey",
+        "RTL::on_activation"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
           "landing",
-          "Mission::on_inactive",
           "Mission::find_mission_land_start",
           "Mission::set_mission_item_reached",
           "Mission::set_mission_items",
+          "Mission::on_inactive",
           "Mission::on_inactivation"
         ],
         "src/modules/navigator/navigator_main.cpp": [
@@ -13818,13 +13818,13 @@
         ],
         "src/modules/navigator/rtl.cpp": [
           "RTL::set_rtl_item",
+          "math::max",
+          "math::radians",
+          "math::constrain",
           "math::min",
           "RTL::calculate_return_alt_from_cone_half_angle",
-          "math::constrain",
-          "math::max",
-          "RTL::on_activation",
           "RTL::find_RTL_destination",
-          "math::radians"
+          "RTL::on_activation"
         ],
         "src/modules/navigator/rtl_params.c": [
           "journey"
@@ -14224,15 +14224,15 @@
     },
     "modified_functions": {
       "all": [
-        "FollowTarget::on_active",
+        "FollowTarget::FollowTarget",
         "FollowTarget::reset_target_validity",
-        "FollowTarget::FollowTarget"
+        "FollowTarget::on_active"
       ],
       "by_file": {
         "src/modules/navigator/follow_target.cpp": [
-          "FollowTarget::on_active",
+          "FollowTarget::FollowTarget",
           "FollowTarget::reset_target_validity",
-          "FollowTarget::FollowTarget"
+          "FollowTarget::on_active"
         ]
       }
     }
@@ -14374,16 +14374,16 @@
     "modified_functions": {
       "all": [
         "Geofence::checkAll",
-        "Navigator::geofence_breach_check",
         "GeofenceBreachAvoidance::generateLoiterAltitudeForMulticopter",
         "GeofenceBreachAvoidance::generateLoiterAltitudeForFixedWing",
+        "Navigator::geofence_breach_check",
         "Navigator::run",
         "generateLoiterAltitudeForMulticopter"
       ],
       "by_file": {
         "src/modules/navigator/GeofenceBreachAvoidance/geofence_breach_avoidance.cpp": [
-          "GeofenceBreachAvoidance::generateLoiterAltitudeForFixedWing",
-          "GeofenceBreachAvoidance::generateLoiterAltitudeForMulticopter"
+          "GeofenceBreachAvoidance::generateLoiterAltitudeForMulticopter",
+          "GeofenceBreachAvoidance::generateLoiterAltitudeForFixedWing"
         ],
         "src/modules/navigator/GeofenceBreachAvoidance/geofence_breach_avoidance.h": [
           "generateLoiterAltitudeForMulticopter"
@@ -14392,8 +14392,8 @@
           "Geofence::checkAll"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::geofence_breach_check",
-          "Navigator::run"
+          "Navigator::run",
+          "Navigator::geofence_breach_check"
         ]
       }
     }
@@ -14497,16 +14497,16 @@
     "modified_functions": {
       "all": [
         "Navigator::run",
-        "Navigator::params_update",
         "Navigator::reset_position_setpoint",
-        "Navigator::Navigator"
+        "Navigator::Navigator",
+        "Navigator::params_update"
       ],
       "by_file": {
         "src/modules/navigator/navigator_main.cpp": [
           "Navigator::run",
-          "Navigator::params_update",
           "Navigator::reset_position_setpoint",
-          "Navigator::Navigator"
+          "Navigator::Navigator",
+          "Navigator::params_update"
         ]
       }
     }
@@ -14710,8 +14710,8 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::position_setpoint_equal",
-        "FollowTarget::update_position_sp"
+        "FollowTarget::update_position_sp",
+        "Mission::position_setpoint_equal"
       ],
       "by_file": {
         "src/modules/navigator/follow_target.cpp": [
@@ -14977,40 +14977,40 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::update_mission",
-        "MissionFeasibilityChecker::checkFixedWingLanding",
-        "MissionBlock::is_mission_item_reached",
-        "GpsFailure::set_gpsf_item",
-        "publish_mission_result",
-        "Land::on_active",
-        "Takeoff::set_takeoff_position",
-        "Mission::set_execution_mode",
-        "Mission::landing",
-        "Mission::check_mission_valid",
-        "MissionFeasibilityChecker::checkTakeoff",
-        "MissionFeasibilityChecker::checkGeofence",
-        "MissionFeasibilityChecker::checkMissionItemValidity",
         "Mission::position_setpoint_equal",
-        "set_mission_result_updated",
-        "NavigatorMode::run",
-        "MissionFeasibilityChecker::checkVTOLLanding",
-        "Mission::on_active",
-        "MissionFeasibilityChecker::checkHomePositionAltitude",
-        "Mission::on_inactive",
-        "Navigator::run",
-        "Mission::on_activation",
-        "increment_mission_instance_count",
-        "MissionFeasibilityChecker::checkMissionFeasible",
-        "Land::on_activation",
-        "Mission::report_do_jump_mission_changed",
-        "Mission::set_mission_item_reached",
-        "Takeoff::on_active",
-        "set_mission_failure",
-        "MissionFeasibilityChecker::checkDistancesBetweenWaypoints",
         "MissionFeasibilityChecker::checkDistanceToFirstWaypoint",
-        "mission_instance_count",
+        "set_mission_failure",
         "Mission::set_mission_items",
-        "Mission::on_inactivation"
+        "Land::on_activation",
+        "Mission::update_mission",
+        "Mission::check_mission_valid",
+        "MissionFeasibilityChecker::checkVTOLLanding",
+        "MissionFeasibilityChecker::checkMissionFeasible",
+        "Mission::on_inactivation",
+        "Takeoff::set_takeoff_position",
+        "MissionBlock::is_mission_item_reached",
+        "increment_mission_instance_count",
+        "Navigator::run",
+        "NavigatorMode::run",
+        "Takeoff::on_active",
+        "Mission::on_activation",
+        "MissionFeasibilityChecker::checkGeofence",
+        "Mission::set_mission_item_reached",
+        "Mission::set_execution_mode",
+        "Mission::on_active",
+        "MissionFeasibilityChecker::checkMissionItemValidity",
+        "Land::on_active",
+        "GpsFailure::set_gpsf_item",
+        "MissionFeasibilityChecker::checkTakeoff",
+        "Mission::on_inactive",
+        "publish_mission_result",
+        "Mission::report_do_jump_mission_changed",
+        "MissionFeasibilityChecker::checkFixedWingLanding",
+        "Mission::landing",
+        "MissionFeasibilityChecker::checkHomePositionAltitude",
+        "set_mission_result_updated",
+        "mission_instance_count",
+        "MissionFeasibilityChecker::checkDistancesBetweenWaypoints"
       ],
       "by_file": {
         "src/modules/navigator/gpsfailure.cpp": [
@@ -15021,39 +15021,39 @@
           "Land::on_active"
         ],
         "src/modules/navigator/mission.cpp": [
-          "Mission::update_mission",
-          "Mission::on_active",
-          "Mission::on_inactive",
           "Mission::on_activation",
-          "Mission::report_do_jump_mission_changed",
-          "Mission::set_mission_item_reached",
-          "Mission::set_execution_mode",
-          "Mission::landing",
-          "Mission::check_mission_valid",
           "Mission::position_setpoint_equal",
+          "Mission::set_mission_item_reached",
           "Mission::set_mission_items",
-          "Mission::on_inactivation"
+          "Mission::set_execution_mode",
+          "Mission::on_active",
+          "Mission::update_mission",
+          "Mission::check_mission_valid",
+          "Mission::on_inactive",
+          "Mission::on_inactivation",
+          "Mission::report_do_jump_mission_changed",
+          "Mission::landing"
         ],
         "src/modules/navigator/mission_block.cpp": [
           "MissionBlock::is_mission_item_reached"
         ],
         "src/modules/navigator/mission_feasibility_checker.cpp": [
-          "MissionFeasibilityChecker::checkFixedWingLanding",
+          "MissionFeasibilityChecker::checkGeofence",
+          "MissionFeasibilityChecker::checkMissionItemValidity",
+          "MissionFeasibilityChecker::checkTakeoff",
           "MissionFeasibilityChecker::checkVTOLLanding",
-          "MissionFeasibilityChecker::checkHomePositionAltitude",
           "MissionFeasibilityChecker::checkMissionFeasible",
           "MissionFeasibilityChecker::checkDistancesBetweenWaypoints",
-          "MissionFeasibilityChecker::checkTakeoff",
-          "MissionFeasibilityChecker::checkGeofence",
-          "MissionFeasibilityChecker::checkDistanceToFirstWaypoint",
-          "MissionFeasibilityChecker::checkMissionItemValidity"
+          "MissionFeasibilityChecker::checkFixedWingLanding",
+          "MissionFeasibilityChecker::checkHomePositionAltitude",
+          "MissionFeasibilityChecker::checkDistanceToFirstWaypoint"
         ],
         "src/modules/navigator/navigator.h": [
-          "increment_mission_instance_count",
-          "publish_mission_result",
           "set_mission_failure",
-          "mission_instance_count",
-          "set_mission_result_updated"
+          "publish_mission_result",
+          "set_mission_result_updated",
+          "increment_mission_instance_count",
+          "mission_instance_count"
         ],
         "src/modules/navigator/navigator_main.cpp": [
           "Navigator::run"
@@ -15225,67 +15225,67 @@
     },
     "modified_functions": {
       "all": [
-        "update_target_motion",
-        "target_position_valid",
-        "FollowTarget::target_position_valid",
-        "set_follow_target_item",
-        "FollowTarget::target_velocity_valid",
+        "Mission::position_setpoint_equal",
+        "on_inactive",
+        "on_activation",
+        "track_target_velocity",
         "reset_target_validity",
-        "on_active",
-        "FollowTarget::on_active",
         "math::constrain",
         "update_position_sp",
-        "FollowTarget::on_inactive",
-        "FollowTarget::reset_target_validity",
-        "update_target_velocity",
+        "FollowTarget::target_position_valid",
+        "on_active",
+        "FollowTarget::on_active",
+        "FollowTarget::on_activation",
+        "Copyright",
         "Navigator::Navigator",
-        "Mission::position_setpoint_equal",
-        "target_velocity_valid",
+        "target_position_valid",
+        "set_follow_target_item",
+        "FollowTarget::update_position_sp",
+        "update_target_motion",
+        "Navigator::geofence_breach_check",
         "math::radians",
-        "on_activation",
-        "MissionBlock::item_contains_position",
+        "target_velocity_valid",
+        "FollowTarget::reset_target_validity",
+        "FollowTarget::target_velocity_valid",
         "Loiter::reposition",
         "Navigator::run",
-        "track_target_position",
-        "Copyright",
-        "on_inactive",
-        "Navigator::geofence_breach_check",
+        "MissionBlock::item_contains_position",
         "Loiter::set_loiter_position",
-        "track_target_velocity",
-        "FollowTarget::on_activation",
-        "FollowTarget::update_position_sp"
+        "track_target_position",
+        "FollowTarget::on_inactive",
+        "update_target_velocity"
       ],
       "by_file": {
         "src/modules/navigator/follow_target.cpp": [
-          "FollowTarget::target_position_valid",
-          "FollowTarget::target_velocity_valid",
-          "FollowTarget::on_active",
-          "Copyright",
-          "math::constrain",
-          "FollowTarget::on_inactive",
-          "FollowTarget::reset_target_validity",
-          "FollowTarget::on_activation",
           "FollowTarget::update_position_sp",
-          "math::radians"
+          "math::radians",
+          "math::constrain",
+          "FollowTarget::reset_target_validity",
+          "FollowTarget::target_velocity_valid",
+          "FollowTarget::target_position_valid",
+          "FollowTarget::on_active",
+          "FollowTarget::on_activation",
+          "Copyright",
+          "FollowTarget::on_inactive"
         ],
         "src/modules/navigator/follow_target.h": [
           "update_target_motion",
-          "on_activation",
-          "target_position_valid",
-          "set_follow_target_item",
-          "reset_target_validity",
-          "on_active",
-          "track_target_position",
-          "Copyright",
-          "update_position_sp",
           "on_inactive",
-          "update_target_velocity",
+          "on_activation",
           "track_target_velocity",
-          "target_velocity_valid"
+          "reset_target_validity",
+          "target_velocity_valid",
+          "update_position_sp",
+          "on_active",
+          "set_follow_target_item",
+          "Copyright",
+          "track_target_position",
+          "target_position_valid",
+          "update_target_velocity"
         ],
         "src/modules/navigator/loiter.cpp": [
-          "Loiter::reposition",
-          "Loiter::set_loiter_position"
+          "Loiter::set_loiter_position",
+          "Loiter::reposition"
         ],
         "src/modules/navigator/mission.cpp": [
           "Mission::position_setpoint_equal"
@@ -15294,8 +15294,8 @@
           "MissionBlock::item_contains_position"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::geofence_breach_check",
           "Navigator::run",
+          "Navigator::geofence_breach_check",
           "Navigator::Navigator"
         ]
       }
@@ -15366,24 +15366,24 @@
     },
     "modified_functions": {
       "all": [
-        "_missionFeasibilityChecker",
-        "Mission::save_mission_state",
-        "Mission::on_inactive",
-        "Navigator::run",
         "Mission::on_activation",
         "Mission::publish_navigator_mission_item",
         "Mission::set_mission_item_reached",
+        "_missionFeasibilityChecker",
+        "Mission::save_mission_state",
+        "Mission::on_inactive",
         "Mission::landing",
+        "Navigator::run",
         "update_mission"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "Mission::save_mission_state",
-          "Mission::on_inactive",
-          "_missionFeasibilityChecker",
           "Mission::on_activation",
           "Mission::publish_navigator_mission_item",
           "Mission::set_mission_item_reached",
+          "_missionFeasibilityChecker",
+          "Mission::save_mission_state",
+          "Mission::on_inactive",
           "Mission::landing"
         ],
         "src/modules/navigator/mission.h": [
@@ -16185,22 +16185,22 @@
     },
     "modified_functions": {
       "all": [
-        "Navigator::check_traffic",
-        "MissionFeasibilityChecker::checkFixedWingLanding",
-        "Navigator::home_position_update",
-        "MissionBlock::is_mission_item_reached",
-        "Navigator::run",
         "Navigator::publish_mission_result",
-        "Navigator::get_altitude_acceptance_radius",
-        "Navigator::print_status",
         "fw_pos_ctrl_status_update",
+        "Navigator::home_position_update",
+        "Navigator::get_acceptance_radius",
         "PX4_ISFINITE",
-        "Navigator::get_acceptance_radius"
+        "Navigator::print_status",
+        "Navigator::check_traffic",
+        "Navigator::get_altitude_acceptance_radius",
+        "MissionFeasibilityChecker::checkFixedWingLanding",
+        "MissionBlock::is_mission_item_reached",
+        "Navigator::run"
       ],
       "by_file": {
         "src/modules/navigator/mission_block.cpp": [
-          "MissionBlock::is_mission_item_reached",
-          "PX4_ISFINITE"
+          "PX4_ISFINITE",
+          "MissionBlock::is_mission_item_reached"
         ],
         "src/modules/navigator/mission_feasibility_checker.cpp": [
           "MissionFeasibilityChecker::checkFixedWingLanding"
@@ -16209,13 +16209,13 @@
           "fw_pos_ctrl_status_update"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::check_traffic",
-          "Navigator::home_position_update",
-          "Navigator::run",
           "Navigator::publish_mission_result",
-          "Navigator::get_altitude_acceptance_radius",
+          "Navigator::home_position_update",
+          "Navigator::get_acceptance_radius",
           "Navigator::print_status",
-          "Navigator::get_acceptance_radius"
+          "Navigator::check_traffic",
+          "Navigator::get_altitude_acceptance_radius",
+          "Navigator::run"
         ]
       }
     }
@@ -16461,19 +16461,19 @@
     },
     "modified_functions": {
       "all": [
-        "Loiter::reposition",
-        "Mission::calculate_takeoff_altitude",
         "Loiter::set_loiter_position",
-        "Mission::on_active"
+        "Mission::on_active",
+        "Mission::calculate_takeoff_altitude",
+        "Loiter::reposition"
       ],
       "by_file": {
         "src/modules/navigator/loiter.cpp": [
-          "Loiter::reposition",
-          "Loiter::set_loiter_position"
+          "Loiter::set_loiter_position",
+          "Loiter::reposition"
         ],
         "src/modules/navigator/mission.cpp": [
-          "Mission::calculate_takeoff_altitude",
-          "Mission::on_active"
+          "Mission::on_active",
+          "Mission::calculate_takeoff_altitude"
         ]
       }
     }
@@ -16542,20 +16542,20 @@
     },
     "modified_functions": {
       "all": [
-        "MissionFeasibilityChecker::checkFixedWingLanding",
-        "Navigator::home_position_update",
-        "MissionBlock::is_mission_item_reached",
-        "Navigator::run",
-        "Navigator::get_altitude_acceptance_radius",
-        "Navigator::abort_landing",
         "fw_pos_ctrl_status_update",
+        "Navigator::home_position_update",
+        "Navigator::get_acceptance_radius",
         "PX4_ISFINITE",
-        "Navigator::get_acceptance_radius"
+        "Navigator::abort_landing",
+        "Navigator::get_altitude_acceptance_radius",
+        "MissionFeasibilityChecker::checkFixedWingLanding",
+        "MissionBlock::is_mission_item_reached",
+        "Navigator::run"
       ],
       "by_file": {
         "src/modules/navigator/mission_block.cpp": [
-          "MissionBlock::is_mission_item_reached",
-          "PX4_ISFINITE"
+          "PX4_ISFINITE",
+          "MissionBlock::is_mission_item_reached"
         ],
         "src/modules/navigator/mission_feasibility_checker.cpp": [
           "MissionFeasibilityChecker::checkFixedWingLanding"
@@ -16565,10 +16565,10 @@
         ],
         "src/modules/navigator/navigator_main.cpp": [
           "Navigator::home_position_update",
-          "Navigator::run",
-          "Navigator::get_altitude_acceptance_radius",
+          "Navigator::get_acceptance_radius",
           "Navigator::abort_landing",
-          "Navigator::get_acceptance_radius"
+          "Navigator::get_altitude_acceptance_radius",
+          "Navigator::run"
         ]
       }
     }
@@ -16812,19 +16812,19 @@
     },
     "modified_functions": {
       "all": [
-        "RTL::set_rtl_item",
-        "RTL::set_return_alt_min",
-        "RTL::on_activation",
-        "RTL::RTL",
         "RTL::advance_rtl",
-        "Copyright"
+        "RTL::set_rtl_item",
+        "Copyright",
+        "RTL::RTL",
+        "RTL::on_activation",
+        "RTL::set_return_alt_min"
       ],
       "by_file": {
         "src/modules/navigator/rtl.cpp": [
-          "RTL::set_rtl_item",
-          "RTL::set_return_alt_min",
           "RTL::advance_rtl",
+          "RTL::set_rtl_item",
           "RTL::RTL",
+          "RTL::set_return_alt_min",
           "Copyright",
           "RTL::on_activation"
         ]
@@ -17037,14 +17037,14 @@
     },
     "modified_functions": {
       "all": [
+        "Navigator::publish_mission_result",
+        "fw_pos_ctrl_status_update",
+        "Navigator::home_position_update",
+        "Navigator::get_acceptance_radius",
+        "Navigator::print_status",
         "Navigator::check_traffic",
         "MissionFeasibilityChecker::checkFixedWingLanding",
-        "Navigator::home_position_update",
-        "Navigator::run",
-        "Navigator::publish_mission_result",
-        "Navigator::print_status",
-        "fw_pos_ctrl_status_update",
-        "Navigator::get_acceptance_radius"
+        "Navigator::run"
       ],
       "by_file": {
         "src/modules/navigator/mission_feasibility_checker.cpp": [
@@ -17054,12 +17054,12 @@
           "fw_pos_ctrl_status_update"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::check_traffic",
-          "Navigator::home_position_update",
-          "Navigator::run",
           "Navigator::publish_mission_result",
+          "Navigator::home_position_update",
+          "Navigator::get_acceptance_radius",
           "Navigator::print_status",
-          "Navigator::get_acceptance_radius"
+          "Navigator::check_traffic",
+          "Navigator::run"
         ]
       }
     }
@@ -17236,19 +17236,19 @@
     "modified_functions": {
       "all": [
         "RTL::set_rtl_item",
-        "Mission::on_active",
         "Loiter::reposition",
-        "Mission::calculate_takeoff_altitude",
-        "Loiter::set_loiter_position"
+        "Loiter::set_loiter_position",
+        "Mission::on_active",
+        "Mission::calculate_takeoff_altitude"
       ],
       "by_file": {
         "src/modules/navigator/loiter.cpp": [
-          "Loiter::reposition",
-          "Loiter::set_loiter_position"
+          "Loiter::set_loiter_position",
+          "Loiter::reposition"
         ],
         "src/modules/navigator/mission.cpp": [
-          "Mission::calculate_takeoff_altitude",
-          "Mission::on_active"
+          "Mission::on_active",
+          "Mission::calculate_takeoff_altitude"
         ],
         "src/modules/navigator/rtl.cpp": [
           "RTL::set_rtl_item"
@@ -17379,8 +17379,8 @@
     },
     "modified_functions": {
       "all": [
-        "Navigator::vehicle_land_detected_update",
         "Navigator::run",
+        "Navigator::vehicle_land_detected_update",
         "MissionBlock::is_mission_item_reached"
       ],
       "by_file": {
@@ -17783,10 +17783,10 @@
     },
     "modified_functions": {
       "all": [
-        "Land::on_activation",
-        "Land::on_active",
         "set_land_item",
-        "MissionBlock::set_takeoff_item"
+        "Land::on_activation",
+        "MissionBlock::set_takeoff_item",
+        "Land::on_active"
       ],
       "by_file": {
         "src/modules/navigator/land.cpp": [
@@ -18053,51 +18053,51 @@
     },
     "modified_functions": {
       "all": [
-        "MissionFeasibilityChecker::checkFixedWingLanding",
-        "GpsFailure::set_gpsf_item",
-        "Mission::index_closest_mission_item",
-        "Land::on_active",
-        "RCLoss::advance_rcl",
-        "Mission::landing",
-        "set_mission_result_updated",
-        "NavigatorMode::run",
-        "Mission::on_active",
-        "Mission::read_mission_item",
-        "Mission::on_inactive",
-        "Mission::on_activation",
-        "MissionFeasibilityChecker::checkMissionFeasible",
-        "Land::on_activation",
-        "set_mission_failure",
-        "checkDistancesBetweenWaypoints",
-        "MissionFeasibilityChecker::checkDistancesBetweenWaypoints",
-        "MissionFeasibilityChecker::checkDistanceToFirstWaypoint",
-        "RCLoss::set_rcl_item",
-        "checkHomePositionAltitude",
-        "Navigator::publish_geofence_result",
         "RTL::set_rtl_item",
-        "MissionBlock::is_mission_item_reached",
-        "Mission::advance_mission",
-        "publish_mission_result",
-        "checkDistanceToFirstWaypoint",
-        "Takeoff::set_takeoff_position",
-        "Mission::prepare_mission_items",
-        "Mission::set_execution_mode",
+        "Mission::set_mission_items",
+        "Navigator::publish_geofence_result",
         "Mission::check_mission_valid",
-        "MissionFeasibilityChecker::checkGeofence",
-        "MissionFeasibilityChecker::checkHomePositionAltitude",
-        "Navigator::run",
-        "increment_mission_instance_count",
-        "Mission::report_do_jump_mission_changed",
-        "Takeoff::on_active",
-        "DataLinkLoss::set_dll_item",
-        "Mission::update_offboard_mission",
+        "Mission::prepare_mission_items",
         "DataLinkLoss::advance_dll",
-        "Mission::set_mission_items"
+        "increment_mission_instance_count",
+        "Takeoff::on_active",
+        "Mission::on_activation",
+        "Mission::on_active",
+        "GpsFailure::set_gpsf_item",
+        "Mission::update_offboard_mission",
+        "Mission::on_inactive",
+        "publish_mission_result",
+        "MissionFeasibilityChecker::checkFixedWingLanding",
+        "MissionFeasibilityChecker::checkHomePositionAltitude",
+        "MissionBlock::is_mission_item_reached",
+        "Navigator::run",
+        "MissionFeasibilityChecker::checkDistanceToFirstWaypoint",
+        "Mission::index_closest_mission_item",
+        "RCLoss::set_rcl_item",
+        "Mission::advance_mission",
+        "set_mission_failure",
+        "checkHomePositionAltitude",
+        "Land::on_activation",
+        "DataLinkLoss::set_dll_item",
+        "MissionFeasibilityChecker::checkMissionFeasible",
+        "MissionFeasibilityChecker::checkDistancesBetweenWaypoints",
+        "Takeoff::set_takeoff_position",
+        "NavigatorMode::run",
+        "MissionFeasibilityChecker::checkGeofence",
+        "Mission::set_execution_mode",
+        "Land::on_active",
+        "checkDistanceToFirstWaypoint",
+        "RCLoss::advance_rcl",
+        "Mission::report_do_jump_mission_changed",
+        "set_mission_result_updated",
+        "Mission::landing",
+        "Mission::read_mission_item",
+        "checkDistancesBetweenWaypoints"
       ],
       "by_file": {
         "src/modules/navigator/datalinkloss.cpp": [
-          "DataLinkLoss::advance_dll",
-          "DataLinkLoss::set_dll_item"
+          "DataLinkLoss::set_dll_item",
+          "DataLinkLoss::advance_dll"
         ],
         "src/modules/navigator/gpsfailure.cpp": [
           "GpsFailure::set_gpsf_item"
@@ -18107,45 +18107,45 @@
           "Land::on_active"
         ],
         "src/modules/navigator/mission.cpp": [
-          "Mission::on_active",
-          "Mission::read_mission_item",
-          "Mission::index_closest_mission_item",
-          "Mission::on_inactive",
-          "Mission::advance_mission",
           "Mission::on_activation",
-          "Mission::report_do_jump_mission_changed",
-          "Mission::prepare_mission_items",
-          "Mission::landing",
+          "Mission::index_closest_mission_item",
+          "Mission::advance_mission",
+          "Mission::set_mission_items",
           "Mission::set_execution_mode",
-          "Mission::update_offboard_mission",
+          "Mission::on_active",
           "Mission::check_mission_valid",
-          "Mission::set_mission_items"
+          "Mission::update_offboard_mission",
+          "Mission::on_inactive",
+          "Mission::prepare_mission_items",
+          "Mission::report_do_jump_mission_changed",
+          "Mission::landing",
+          "Mission::read_mission_item"
         ],
         "src/modules/navigator/mission_block.cpp": [
           "MissionBlock::is_mission_item_reached"
         ],
         "src/modules/navigator/mission_feasibility_checker.cpp": [
-          "MissionFeasibilityChecker::checkFixedWingLanding",
-          "MissionFeasibilityChecker::checkHomePositionAltitude",
+          "MissionFeasibilityChecker::checkGeofence",
           "MissionFeasibilityChecker::checkMissionFeasible",
           "MissionFeasibilityChecker::checkDistancesBetweenWaypoints",
-          "MissionFeasibilityChecker::checkGeofence",
+          "MissionFeasibilityChecker::checkFixedWingLanding",
+          "MissionFeasibilityChecker::checkHomePositionAltitude",
           "MissionFeasibilityChecker::checkDistanceToFirstWaypoint"
         ],
         "src/modules/navigator/mission_feasibility_checker.h": [
-          "checkDistanceToFirstWaypoint",
+          "checkDistancesBetweenWaypoints",
           "checkHomePositionAltitude",
-          "checkDistancesBetweenWaypoints"
+          "checkDistanceToFirstWaypoint"
         ],
         "src/modules/navigator/navigator.h": [
-          "publish_mission_result",
-          "set_mission_result_updated",
+          "set_mission_failure",
           "increment_mission_instance_count",
-          "set_mission_failure"
+          "publish_mission_result",
+          "set_mission_result_updated"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::publish_geofence_result",
-          "Navigator::run"
+          "Navigator::run",
+          "Navigator::publish_geofence_result"
         ],
         "src/modules/navigator/navigator_mode.cpp": [
           "NavigatorMode::run"
@@ -18227,13 +18227,13 @@
     },
     "modified_functions": {
       "all": [
-        "MissionFeasibilityChecker::checkDistanceToFirstWaypoint",
-        "MissionFeasibilityChecker::checkDistancesBetweenWaypoints"
+        "MissionFeasibilityChecker::checkDistancesBetweenWaypoints",
+        "MissionFeasibilityChecker::checkDistanceToFirstWaypoint"
       ],
       "by_file": {
         "src/modules/navigator/mission_feasibility_checker.cpp": [
-          "MissionFeasibilityChecker::checkDistanceToFirstWaypoint",
-          "MissionFeasibilityChecker::checkDistancesBetweenWaypoints"
+          "MissionFeasibilityChecker::checkDistancesBetweenWaypoints",
+          "MissionFeasibilityChecker::checkDistanceToFirstWaypoint"
         ]
       }
     }
@@ -18589,8 +18589,8 @@
     },
     "modified_functions": {
       "all": [
-        "Navigator::get_altitude_acceptance_radius",
         "Navigator::get_acceptance_radius",
+        "Navigator::get_altitude_acceptance_radius",
         "MissionBlock::is_mission_item_reached"
       ],
       "by_file": {
@@ -18598,8 +18598,8 @@
           "MissionBlock::is_mission_item_reached"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::get_altitude_acceptance_radius",
-          "Navigator::get_acceptance_radius"
+          "Navigator::get_acceptance_radius",
+          "Navigator::get_altitude_acceptance_radius"
         ]
       }
     }
@@ -18876,9 +18876,9 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::heading_sp_update",
+        "MissionBlock::is_mission_item_reached",
         "FollowTarget::on_active",
-        "MissionBlock::is_mission_item_reached"
+        "Mission::heading_sp_update"
       ],
       "by_file": {
         "src/modules/navigator/follow_target.cpp": [
@@ -19224,27 +19224,27 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::Mission",
-        "Mission::altitude_sp_foh_update",
-        "RTL::rtl_type",
+        "MissionBlock::mission_item_to_position_setpoint",
+        "Navigator::set_cruising_speed",
         "Mission::on_active",
         "Mission::on_inactive",
-        "Navigator::run",
-        "cruising_speed_sp_update",
-        "Navigator::set_cruising_speed",
+        "Mission::Mission",
         "Navigator::reset_cruising_speed",
-        "Loiter::on_inactive",
-        "MissionBlock::mission_item_to_position_setpoint"
+        "Mission::altitude_sp_foh_update",
+        "RTL::rtl_type",
+        "cruising_speed_sp_update",
+        "Navigator::run",
+        "Loiter::on_inactive"
       ],
       "by_file": {
         "src/modules/navigator/loiter.cpp": [
           "Loiter::on_inactive"
         ],
         "src/modules/navigator/mission.cpp": [
-          "Mission::Mission",
           "Mission::on_inactive",
-          "Mission::altitude_sp_foh_update",
-          "Mission::on_active"
+          "Mission::Mission",
+          "Mission::on_active",
+          "Mission::altitude_sp_foh_update"
         ],
         "src/modules/navigator/mission.h": [
           "cruising_speed_sp_update"
@@ -19253,9 +19253,9 @@
           "MissionBlock::mission_item_to_position_setpoint"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::set_cruising_speed",
           "Navigator::run",
-          "Navigator::reset_cruising_speed"
+          "Navigator::reset_cruising_speed",
+          "Navigator::set_cruising_speed"
         ],
         "src/modules/navigator/rtl.cpp": [
           "RTL::rtl_type"
@@ -19886,13 +19886,13 @@
     },
     "modified_functions": {
       "all": [
-        "MissionFeasibilityChecker::checkHomePositionAltitude",
-        "MissionFeasibilityChecker::checkGeofence"
+        "MissionFeasibilityChecker::checkGeofence",
+        "MissionFeasibilityChecker::checkHomePositionAltitude"
       ],
       "by_file": {
         "src/modules/navigator/mission_feasibility_checker.cpp": [
-          "MissionFeasibilityChecker::checkHomePositionAltitude",
-          "MissionFeasibilityChecker::checkGeofence"
+          "MissionFeasibilityChecker::checkGeofence",
+          "MissionFeasibilityChecker::checkHomePositionAltitude"
         ]
       }
     }
@@ -20089,19 +20089,19 @@
     },
     "modified_functions": {
       "all": [
-        "Navigator::params_update",
-        "get_vtol_back_trans_deceleration",
         "get_vtol_reverse_delay",
-        "Navigator::Navigator"
+        "Navigator::Navigator",
+        "get_vtol_back_trans_deceleration",
+        "Navigator::params_update"
       ],
       "by_file": {
         "src/modules/navigator/navigator.h": [
-          "get_vtol_back_trans_deceleration",
-          "get_vtol_reverse_delay"
+          "get_vtol_reverse_delay",
+          "get_vtol_back_trans_deceleration"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::params_update",
-          "Navigator::Navigator"
+          "Navigator::Navigator",
+          "Navigator::params_update"
         ]
       }
     }
@@ -20650,24 +20650,24 @@
     },
     "modified_functions": {
       "all": [
+        "Takeoff::on_activation",
+        "MissionBlock::mission_item_to_position_setpoint",
+        "get_time_inside",
+        "MissionBlock::issue_command",
+        "Land::on_activation",
+        "Navigator::print_status",
+        "MissionBlock::mission_apply_limitation",
+        "Land::on_active",
         "mission_apply_limitation",
+        "Loiter::on_activation",
+        "get_absolute_altitude_for_item",
+        "Takeoff::set_takeoff_position",
         "Loiter::reposition",
         "Navigator::run",
-        "Loiter::on_activation",
-        "Land::on_activation",
-        "Land::on_active",
-        "MissionBlock::issue_command",
-        "get_absolute_altitude_for_item",
-        "Navigator::print_status",
-        "Navigator::Navigator",
         "Takeoff::on_active",
-        "MissionBlock::mission_apply_limitation",
-        "Takeoff::on_activation",
-        "get_time_inside",
-        "Takeoff::set_takeoff_position",
-        "Loiter::on_inactive",
-        "MissionBlock::mission_item_to_position_setpoint",
-        "Loiter::set_loiter_position"
+        "Loiter::set_loiter_position",
+        "Navigator::Navigator",
+        "Loiter::on_inactive"
       ],
       "by_file": {
         "src/modules/navigator/land.cpp": [
@@ -20675,10 +20675,10 @@
           "Land::on_active"
         ],
         "src/modules/navigator/loiter.cpp": [
+          "Loiter::on_activation",
           "Loiter::set_loiter_position",
           "Loiter::on_inactive",
-          "Loiter::reposition",
-          "Loiter::on_activation"
+          "Loiter::reposition"
         ],
         "src/modules/navigator/mission_block.cpp": [
           "MissionBlock::issue_command",
@@ -20686,18 +20686,18 @@
           "MissionBlock::mission_apply_limitation"
         ],
         "src/modules/navigator/mission_block.h": [
+          "get_absolute_altitude_for_item",
           "mission_apply_limitation",
-          "get_time_inside",
-          "get_absolute_altitude_for_item"
+          "get_time_inside"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::print_status",
           "Navigator::run",
+          "Navigator::print_status",
           "Navigator::Navigator"
         ],
         "src/modules/navigator/takeoff.cpp": [
-          "Takeoff::on_active",
           "Takeoff::on_activation",
+          "Takeoff::on_active",
           "Takeoff::set_takeoff_position"
         ]
       }
@@ -20821,13 +20821,13 @@
     },
     "modified_functions": {
       "all": [
-        "RTL::set_rtl_item",
-        "RTL::on_activation"
+        "RTL::on_activation",
+        "RTL::set_rtl_item"
       ],
       "by_file": {
         "src/modules/navigator/rtl.cpp": [
-          "RTL::set_rtl_item",
-          "RTL::on_activation"
+          "RTL::on_activation",
+          "RTL::set_rtl_item"
         ]
       }
     }
@@ -20932,8 +20932,8 @@
     },
     "modified_functions": {
       "all": [
-        "MissionFeasibilityChecker::checkHomePositionAltitude",
-        "Navigator::start"
+        "Navigator::start",
+        "MissionFeasibilityChecker::checkHomePositionAltitude"
       ],
       "by_file": {
         "src/modules/navigator/mission_feasibility_checker.cpp": [
@@ -21152,13 +21152,13 @@
     },
     "modified_functions": {
       "all": [
-        "Geofence::inside",
-        "Geofence::Geofence"
+        "Geofence::Geofence",
+        "Geofence::inside"
       ],
       "by_file": {
         "src/modules/navigator/geofence.cpp": [
-          "Geofence::inside",
-          "Geofence::Geofence"
+          "Geofence::Geofence",
+          "Geofence::inside"
         ]
       }
     }
@@ -21265,18 +21265,18 @@
     },
     "modified_functions": {
       "all": [
-        "MissionFeasibilityChecker::checkFixedWingLanding",
+        "MissionFeasibilityChecker::checkGeofence",
+        "Geofence::inside",
+        "EngineFailure::advance_ef",
+        "Geofence::loadFromFile",
+        "DataLinkLoss::advance_dll",
         "RTL::set_rtl_item",
+        "Navigator::task_main",
+        "RCLoss::advance_rcl",
+        "MissionFeasibilityChecker::checkFixedWingLanding",
         "MissionBlock::is_mission_item_reached",
         "GpsFailure::advance_gpsf",
-        "Navigator::task_main",
-        "EngineFailure::advance_ef",
-        "Geofence::inside",
-        "RCLoss::advance_rcl",
-        "RTL::on_activation",
-        "MissionFeasibilityChecker::checkGeofence",
-        "Geofence::loadFromFile",
-        "DataLinkLoss::advance_dll"
+        "RTL::on_activation"
       ],
       "by_file": {
         "src/modules/navigator/datalinkloss.cpp": [
@@ -21296,8 +21296,8 @@
           "MissionBlock::is_mission_item_reached"
         ],
         "src/modules/navigator/mission_feasibility_checker.cpp": [
-          "MissionFeasibilityChecker::checkFixedWingLanding",
-          "MissionFeasibilityChecker::checkGeofence"
+          "MissionFeasibilityChecker::checkGeofence",
+          "MissionFeasibilityChecker::checkFixedWingLanding"
         ],
         "src/modules/navigator/navigator_main.cpp": [
           "Navigator::task_main"
@@ -21306,8 +21306,8 @@
           "RCLoss::advance_rcl"
         ],
         "src/modules/navigator/rtl.cpp": [
-          "RTL::set_rtl_item",
-          "RTL::on_activation"
+          "RTL::on_activation",
+          "RTL::set_rtl_item"
         ]
       }
     }
@@ -21385,11 +21385,11 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBlock::set_previous_pos_setpoint",
         "Loiter::on_activation",
+        "MissionBlock::set_previous_pos_setpoint",
         "MissionBlock::set_loiter_item",
-        "Mission::set_mission_items",
-        "set_loiter_item"
+        "set_loiter_item",
+        "Mission::set_mission_items"
       ],
       "by_file": {
         "src/modules/navigator/loiter.cpp": [
@@ -21511,9 +21511,9 @@
     },
     "modified_functions": {
       "all": [
-        "check_mission_valid",
+        "MissionBase::on_activation",
         "Mission::on_activation",
-        "MissionBase::on_activation"
+        "check_mission_valid"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
@@ -21627,14 +21627,14 @@
     },
     "modified_functions": {
       "all": [
-        "hrt_elapsed_time",
         "RTL::on_active",
+        "hrt_elapsed_time",
         "RTL::on_inactive"
       ],
       "by_file": {
         "src/modules/navigator/rtl.cpp": [
-          "hrt_elapsed_time",
           "RTL::on_active",
+          "hrt_elapsed_time",
           "RTL::on_inactive"
         ]
       }
@@ -21717,8 +21717,8 @@
     },
     "modified_functions": {
       "all": [
-        "hasMissionLandStart",
-        "RTL::parameters_update"
+        "RTL::parameters_update",
+        "hasMissionLandStart"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.h": [
@@ -21839,53 +21839,53 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBase::MissionBase",
-        "MissionBase::checkMissionDataChanged",
-        "MissionBase::publish_navigator_mission_item",
-        "check_mission_valid",
-        "matrix::Vector2d",
-        "Geofence::Geofence",
         "FeasibilityChecker::FeasibilityChecker",
-        "isMissionValid",
         "MissionBase::initMission",
-        "MissionBase::on_active",
-        "MissionBase::isMissionValid",
-        "FeasibilityChecker::updateData",
+        "isMissionValid",
+        "check_mission_valid",
         "MissionBase::updateMavlinkMission",
-        "Geofence::run",
-        "MissionBase::checkMissionRestart",
-        "MissionBase::on_activation",
-        "MissionBase::on_inactive",
+        "MissionBase::checkMissionDataChanged",
+        "Geofence::Geofence",
+        "matrix::Vector2d",
         "MissionBase::check_mission_valid",
-        "MissionBase::setMissionToClosestItem"
+        "FeasibilityChecker::updateData",
+        "MissionBase::isMissionValid",
+        "MissionBase::on_active",
+        "Geofence::run",
+        "MissionBase::setMissionToClosestItem",
+        "MissionBase::MissionBase",
+        "MissionBase::checkMissionRestart",
+        "MissionBase::publish_navigator_mission_item",
+        "MissionBase::on_activation",
+        "MissionBase::on_inactive"
       ],
       "by_file": {
         "src/modules/navigator/MissionFeasibility/FeasibilityChecker.cpp": [
-          "FeasibilityChecker::updateData",
+          "matrix::Vector2d",
           "FeasibilityChecker::FeasibilityChecker",
-          "matrix::Vector2d"
+          "FeasibilityChecker::updateData"
         ],
         "src/modules/navigator/geofence.cpp": [
-          "Geofence::run",
-          "Geofence::Geofence"
+          "Geofence::Geofence",
+          "Geofence::run"
         ],
         "src/modules/navigator/mission_base.cpp": [
+          "MissionBase::isMissionValid",
+          "MissionBase::on_active",
+          "MissionBase::initMission",
+          "MissionBase::updateMavlinkMission",
+          "MissionBase::setMissionToClosestItem",
           "MissionBase::MissionBase",
+          "MissionBase::checkMissionRestart",
           "MissionBase::checkMissionDataChanged",
           "MissionBase::publish_navigator_mission_item",
-          "MissionBase::updateMavlinkMission",
-          "MissionBase::checkMissionRestart",
           "MissionBase::on_activation",
-          "MissionBase::initMission",
-          "MissionBase::on_inactive",
-          "MissionBase::on_active",
           "MissionBase::check_mission_valid",
-          "MissionBase::setMissionToClosestItem",
-          "MissionBase::isMissionValid"
+          "MissionBase::on_inactive"
         ],
         "src/modules/navigator/mission_base.h": [
-          "check_mission_valid",
-          "isMissionValid"
+          "isMissionValid",
+          "check_mission_valid"
         ]
       }
     }
@@ -22152,13 +22152,13 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBase::on_active",
-        "MissionBase::canRunMissionFeasibility"
+        "MissionBase::canRunMissionFeasibility",
+        "MissionBase::on_active"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::on_active",
-          "MissionBase::canRunMissionFeasibility"
+          "MissionBase::canRunMissionFeasibility",
+          "MissionBase::on_active"
         ]
       }
     }
@@ -22202,13 +22202,13 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBase::on_active",
-        "MissionBase::checkMissionDataChanged"
+        "MissionBase::checkMissionDataChanged",
+        "MissionBase::on_active"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::on_active",
-          "MissionBase::checkMissionDataChanged"
+          "MissionBase::checkMissionDataChanged",
+          "MissionBase::on_active"
         ]
       }
     }
@@ -22251,17 +22251,17 @@
     },
     "modified_functions": {
       "all": [
-        "math::max",
         "MissionBase::updateMavlinkMission",
+        "MissionBase::resetMission",
         "MissionBase::updateDatamanCache",
-        "MissionBase::resetMission"
+        "math::max"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.cpp": [
-          "math::max",
           "MissionBase::updateMavlinkMission",
+          "MissionBase::resetMission",
           "MissionBase::updateDatamanCache",
-          "MissionBase::resetMission"
+          "math::max"
         ]
       }
     }
@@ -22427,29 +22427,29 @@
     },
     "modified_functions": {
       "all": [
-        "RTL::setRtlTypeAndDestination",
-        "FeasibilityChecker::updateData",
+        "FeasibilityChecker::checkTakeoffLandAvailable",
+        "RTL::findRtlDestination",
         "findRtlDestination",
         "updateSafePoints",
+        "RTL::setRtlTypeAndDestination",
         "Navigator::run",
-        "FeasibilityChecker::checkTakeoffLandAvailable",
-        "RTL::findRtlDestination"
+        "FeasibilityChecker::updateData"
       ],
       "by_file": {
         "src/modules/navigator/MissionFeasibility/FeasibilityChecker.cpp": [
-          "FeasibilityChecker::updateData",
-          "FeasibilityChecker::checkTakeoffLandAvailable"
+          "FeasibilityChecker::checkTakeoffLandAvailable",
+          "FeasibilityChecker::updateData"
         ],
         "src/modules/navigator/navigator_main.cpp": [
           "Navigator::run"
         ],
         "src/modules/navigator/rtl.cpp": [
-          "RTL::setRtlTypeAndDestination",
-          "RTL::findRtlDestination"
+          "RTL::findRtlDestination",
+          "RTL::setRtlTypeAndDestination"
         ],
         "src/modules/navigator/rtl.h": [
-          "updateSafePoints",
-          "findRtlDestination"
+          "findRtlDestination",
+          "updateSafePoints"
         ]
       }
     }
@@ -22692,31 +22692,31 @@
     },
     "modified_functions": {
       "all": [
+        "RtlDirect::getCruiseGroundSpeed",
+        "RtlDirectMissionLand::on_activation",
+        "RtlDirect::calc_rtl_time_estimate",
+        "math::max",
+        "RtlDirect::getDescendRate",
+        "RtlDirectMissionLand::RtlDirectMissionLand",
+        "RtlDirect::get_wind",
+        "getCruiseSpeed",
+        "updateDatamanCache",
+        "RtlDirect::parameters_update",
+        "RtlDirect::getActivationLandState",
+        "Copyright",
+        "RtlDirect::getClimbRate",
         "RtlDirect::setRtlPosition",
         "getDescendRate",
-        "RTL::on_inactive",
-        "RtlDirect::getCruiseGroundSpeed",
-        "math::max",
-        "matrix::Vector2f",
-        "updateDatamanCache",
-        "RtlDirect::getDescendRate",
         "getCruiseGroundSpeed",
-        "RtlDirect::getActivationLandState",
-        "getCruiseSpeed",
-        "getClimbRate",
-        "RtlDirect::RtlDirect",
-        "RtlDirect::get_wind",
-        "RtlDirect::parameters_update",
-        "getHoverLandSpeed",
-        "RtlDirect::calc_rtl_time_estimate",
-        "RtlDirect::getClimbRate",
-        "Copyright",
-        "RtlDirect::set_rtl_item",
-        "RtlDirect::getHoverLandSpeed",
-        "RtlDirectMissionLand::RtlDirectMissionLand",
-        "RtlDirectMissionLand::on_activation",
         "RtlDirectMissionLand::setActiveMissionItems",
-        "RtlDirect::getCruiseSpeed"
+        "matrix::Vector2f",
+        "RtlDirect::getHoverLandSpeed",
+        "getClimbRate",
+        "RtlDirect::set_rtl_item",
+        "RTL::on_inactive",
+        "RtlDirect::getCruiseSpeed",
+        "getHoverLandSpeed",
+        "RtlDirect::RtlDirect"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.h": [
@@ -22726,32 +22726,32 @@
           "RTL::on_inactive"
         ],
         "src/modules/navigator/rtl_direct.cpp": [
-          "RtlDirect::RtlDirect",
-          "RtlDirect::get_wind",
-          "RtlDirect::parameters_update",
-          "RtlDirect::setRtlPosition",
-          "RtlDirect::calc_rtl_time_estimate",
-          "RtlDirect::getClimbRate",
           "RtlDirect::getCruiseGroundSpeed",
-          "Copyright",
+          "RtlDirect::calc_rtl_time_estimate",
           "math::max",
-          "matrix::Vector2f",
-          "RtlDirect::set_rtl_item",
-          "RtlDirect::getHoverLandSpeed",
           "RtlDirect::getDescendRate",
+          "RtlDirect::getHoverLandSpeed",
+          "RtlDirect::get_wind",
+          "matrix::Vector2f",
+          "Copyright",
+          "RtlDirect::set_rtl_item",
+          "RtlDirect::getCruiseSpeed",
+          "RtlDirect::parameters_update",
           "RtlDirect::getActivationLandState",
-          "RtlDirect::getCruiseSpeed"
+          "RtlDirect::RtlDirect",
+          "RtlDirect::getClimbRate",
+          "RtlDirect::setRtlPosition"
         ],
         "src/modules/navigator/rtl_direct.h": [
-          "getHoverLandSpeed",
-          "getDescendRate",
           "getCruiseGroundSpeed",
+          "getClimbRate",
           "getCruiseSpeed",
-          "getClimbRate"
+          "getHoverLandSpeed",
+          "getDescendRate"
         ],
         "src/modules/navigator/rtl_direct_mission_land.cpp": [
-          "RtlDirectMissionLand::on_activation",
           "RtlDirectMissionLand::setActiveMissionItems",
+          "RtlDirectMissionLand::on_activation",
           "RtlDirectMissionLand::RtlDirectMissionLand"
         ]
       }
@@ -22986,70 +22986,70 @@
     },
     "modified_functions": {
       "all": [
-        "setLandMissionItem",
-        "setLandPosAsDestination",
-        "MissionBlock::setMoveToPositionMissionItem",
-        "MissionBlock::setYawFromHeadingMode",
         "setSafepointAsDestination",
-        "RTL::chooseBestLandingApproach",
-        "RTL::setLandPosAsDestination",
-        "RtlDirect::setRtlPosition",
-        "setRtlPosition",
-        "RTL::calculate_return_alt_from_cone_half_angle",
-        "MissionBlock::setLoiterToAltMissionItem",
-        "RTL::hasMissionLandStart",
-        "RtlDirect::on_active",
         "hasVtolLandApproach",
-        "RTL::readVtolLandApproaches",
-        "RTL::findRtlDestination",
-        "MissionBlock::initialize",
+        "MissionBlock::setYawFromHeadingMode",
         "setYawFromHeadingMode",
         "desired_yaw",
-        "RTL::setSafepointAsDestination",
-        "findRtlDestination",
+        "RtlDirect::on_active",
+        "RtlDirect::setRtlPosition",
+        "setLandMissionItem",
+        "RTL::findRtlDestination",
+        "RTL::setLandPosAsDestination",
+        "MissionBlock::initialize",
         "MissionBlock::setLandMissionItem",
-        "readVtolLandApproaches",
-        "RTL::setRtlTypeAndDestination",
-        "RtlDirect::set_rtl_item",
+        "findRtlDestination",
+        "RTL::hasMissionLandStart",
         "MissionBlock::setLoiterHoldMissionItem",
-        "RTL::hasVtolLandApproach"
+        "readVtolLandApproaches",
+        "setRtlPosition",
+        "RTL::setSafepointAsDestination",
+        "setLandPosAsDestination",
+        "RTL::chooseBestLandingApproach",
+        "RTL::calculate_return_alt_from_cone_half_angle",
+        "RTL::readVtolLandApproaches",
+        "RtlDirect::set_rtl_item",
+        "RTL::hasVtolLandApproach",
+        "RTL::setRtlTypeAndDestination",
+        "MissionBlock::setMoveToPositionMissionItem",
+        "MissionBlock::setLoiterToAltMissionItem"
       ],
       "by_file": {
         "src/modules/navigator/mission_block.cpp": [
-          "MissionBlock::setMoveToPositionMissionItem",
-          "MissionBlock::setYawFromHeadingMode",
           "MissionBlock::initialize",
+          "MissionBlock::setYawFromHeadingMode",
+          "MissionBlock::setLoiterHoldMissionItem",
           "desired_yaw",
           "MissionBlock::setLandMissionItem",
-          "MissionBlock::setLoiterToAltMissionItem",
-          "MissionBlock::setLoiterHoldMissionItem"
+          "MissionBlock::setMoveToPositionMissionItem",
+          "MissionBlock::setLoiterToAltMissionItem"
         ],
         "src/modules/navigator/mission_block.h": [
           "setLandMissionItem",
           "setYawFromHeadingMode"
         ],
         "src/modules/navigator/rtl.cpp": [
-          "RTL::chooseBestLandingApproach",
-          "RTL::setLandPosAsDestination",
-          "RTL::calculate_return_alt_from_cone_half_angle",
-          "RTL::setSafepointAsDestination",
-          "RTL::hasMissionLandStart",
-          "RTL::setRtlTypeAndDestination",
-          "RTL::readVtolLandApproaches",
           "RTL::findRtlDestination",
-          "RTL::hasVtolLandApproach"
+          "RTL::setLandPosAsDestination",
+          "RTL::hasMissionLandStart",
+          "RTL::setSafepointAsDestination",
+          "RTL::chooseBestLandingApproach",
+          "RTL::calculate_return_alt_from_cone_half_angle",
+          "RTL::readVtolLandApproaches",
+          "RTL::hasVtolLandApproach",
+          "RTL::setRtlTypeAndDestination"
         ],
         "src/modules/navigator/rtl.h": [
-          "setLandPosAsDestination",
           "setSafepointAsDestination",
+          "hasVtolLandApproach",
           "findRtlDestination",
-          "readVtolLandApproaches",
-          "hasVtolLandApproach"
+          "setLandPosAsDestination",
+          "readVtolLandApproaches"
         ],
         "src/modules/navigator/rtl_direct.cpp": [
           "RtlDirect::setRtlPosition",
-          "RtlDirect::on_active",
-          "RtlDirect::set_rtl_item"
+          "RtlDirect::set_rtl_item",
+          "RtlDirect::on_active"
         ],
         "src/modules/navigator/rtl_direct.h": [
           "setRtlPosition"
@@ -23621,9 +23621,9 @@
     },
     "modified_functions": {
       "all": [
+        "MissionBase::handleLanding",
         "MissionBlock::is_mission_item_reached_or_completed",
-        "RtlDirect::set_rtl_item",
-        "MissionBase::handleLanding"
+        "RtlDirect::set_rtl_item"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.cpp": [
@@ -23685,19 +23685,19 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBlock::item_contains_position",
-        "FeasibilityChecker::checkIfBelowHomeAltitude",
-        "FeasibilityChecker::reset",
         "FeasibilityChecker::doCommonChecks",
+        "FeasibilityChecker::reset",
+        "FeasibilityChecker::checkIfBelowHomeAltitude",
         "checkIfBelowHomeAltitude",
+        "MissionBlock::item_contains_position",
         "FeasibilityChecker::checkDistancesBetweenWaypoints"
       ],
       "by_file": {
         "src/modules/navigator/MissionFeasibility/FeasibilityChecker.cpp": [
-          "MissionBlock::item_contains_position",
-          "FeasibilityChecker::checkIfBelowHomeAltitude",
           "FeasibilityChecker::doCommonChecks",
           "FeasibilityChecker::reset",
+          "FeasibilityChecker::checkIfBelowHomeAltitude",
+          "MissionBlock::item_contains_position",
           "FeasibilityChecker::checkDistancesBetweenWaypoints"
         ],
         "src/modules/navigator/MissionFeasibility/FeasibilityChecker.hpp": [
@@ -24076,8 +24076,8 @@
     "modified_functions": {
       "all": [
         "setMissionIndex",
-        "RtlMissionFastReverse::RtlMissionFastReverse",
-        "RtlMissionFast::RtlMissionFast"
+        "RtlMissionFast::RtlMissionFast",
+        "RtlMissionFastReverse::RtlMissionFastReverse"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.h": [
@@ -24289,9 +24289,9 @@
     },
     "modified_functions": {
       "all": [
+        "Navigator::publish_vehicle_cmd",
         "FeasibilityChecker::checkMissionItemValidity",
         "MissionBlock::is_mission_item_reached_or_completed",
-        "Navigator::publish_vehicle_cmd",
         "FeasibilityChecker::checkTakeoff"
       ],
       "by_file": {
@@ -24422,9 +24422,9 @@
     },
     "modified_functions": {
       "all": [
-        "Land::on_active",
+        "Navigator::run",
         "MissionBase::do_abort_landing",
-        "Navigator::run"
+        "Land::on_active"
       ],
       "by_file": {
         "src/modules/navigator/land.cpp": [
@@ -24590,17 +24590,17 @@
     },
     "modified_functions": {
       "all": [
-        "RTL::init_rtl_mission_type",
-        "RTL::setRtlTypeAndDestination",
         "RTL::findRtlDestination",
-        "hasMissionLandStart"
+        "RTL::init_rtl_mission_type",
+        "hasMissionLandStart",
+        "RTL::setRtlTypeAndDestination"
       ],
       "by_file": {
         "src/modules/navigator/rtl.cpp": [
-          "RTL::init_rtl_mission_type",
-          "RTL::setRtlTypeAndDestination",
           "RTL::findRtlDestination",
-          "hasMissionLandStart"
+          "RTL::init_rtl_mission_type",
+          "hasMissionLandStart",
+          "RTL::setRtlTypeAndDestination"
         ]
       }
     }
@@ -24741,13 +24741,13 @@
     },
     "modified_functions": {
       "all": [
-        "FeasibilityChecker::checkMissionItemValidity",
         "Mission::setActiveMissionItems",
         "MissionBase::on_inactivation",
-        "Navigator::Navigator",
         "MissionBase::on_active",
-        "MissionBlock::is_mission_item_reached_or_completed",
-        "RtlMissionFast::setActiveMissionItems"
+        "RtlMissionFast::setActiveMissionItems",
+        "FeasibilityChecker::checkMissionItemValidity",
+        "Navigator::Navigator",
+        "MissionBlock::is_mission_item_reached_or_completed"
       ],
       "by_file": {
         "src/modules/navigator/MissionFeasibility/FeasibilityChecker.cpp": [
@@ -24757,8 +24757,8 @@
           "Mission::setActiveMissionItems"
         ],
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::on_active",
-          "MissionBase::on_inactivation"
+          "MissionBase::on_inactivation",
+          "MissionBase::on_active"
         ],
         "src/modules/navigator/mission_block.cpp": [
           "MissionBlock::is_mission_item_reached_or_completed"
@@ -24819,16 +24819,16 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBase::on_active",
-        "MissionBase::advance_mission",
         "loadCurrentMissionItem",
-        "MissionBase::loadCurrentMissionItem"
+        "MissionBase::loadCurrentMissionItem",
+        "MissionBase::advance_mission",
+        "MissionBase::on_active"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::on_active",
+          "MissionBase::loadCurrentMissionItem",
           "MissionBase::advance_mission",
-          "MissionBase::loadCurrentMissionItem"
+          "MissionBase::on_active"
         ],
         "src/modules/navigator/mission_base.h": [
           "loadCurrentMissionItem"
@@ -24892,8 +24892,8 @@
     },
     "modified_functions": {
       "all": [
-        "get_takeoff_land_required",
-        "FeasibilityChecker::checkTakeoffLandAvailable"
+        "FeasibilityChecker::checkTakeoffLandAvailable",
+        "get_takeoff_land_required"
       ],
       "by_file": {
         "src/modules/navigator/MissionFeasibility/FeasibilityChecker.cpp": [
@@ -24975,8 +24975,8 @@
     },
     "modified_functions": {
       "all": [
-        "hasMissionLandStart",
-        "RTL::parameters_update"
+        "RTL::parameters_update",
+        "hasMissionLandStart"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.h": [
@@ -25153,19 +25153,19 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBase::setEndOfMissionItems",
-        "set_idle_item",
-        "FeasibilityChecker::checkTakeoff",
-        "Land::on_active",
-        "FeasibilityChecker::checkMissionItemValidity",
-        "Loiter::on_active",
-        "MissionBlock::set_land_item",
-        "RtlDirect::set_rtl_item",
-        "Takeoff::on_active",
+        "MissionBlock::mission_item_to_position_setpoint",
         "Navigator::reset_position_setpoint",
         "MissionBlock::updateAltToAvoidTerrainCollisionAndRepublishTriplet",
-        "MissionBlock::is_mission_item_reached_or_completed",
-        "MissionBlock::mission_item_to_position_setpoint"
+        "MissionBlock::set_land_item",
+        "set_idle_item",
+        "FeasibilityChecker::checkMissionItemValidity",
+        "FeasibilityChecker::checkTakeoff",
+        "Land::on_active",
+        "RtlDirect::set_rtl_item",
+        "MissionBase::setEndOfMissionItems",
+        "Takeoff::on_active",
+        "Loiter::on_active",
+        "MissionBlock::is_mission_item_reached_or_completed"
       ],
       "by_file": {
         "src/modules/navigator/MissionFeasibility/FeasibilityChecker.cpp": [
@@ -25182,10 +25182,10 @@
           "MissionBase::setEndOfMissionItems"
         ],
         "src/modules/navigator/mission_block.cpp": [
-          "MissionBlock::updateAltToAvoidTerrainCollisionAndRepublishTriplet",
-          "MissionBlock::is_mission_item_reached_or_completed",
           "MissionBlock::set_land_item",
-          "MissionBlock::mission_item_to_position_setpoint"
+          "MissionBlock::mission_item_to_position_setpoint",
+          "MissionBlock::is_mission_item_reached_or_completed",
+          "MissionBlock::updateAltToAvoidTerrainCollisionAndRepublishTriplet"
         ],
         "src/modules/navigator/mission_block.h": [
           "set_idle_item"
@@ -25253,13 +25253,13 @@
     },
     "modified_functions": {
       "all": [
-        "RtlDirect::setRtlPosition",
-        "RtlDirect::_updateRtlState"
+        "RtlDirect::_updateRtlState",
+        "RtlDirect::setRtlPosition"
       ],
       "by_file": {
         "src/modules/navigator/rtl_direct.cpp": [
-          "RtlDirect::setRtlPosition",
-          "RtlDirect::_updateRtlState"
+          "RtlDirect::_updateRtlState",
+          "RtlDirect::setRtlPosition"
         ]
       }
     }
@@ -26060,24 +26060,24 @@
     },
     "modified_functions": {
       "all": [
-        "RtlDirect::setRtlPosition",
-        "Navigator::run",
+        "Navigator::publish_vehicle_cmd",
         "RtlMissionFastReverse::on_inactive",
-        "isLanding",
-        "RtlDirect::set_rtl_item",
-        "Navigator::Navigator",
-        "RtlDirect::on_active",
         "RTL::on_active",
+        "RtlDirect::set_rtl_item",
+        "isLanding",
+        "RtlDirect::on_active",
+        "Navigator::run",
         "RtlMissionFastReverse::setActiveMissionItems",
-        "Navigator::publish_vehicle_cmd"
+        "RtlDirect::setRtlPosition",
+        "Navigator::Navigator"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.h": [
           "isLanding"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::publish_vehicle_cmd",
           "Navigator::run",
+          "Navigator::publish_vehicle_cmd",
           "Navigator::Navigator"
         ],
         "src/modules/navigator/rtl.cpp": [
@@ -26085,12 +26085,12 @@
         ],
         "src/modules/navigator/rtl_direct.cpp": [
           "RtlDirect::setRtlPosition",
-          "RtlDirect::on_active",
-          "RtlDirect::set_rtl_item"
+          "RtlDirect::set_rtl_item",
+          "RtlDirect::on_active"
         ],
         "src/modules/navigator/rtl_mission_fast_reverse.cpp": [
-          "RtlMissionFastReverse::setActiveMissionItems",
-          "RtlMissionFastReverse::on_inactive"
+          "RtlMissionFastReverse::on_inactive",
+          "RtlMissionFastReverse::setActiveMissionItems"
         ]
       }
     }
@@ -26271,23 +26271,23 @@
     },
     "modified_functions": {
       "all": [
-        "RtlDirect::RtlDirect",
+        "RtlDirect::on_active",
         "MissionBase::on_inactivation",
         "MissionBase::on_active",
-        "RtlDirect::on_active",
+        "RtlDirect::RtlDirect",
         "MissionBlock::startPrecLand"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::on_active",
-          "MissionBase::on_inactivation"
+          "MissionBase::on_inactivation",
+          "MissionBase::on_active"
         ],
         "src/modules/navigator/mission_block.cpp": [
           "MissionBlock::startPrecLand"
         ],
         "src/modules/navigator/rtl_direct.cpp": [
-          "RtlDirect::on_active",
-          "RtlDirect::RtlDirect"
+          "RtlDirect::RtlDirect",
+          "RtlDirect::on_active"
         ]
       }
     }
@@ -26340,13 +26340,13 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBlock::is_mission_item_reached_or_completed",
-        "PX4_ISFINITE"
+        "PX4_ISFINITE",
+        "MissionBlock::is_mission_item_reached_or_completed"
       ],
       "by_file": {
         "src/modules/navigator/mission_block.cpp": [
-          "MissionBlock::is_mission_item_reached_or_completed",
-          "PX4_ISFINITE"
+          "PX4_ISFINITE",
+          "MissionBlock::is_mission_item_reached_or_completed"
         ]
       }
     }
@@ -26911,21 +26911,21 @@
     },
     "modified_functions": {
       "all": [
-        "RtlMissionFast::setActiveMissionItems",
-        "Navigator::get_default_acceptance_radius",
         "Mission::on_activation",
-        "fabsf",
-        "isLanding",
-        "Mission::setActiveMissionItems",
-        "MissionBase::on_active",
+        "MissionBlock::mission_item_to_position_setpoint",
         "RtlDirectMissionLand::setActiveMissionItems",
-        "MissionBlock::mission_item_to_position_setpoint"
+        "MissionBase::on_active",
+        "fabsf",
+        "Mission::setActiveMissionItems",
+        "isLanding",
+        "Navigator::get_default_acceptance_radius",
+        "RtlMissionFast::setActiveMissionItems"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "fabsf",
+          "Mission::on_activation",
           "Mission::setActiveMissionItems",
-          "Mission::on_activation"
+          "fabsf"
         ],
         "src/modules/navigator/mission.h": [
           "isLanding"
@@ -27045,19 +27045,19 @@
     },
     "modified_functions": {
       "all": [
-        "FeasibilityChecker::hasMissionBothOrNeitherTakeoffAndLanding",
-        "FeasibilityChecker::updateData",
-        "matrix::Vector2d",
+        "FeasibilityChecker::doCommonChecks",
         "FeasibilityChecker::reset",
-        "FeasibilityChecker::doCommonChecks"
+        "FeasibilityChecker::hasMissionBothOrNeitherTakeoffAndLanding",
+        "matrix::Vector2d",
+        "FeasibilityChecker::updateData"
       ],
       "by_file": {
         "src/modules/navigator/MissionFeasibility/FeasibilityChecker.cpp": [
-          "FeasibilityChecker::updateData",
-          "matrix::Vector2d",
+          "FeasibilityChecker::hasMissionBothOrNeitherTakeoffAndLanding",
           "FeasibilityChecker::doCommonChecks",
           "FeasibilityChecker::reset",
-          "FeasibilityChecker::hasMissionBothOrNeitherTakeoffAndLanding"
+          "matrix::Vector2d",
+          "FeasibilityChecker::updateData"
         ],
         "src/modules/navigator/MissionFeasibility/FeasibilityChecker.hpp": [
           "matrix::Vector2d"
@@ -27225,48 +27225,48 @@
     },
     "modified_functions": {
       "all": [
+        "FeasibilityChecker::checkTakeoffLandAvailable",
+        "MissionBase::getNonJumpItem",
         "Mission::save_mission_state",
-        "FeasibilityChecker::checkTakeoff",
-        "FeasibilityChecker::checkMissionItemValidity",
-        "MissionBase::update_mission",
-        "Takeoff::set_takeoff_position",
         "FeasibilityChecker::checkFixedWindLandApproach",
         "FeasibilityChecker::checkItemsFitToVehicleType",
-        "FeasibilityChecker::hasMissionBothOrNeitherTakeoffAndLanding",
-        "MissionBase::getNonJumpItem",
-        "RTL::findRtlDestination",
-        "Navigator::run",
-        "MissionBase::loadCurrentMissionItem",
-        "RTL::setSafepointAsDestination",
-        "MissionBase::setMissionToClosestItem",
+        "Takeoff::set_takeoff_position",
         "FeasibilityChecker::checkLandPatternValidity",
-        "FeasibilityChecker::checkTakeoffLandAvailable",
-        "MissionBase::resetMissionJumpCounter",
         "MissionFeasibilityChecker::checkMissionAgainstGeofence",
-        "FeasibilityChecker::checkDistancesBetweenWaypoints",
-        "FeasibilityChecker::checkHorizontalDistanceToFirstWaypoint"
+        "RTL::findRtlDestination",
+        "MissionBase::resetMissionJumpCounter",
+        "FeasibilityChecker::hasMissionBothOrNeitherTakeoffAndLanding",
+        "FeasibilityChecker::checkMissionItemValidity",
+        "FeasibilityChecker::checkHorizontalDistanceToFirstWaypoint",
+        "FeasibilityChecker::checkTakeoff",
+        "MissionBase::setMissionToClosestItem",
+        "RTL::setSafepointAsDestination",
+        "MissionBase::loadCurrentMissionItem",
+        "Navigator::run",
+        "MissionBase::update_mission",
+        "FeasibilityChecker::checkDistancesBetweenWaypoints"
       ],
       "by_file": {
         "src/modules/navigator/MissionFeasibility/FeasibilityChecker.cpp": [
-          "FeasibilityChecker::checkTakeoff",
-          "FeasibilityChecker::checkDistancesBetweenWaypoints",
-          "FeasibilityChecker::checkMissionItemValidity",
-          "FeasibilityChecker::checkLandPatternValidity",
-          "FeasibilityChecker::checkFixedWindLandApproach",
-          "FeasibilityChecker::checkItemsFitToVehicleType",
-          "FeasibilityChecker::hasMissionBothOrNeitherTakeoffAndLanding",
           "FeasibilityChecker::checkTakeoffLandAvailable",
-          "FeasibilityChecker::checkHorizontalDistanceToFirstWaypoint"
+          "FeasibilityChecker::hasMissionBothOrNeitherTakeoffAndLanding",
+          "FeasibilityChecker::checkMissionItemValidity",
+          "FeasibilityChecker::checkHorizontalDistanceToFirstWaypoint",
+          "FeasibilityChecker::checkFixedWindLandApproach",
+          "FeasibilityChecker::checkTakeoff",
+          "FeasibilityChecker::checkItemsFitToVehicleType",
+          "FeasibilityChecker::checkLandPatternValidity",
+          "FeasibilityChecker::checkDistancesBetweenWaypoints"
         ],
         "src/modules/navigator/mission.cpp": [
           "Mission::save_mission_state"
         ],
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::loadCurrentMissionItem",
-          "MissionBase::update_mission",
           "MissionBase::resetMissionJumpCounter",
+          "MissionBase::getNonJumpItem",
           "MissionBase::setMissionToClosestItem",
-          "MissionBase::getNonJumpItem"
+          "MissionBase::loadCurrentMissionItem",
+          "MissionBase::update_mission"
         ],
         "src/modules/navigator/mission_feasibility_checker.cpp": [
           "MissionFeasibilityChecker::checkMissionAgainstGeofence"
@@ -27275,8 +27275,8 @@
           "Navigator::run"
         ],
         "src/modules/navigator/rtl.cpp": [
-          "RTL::setSafepointAsDestination",
-          "RTL::findRtlDestination"
+          "RTL::findRtlDestination",
+          "RTL::setSafepointAsDestination"
         ],
         "src/modules/navigator/takeoff.cpp": [
           "Takeoff::set_takeoff_position"
@@ -27681,10 +27681,10 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBlock::updateAltToAvoidTerrainCollisionAndRepublishTriplet",
-        "NavigatorMode::run",
         "RTL::on_active",
-        "RtlDirect::set_rtl_item"
+        "NavigatorMode::run",
+        "RtlDirect::set_rtl_item",
+        "MissionBlock::updateAltToAvoidTerrainCollisionAndRepublishTriplet"
       ],
       "by_file": {
         "src/modules/navigator/mission_block.cpp": [
@@ -27864,15 +27864,15 @@
     "modified_functions": {
       "all": [
         "Geofence::checkPointAgainstPolygonCircle",
-        "Geofence::insidePolygon",
         "Geofence::printStatus",
+        "Geofence::insidePolygon",
         "Geofence::insideCircle"
       ],
       "by_file": {
         "src/modules/navigator/geofence.cpp": [
           "Geofence::checkPointAgainstPolygonCircle",
-          "Geofence::insidePolygon",
           "Geofence::printStatus",
+          "Geofence::insidePolygon",
           "Geofence::insideCircle"
         ]
       }
@@ -27944,10 +27944,10 @@
     "modified_functions": {
       "all": [
         "MissionBase::publish_navigator_mission_item",
-        "RtlDirect::set_rtl_item",
-        "mission_instance_count",
         "RtlDirect::sanitizeLandApproach",
-        "RtlDirect::on_active"
+        "RtlDirect::on_active",
+        "mission_instance_count",
+        "RtlDirect::set_rtl_item"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.cpp": [
@@ -27958,8 +27958,8 @@
         ],
         "src/modules/navigator/rtl_direct.cpp": [
           "RtlDirect::sanitizeLandApproach",
-          "RtlDirect::on_active",
-          "RtlDirect::set_rtl_item"
+          "RtlDirect::set_rtl_item",
+          "RtlDirect::on_active"
         ]
       }
     }
@@ -28266,13 +28266,13 @@
     },
     "modified_functions": {
       "all": [
-        "Land::on_active",
-        "Takeoff::on_active",
+        "Navigator::set_mission_failure_heading_timeout",
         "RtlDirect::set_rtl_item",
         "VtolTakeoff::on_active",
-        "MissionBase::set_mission_items",
         "Navigator::run",
-        "Navigator::set_mission_failure_heading_timeout"
+        "Takeoff::on_active",
+        "MissionBase::set_mission_items",
+        "Land::on_active"
       ],
       "by_file": {
         "src/modules/navigator/land.cpp": [
@@ -28391,27 +28391,27 @@
     },
     "modified_functions": {
       "all": [
+        "replayCachedGimbalCameraItems",
         "MissionBase::cacheItem",
         "haveCachedGimbalOrCameraItems",
-        "MissionBase::haveCachedGimbalOrCameraItems",
-        "MissionBase::replayCachedGimbalCameraItems",
-        "replayCachedGimbalCameraItems",
-        "MissionBase::on_active",
         "MissionBase::resetItemCache",
-        "MissionBase::on_activation"
+        "MissionBase::on_activation",
+        "MissionBase::replayCachedGimbalCameraItems",
+        "MissionBase::on_active",
+        "MissionBase::haveCachedGimbalOrCameraItems"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::on_activation",
-          "MissionBase::cacheItem",
-          "MissionBase::haveCachedGimbalOrCameraItems",
-          "MissionBase::replayCachedGimbalCameraItems",
+          "MissionBase::resetItemCache",
           "MissionBase::on_active",
-          "MissionBase::resetItemCache"
+          "MissionBase::replayCachedGimbalCameraItems",
+          "MissionBase::cacheItem",
+          "MissionBase::on_activation",
+          "MissionBase::haveCachedGimbalOrCameraItems"
         ],
         "src/modules/navigator/mission_base.h": [
-          "haveCachedGimbalOrCameraItems",
-          "replayCachedGimbalCameraItems"
+          "replayCachedGimbalCameraItems",
+          "haveCachedGimbalOrCameraItems"
         ]
       }
     }
@@ -28521,8 +28521,8 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBase::canRunMissionFeasibility",
-        "Navigator::run"
+        "Navigator::run",
+        "MissionBase::canRunMissionFeasibility"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.cpp": [
@@ -28721,10 +28721,10 @@
     "modified_functions": {
       "all": [
         "Navigator::set_gimbal_neutral",
-        "MissionBase::on_active",
+        "RtlDirectMissionLand::setActiveMissionItems",
         "RtlDirect::on_active",
         "MissionBlock::startPrecLand",
-        "RtlDirectMissionLand::setActiveMissionItems"
+        "MissionBase::on_active"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.cpp": [
@@ -28887,26 +28887,26 @@
     },
     "modified_functions": {
       "all": [
-        "fabsf",
-        "isLanding",
         "MissionBase::updateMissionAltAfterHomeChanged",
-        "RTL::readVtolLandApproaches",
-        "MissionBase::on_active",
+        "Mission::on_activation",
+        "isLanding",
         "RtlDirect::on_active",
+        "MissionBase::on_active",
         "MissionBlock::startPrecLand",
-        "Mission::on_activation"
+        "fabsf",
+        "RTL::readVtolLandApproaches"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
-          "fabsf",
-          "Mission::on_activation"
+          "Mission::on_activation",
+          "fabsf"
         ],
         "src/modules/navigator/mission.h": [
           "isLanding"
         ],
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::on_active",
-          "MissionBase::updateMissionAltAfterHomeChanged"
+          "MissionBase::updateMissionAltAfterHomeChanged",
+          "MissionBase::on_active"
         ],
         "src/modules/navigator/mission_block.cpp": [
           "MissionBlock::startPrecLand"
@@ -29051,21 +29051,21 @@
     },
     "modified_functions": {
       "all": [
-        "Navigator::take_traffic_conflict_action",
+        "Navigator::custom_command",
         "Navigator::check_traffic",
+        "Navigator::load_fence_from_file",
         "Navigator::run",
         "Navigator::params_update",
-        "Navigator::load_fence_from_file",
-        "Navigator::custom_command"
+        "Navigator::take_traffic_conflict_action"
       ],
       "by_file": {
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::take_traffic_conflict_action",
+          "Navigator::custom_command",
+          "Navigator::load_fence_from_file",
           "Navigator::check_traffic",
           "Navigator::run",
-          "Navigator::custom_command",
           "Navigator::params_update",
-          "Navigator::load_fence_from_file"
+          "Navigator::take_traffic_conflict_action"
         ]
       }
     }
@@ -29234,12 +29234,12 @@
     },
     "modified_functions": {
       "all": [
-        "Navigator::get_altitude_acceptance_radius",
         "Mission::setActiveMissionItems",
-        "RtlDirect::set_rtl_item",
+        "Navigator::get_altitude_acceptance_radius",
         "RtlDirectMissionLand::setActiveMissionItems",
+        "MissionBase::isLanding",
         "RtlMissionFastReverse::setActiveMissionItems",
-        "MissionBase::isLanding"
+        "RtlDirect::set_rtl_item"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [
@@ -29252,8 +29252,8 @@
           "RtlDirect::set_rtl_item"
         ],
         "src/modules/navigator/rtl_direct_mission_land.cpp": [
-          "RtlDirectMissionLand::setActiveMissionItems",
-          "MissionBase::isLanding"
+          "MissionBase::isLanding",
+          "RtlDirectMissionLand::setActiveMissionItems"
         ],
         "src/modules/navigator/rtl_mission_fast_reverse.cpp": [
           "RtlMissionFastReverse::setActiveMissionItems"
@@ -29610,16 +29610,16 @@
     },
     "modified_functions": {
       "all": [
-        "Navigator::check_traffic",
-        "MissionBlock::get_time_inside",
-        "Navigator::run_fake_traffic",
+        "set_payload_deployment_timeout",
         "set_payload_depolyment_successful_flag",
         "MissionBlock::issue_command",
-        "MissionBlock::is_mission_item_reached_or_completed",
-        "Navigator",
+        "Navigator::run_fake_traffic",
+        "MissionBlock::get_time_inside",
+        "Navigator::check_traffic",
+        "Navigator::params_update",
         "Navigator::Navigator",
-        "set_payload_deployment_timeout",
-        "Navigator::params_update"
+        "MissionBlock::is_mission_item_reached_or_completed",
+        "Navigator"
       ],
       "by_file": {
         "src/modules/navigator/mission_block.cpp": [
@@ -29633,10 +29633,10 @@
           "Navigator"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::check_traffic",
-          "Navigator::params_update",
           "Navigator::run_fake_traffic",
-          "Navigator::Navigator"
+          "Navigator::check_traffic",
+          "Navigator::Navigator",
+          "Navigator::params_update"
         ]
       }
     }
@@ -29783,18 +29783,18 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBlock::startPrecLand",
-        "RtlDirect::on_active",
         "RtlMissionFastReverse::handleLanding",
-        "RtlDirect::set_rtl_item"
+        "MissionBlock::startPrecLand",
+        "RtlDirect::set_rtl_item",
+        "RtlDirect::on_active"
       ],
       "by_file": {
         "src/modules/navigator/mission_block.cpp": [
           "MissionBlock::startPrecLand"
         ],
         "src/modules/navigator/rtl_direct.cpp": [
-          "RtlDirect::on_active",
-          "RtlDirect::set_rtl_item"
+          "RtlDirect::set_rtl_item",
+          "RtlDirect::on_active"
         ],
         "src/modules/navigator/rtl_mission_fast_reverse.cpp": [
           "RtlMissionFastReverse::handleLanding"
@@ -30178,15 +30178,15 @@
     },
     "modified_functions": {
       "all": [
-        "Navigator::calculate_breaking_stop",
         "MissionBlock::setLoiterItemFromCurrentPosition",
-        "Navigator::run",
         "Navigator::geofence_allows_position",
-        "Land::on_activation",
-        "Land::on_active",
         "calculate_breaking_stop",
         "MissionBlock::set_land_item",
+        "Land::on_activation",
         "setLoiterItemFromCurrentPositionWithBreaking",
+        "Land::on_active",
+        "Navigator::calculate_breaking_stop",
+        "Navigator::run",
         "Loiter::set_loiter_position"
       ],
       "by_file": {
@@ -30208,8 +30208,8 @@
           "calculate_breaking_stop"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::calculate_breaking_stop",
           "Navigator::run",
+          "Navigator::calculate_breaking_stop",
           "Navigator::geofence_allows_position"
         ]
       }
@@ -30653,43 +30653,43 @@
     },
     "modified_functions": {
       "all": [
-        "RtlDirectMissionLand::calc_rtl_time_estimate",
-        "RTL::publishRemainingTimeEstimate",
         "RtlDirect::on_inactivation",
-        "RtlDirect::sanitizeLandApproach",
-        "RTL::init_rtl_mission_type",
-        "RtlDirect::calc_rtl_time_estimate",
-        "RTL::on_inactive",
-        "RTL::updateDatamanCache",
-        "RTL::RTL",
-        "on_inactivation",
         "RTL::on_inactivation",
-        "RTL::on_activation",
         "RtlDirect::on_active",
+        "RtlDirectMissionLand::calc_rtl_time_estimate",
         "RtlDirectMissionLand::setActiveMissionItems",
+        "on_inactivation",
+        "RtlDirect::calc_rtl_time_estimate",
+        "RTL::publishRemainingTimeEstimate",
+        "RTL::RTL",
+        "RTL::on_inactive",
+        "RTL::init_rtl_mission_type",
+        "RTL::updateDatamanCache",
         "RTL::on_active",
-        "RTL::isLanding"
+        "RTL::isLanding",
+        "RtlDirect::sanitizeLandApproach",
+        "RTL::on_activation"
       ],
       "by_file": {
         "src/modules/navigator/rtl.cpp": [
-          "RTL::publishRemainingTimeEstimate",
-          "RTL::init_rtl_mission_type",
-          "RTL::on_inactive",
-          "RTL::updateDatamanCache",
-          "RTL::RTL",
           "RTL::on_inactivation",
-          "RTL::on_activation",
+          "RTL::publishRemainingTimeEstimate",
+          "RTL::RTL",
+          "RTL::on_inactive",
+          "RTL::init_rtl_mission_type",
+          "RTL::updateDatamanCache",
           "RTL::on_active",
-          "RTL::isLanding"
+          "RTL::isLanding",
+          "RTL::on_activation"
         ],
         "src/modules/navigator/rtl.h": [
           "on_inactivation"
         ],
         "src/modules/navigator/rtl_direct.cpp": [
+          "RtlDirect::on_inactivation",
           "RtlDirect::sanitizeLandApproach",
-          "RtlDirect::on_active",
           "RtlDirect::calc_rtl_time_estimate",
-          "RtlDirect::on_inactivation"
+          "RtlDirect::on_active"
         ],
         "src/modules/navigator/rtl_direct_mission_land.cpp": [
           "RtlDirectMissionLand::calc_rtl_time_estimate",
@@ -30854,8 +30854,8 @@
     },
     "modified_functions": {
       "all": [
-        "Geofence::insideCircle",
-        "PrecLand::on_activation"
+        "PrecLand::on_activation",
+        "Geofence::insideCircle"
       ],
       "by_file": {
         "src/modules/navigator/geofence.cpp": [
@@ -31012,51 +31012,51 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBlock::set_idle_item",
-        "MissionBlock::set_align_mission_item",
-        "RTL::setLandPosAsDestination",
-        "Mission::handleTakeoff",
+        "MissionBlock::setLoiterItemFromCurrentPosition",
+        "MissionBlock::issue_command",
+        "MissionBlock::setLoiterItemFromCurrentPositionSetpoint",
+        "FeasibilityChecker::checkFixedWindLandApproach",
         "MissionBlock::setLoiterToAltMissionItem",
+        "RtlMissionFastReverse::handleLanding",
+        "MissionBlock::mission_item_to_position_setpoint",
+        "RtlDirectMissionLand::calc_rtl_time_estimate",
+        "MissionBlock::setLoiterHoldMissionItem",
         "MissionBase::set_mission_result",
         "VtolTakeoff::set_takeoff_position",
-        "MissionBase::do_abort_landing",
-        "Mission::do_need_move_to_takeoff",
-        "MissionBlock::mission_item_to_position_setpoint",
-        "MissionBlock::setLoiterItemFromCurrentPositionSetpoint",
-        "RtlDirectMissionLand::calc_rtl_time_estimate",
-        "MissionBlock::setLoiterItemFromCurrentPosition",
-        "RtlMissionFastReverse::handleLanding",
-        "RTL::setSafepointAsDestination",
-        "MissionBase::setMissionToClosestItem",
-        "Land::on_activation",
-        "MissionBlock::issue_command",
-        "RtlDirectMissionLand::setActiveMissionItems",
-        "MissionBlock::is_mission_item_reached_or_completed",
-        "MissionBlock::setLoiterItemFromCurrentPositionWithBraking",
-        "FeasibilityChecker::checkDistancesBetweenWaypoints",
         "MissionBase::publish_navigator_mission_item",
-        "matrix::Vector2d",
-        "MissionBlock::setMoveToPositionMissionItem",
+        "MissionBase::isLanding",
+        "FeasibilityChecker::checkDistancesBetweenWaypoints",
         "VtolTakeoff::on_active",
-        "RtlDirect::publish_rtl_direct_navigator_mission_item",
         "MissionBlock::set_takeoff_item",
         "MissionBlock::set_land_item",
-        "FeasibilityChecker::checkFixedWindLandApproach",
-        "MissionBase::on_active",
-        "RTL::readVtolLandApproaches",
-        "RTL::findRtlDestination",
-        "MissionBlock::copy_position_if_valid",
+        "Land::on_activation",
+        "MissionBase::do_abort_landing",
+        "RtlDirect::publish_rtl_direct_navigator_mission_item",
         "matrix::wrap_pi",
-        "MissionBlock::setLoiterHoldMissionItem",
         "MissionFeasibilityChecker::checkMissionAgainstGeofence",
-        "MissionBase::isLanding",
-        "FeasibilityChecker::checkHorizontalDistanceToFirstWaypoint"
+        "matrix::Vector2d",
+        "Mission::handleTakeoff",
+        "MissionBlock::is_mission_item_reached_or_completed",
+        "RTL::findRtlDestination",
+        "RTL::setLandPosAsDestination",
+        "RtlDirectMissionLand::setActiveMissionItems",
+        "MissionBase::on_active",
+        "MissionBlock::set_idle_item",
+        "FeasibilityChecker::checkHorizontalDistanceToFirstWaypoint",
+        "MissionBase::setMissionToClosestItem",
+        "RTL::setSafepointAsDestination",
+        "RTL::readVtolLandApproaches",
+        "MissionBlock::setLoiterItemFromCurrentPositionWithBraking",
+        "MissionBlock::copy_position_if_valid",
+        "Mission::do_need_move_to_takeoff",
+        "MissionBlock::setMoveToPositionMissionItem",
+        "MissionBlock::set_align_mission_item"
       ],
       "by_file": {
         "src/modules/navigator/MissionFeasibility/FeasibilityChecker.cpp": [
-          "FeasibilityChecker::checkFixedWindLandApproach",
           "FeasibilityChecker::checkDistancesBetweenWaypoints",
-          "FeasibilityChecker::checkHorizontalDistanceToFirstWaypoint"
+          "FeasibilityChecker::checkHorizontalDistanceToFirstWaypoint",
+          "FeasibilityChecker::checkFixedWindLandApproach"
         ],
         "src/modules/navigator/land.cpp": [
           "Land::on_activation"
@@ -31066,39 +31066,39 @@
           "Mission::handleTakeoff"
         ],
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::publish_navigator_mission_item",
-          "MissionBase::do_abort_landing",
-          "matrix::wrap_pi",
-          "MissionBase::set_mission_result",
           "MissionBase::on_active",
+          "MissionBase::do_abort_landing",
+          "MissionBase::set_mission_result",
           "MissionBase::setMissionToClosestItem",
+          "MissionBase::publish_navigator_mission_item",
+          "matrix::wrap_pi",
           "MissionBase::isLanding"
         ],
         "src/modules/navigator/mission_block.cpp": [
-          "MissionBlock::set_idle_item",
-          "MissionBlock::set_align_mission_item",
-          "MissionBlock::setLoiterItemFromCurrentPositionWithBraking",
+          "MissionBlock::mission_item_to_position_setpoint",
           "MissionBlock::setLoiterItemFromCurrentPosition",
-          "MissionBlock::setMoveToPositionMissionItem",
-          "MissionBlock::copy_position_if_valid",
           "MissionBlock::set_takeoff_item",
           "MissionBlock::issue_command",
-          "MissionBlock::setLoiterToAltMissionItem",
           "MissionBlock::set_land_item",
+          "MissionBlock::setLoiterItemFromCurrentPositionSetpoint",
+          "MissionBlock::set_idle_item",
           "MissionBlock::setLoiterHoldMissionItem",
-          "MissionBlock::is_mission_item_reached_or_completed",
-          "MissionBlock::mission_item_to_position_setpoint",
-          "MissionBlock::setLoiterItemFromCurrentPositionSetpoint"
+          "MissionBlock::setLoiterToAltMissionItem",
+          "MissionBlock::setLoiterItemFromCurrentPositionWithBraking",
+          "MissionBlock::copy_position_if_valid",
+          "MissionBlock::setMoveToPositionMissionItem",
+          "MissionBlock::set_align_mission_item",
+          "MissionBlock::is_mission_item_reached_or_completed"
         ],
         "src/modules/navigator/mission_feasibility_checker.cpp": [
           "MissionFeasibilityChecker::checkMissionAgainstGeofence"
         ],
         "src/modules/navigator/rtl.cpp": [
-          "matrix::Vector2d",
+          "RTL::findRtlDestination",
           "RTL::setLandPosAsDestination",
           "RTL::setSafepointAsDestination",
           "RTL::readVtolLandApproaches",
-          "RTL::findRtlDestination"
+          "matrix::Vector2d"
         ],
         "src/modules/navigator/rtl_direct.cpp": [
           "RtlDirect::publish_rtl_direct_navigator_mission_item"
@@ -31438,42 +31438,42 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBase::on_inactivation",
-        "Navigator::release_gimbal_control",
-        "Navigator::acquire_gimbal_control",
-        "Land::on_activation",
-        "MissionBlock::issue_command",
-        "set_gimbal_neutral",
         "Navigator::publish_vehicle_command_ack",
-        "acquire_gimbal_control",
-        "RTL::on_activation",
+        "Navigator::release_gimbal_control",
         "Navigator::set_gimbal_neutral",
+        "MissionBlock::issue_command",
+        "MissionBase::handleLanding",
+        "set_gimbal_neutral",
+        "Land::on_activation",
         "Navigator::disable_camera_trigger",
+        "MissionBase::on_inactivation",
+        "RTL::on_activation",
         "release_gimbal_control",
-        "MissionBase::handleLanding"
+        "acquire_gimbal_control",
+        "Navigator::acquire_gimbal_control"
       ],
       "by_file": {
         "src/modules/navigator/land.cpp": [
           "Land::on_activation"
         ],
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::on_inactivation",
-          "MissionBase::handleLanding"
+          "MissionBase::handleLanding",
+          "MissionBase::on_inactivation"
         ],
         "src/modules/navigator/mission_block.cpp": [
           "MissionBlock::issue_command"
         ],
         "src/modules/navigator/navigator.h": [
-          "set_gimbal_neutral",
           "acquire_gimbal_control",
+          "set_gimbal_neutral",
           "release_gimbal_control"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::release_gimbal_control",
-          "Navigator::acquire_gimbal_control",
           "Navigator::publish_vehicle_command_ack",
+          "Navigator::release_gimbal_control",
           "Navigator::set_gimbal_neutral",
-          "Navigator::disable_camera_trigger"
+          "Navigator::disable_camera_trigger",
+          "Navigator::acquire_gimbal_control"
         ],
         "src/modules/navigator/rtl.cpp": [
           "RTL::on_activation"
@@ -31750,13 +31750,13 @@
     },
     "modified_functions": {
       "all": [
-        "FeasibilityChecker::FeasibilityChecker",
-        "FeasibilityChecker::processNextItem"
+        "FeasibilityChecker::processNextItem",
+        "FeasibilityChecker::FeasibilityChecker"
       ],
       "by_file": {
         "src/modules/navigator/MissionFeasibility/FeasibilityChecker.cpp": [
-          "FeasibilityChecker::FeasibilityChecker",
-          "FeasibilityChecker::processNextItem"
+          "FeasibilityChecker::processNextItem",
+          "FeasibilityChecker::FeasibilityChecker"
         ]
       }
     }
@@ -31907,17 +31907,17 @@
     "modified_functions": {
       "all": [
         "Navigator::publish_navigator_status",
-        "Navigator::mode_completed",
-        "value",
-        "Navigator::run",
+        "Navigator::publish_vehicle_cmd",
+        "Navigator::load_fence_from_file",
         "Navigator::publish_vehicle_command_ack",
-        "Land::on_active",
-        "MissionBlock::issue_command",
         "publish_vehicle_cmd",
+        "MissionBlock::issue_command",
         "MissionBlock::set_land_item",
         "MissionBase::do_abort_landing",
-        "Navigator::publish_vehicle_cmd",
-        "Navigator::load_fence_from_file"
+        "value",
+        "Navigator::mode_completed",
+        "Land::on_active",
+        "Navigator::run"
       ],
       "by_file": {
         "src/modules/navigator/land.cpp": [
@@ -31931,16 +31931,16 @@
           "MissionBlock::set_land_item"
         ],
         "src/modules/navigator/navigator.h": [
-          "publish_vehicle_cmd",
-          "value"
+          "value",
+          "publish_vehicle_cmd"
         ],
         "src/modules/navigator/navigator_main.cpp": [
           "Navigator::publish_navigator_status",
-          "Navigator::mode_completed",
-          "Navigator::run",
-          "Navigator::publish_vehicle_command_ack",
           "Navigator::publish_vehicle_cmd",
-          "Navigator::load_fence_from_file"
+          "Navigator::load_fence_from_file",
+          "Navigator::publish_vehicle_command_ack",
+          "Navigator::mode_completed",
+          "Navigator::run"
         ]
       }
     }
@@ -32039,19 +32039,19 @@
     },
     "modified_functions": {
       "all": [
-        "RtlDirect::on_activation",
-        "RtlDirect::set_rtl_item",
-        "RtlDirect::getActivationLandState",
         "RtlMissionFastReverse::handleLanding",
+        "RtlDirect::on_activation",
         "RtlDirect::calc_rtl_time_estimate",
-        "getActivationLandState"
+        "RtlDirect::getActivationLandState",
+        "getActivationLandState",
+        "RtlDirect::set_rtl_item"
       ],
       "by_file": {
         "src/modules/navigator/rtl_direct.cpp": [
+          "RtlDirect::calc_rtl_time_estimate",
           "RtlDirect::on_activation",
-          "RtlDirect::set_rtl_item",
           "RtlDirect::getActivationLandState",
-          "RtlDirect::calc_rtl_time_estimate"
+          "RtlDirect::set_rtl_item"
         ],
         "src/modules/navigator/rtl_direct.h": [
           "getActivationLandState"
@@ -32283,14 +32283,14 @@
     },
     "modified_functions": {
       "all": [
-        "RTL::init_rtl_mission_type",
         "RTL::hasMissionLandStart",
+        "RTL::init_rtl_mission_type",
         "RTL::setRtlTypeAndDestination"
       ],
       "by_file": {
         "src/modules/navigator/rtl.cpp": [
-          "RTL::init_rtl_mission_type",
           "RTL::hasMissionLandStart",
+          "RTL::init_rtl_mission_type",
           "RTL::setRtlTypeAndDestination"
         ]
       }
@@ -32437,13 +32437,13 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBase::on_active",
-        "MissionBase::on_activation"
+        "MissionBase::on_activation",
+        "MissionBase::on_active"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::on_active",
-          "MissionBase::on_activation"
+          "MissionBase::on_activation",
+          "MissionBase::on_active"
         ]
       }
     }
@@ -32661,8 +32661,8 @@
     },
     "modified_functions": {
       "all": [
-        "Takeoff::on_activation",
         "Navigator::run",
+        "Takeoff::on_activation",
         "Takeoff::set_takeoff_position"
       ],
       "by_file": {
@@ -33162,8 +33162,8 @@
     },
     "modified_functions": {
       "all": [
-        "Takeoff::on_activation",
         "Navigator::run",
+        "Takeoff::on_activation",
         "Takeoff::set_takeoff_position"
       ],
       "by_file": {
@@ -33501,48 +33501,48 @@
     },
     "modified_functions": {
       "all": [
-        "MissionBlock::set_idle_item",
-        "VtolTakeoff::on_active",
+        "Navigator::reset_position_setpoint",
+        "MissionBlock::setLoiterItemFromCurrentPosition",
         "MissionBlock::set_takeoff_item",
+        "VtolTakeoff::on_active",
         "MissionBlock::set_land_item",
         "MissionBase::do_abort_landing",
-        "RtlDirectMissionLand::setActiveMissionItems",
+        "Takeoff::on_active",
+        "MissionBlock::is_mission_item_reached_or_completed",
         "MissionBlock::mission_item_to_position_setpoint",
-        "MissionBlock::setLoiterItemFromCurrentPosition",
         "MissionBlock::initialize",
+        "Navigator::geofence_breach_check",
+        "RtlDirectMissionLand::setActiveMissionItems",
+        "MissionBlock::set_idle_item",
+        "RtlDirect::set_rtl_item",
+        "MissionBlock::setLoiterItemFromCurrentPositionWithBraking",
         "mode",
         "Navigator::run",
-        "Takeoff::on_active",
-        "Navigator::geofence_breach_check",
-        "RtlDirect::set_rtl_item",
-        "get_loiter_radius",
-        "MissionBlock::is_mission_item_reached_or_completed",
-        "Navigator::reset_position_setpoint",
-        "MissionBlock::setLoiterItemFromCurrentPositionWithBraking",
-        "MissionBase::isLanding"
+        "MissionBase::isLanding",
+        "get_loiter_radius"
       ],
       "by_file": {
         "src/modules/navigator/mission_base.cpp": [
-          "MissionBase::do_abort_landing",
-          "MissionBase::isLanding"
+          "MissionBase::isLanding",
+          "MissionBase::do_abort_landing"
         ],
         "src/modules/navigator/mission_block.cpp": [
-          "MissionBlock::set_idle_item",
+          "MissionBlock::mission_item_to_position_setpoint",
           "MissionBlock::setLoiterItemFromCurrentPosition",
-          "MissionBlock::initialize",
           "MissionBlock::set_takeoff_item",
+          "MissionBlock::initialize",
           "MissionBlock::set_land_item",
-          "MissionBlock::is_mission_item_reached_or_completed",
+          "MissionBlock::set_idle_item",
           "MissionBlock::setLoiterItemFromCurrentPositionWithBraking",
-          "MissionBlock::mission_item_to_position_setpoint"
+          "MissionBlock::is_mission_item_reached_or_completed"
         ],
         "src/modules/navigator/navigator.h": [
           "get_loiter_radius"
         ],
         "src/modules/navigator/navigator_main.cpp": [
-          "Navigator::geofence_breach_check",
           "Navigator::run",
-          "Navigator::reset_position_setpoint"
+          "Navigator::reset_position_setpoint",
+          "Navigator::geofence_breach_check"
         ],
         "src/modules/navigator/navigator_params.c": [
           "mode"
@@ -34165,15 +34165,15 @@
     "modified_functions": {
       "all": [
         "math::max",
-        "RTL::rtl_type",
         "RTL::advance_rtl",
+        "RTL::rtl_type",
         "RTL::set_rtl_item"
       ],
       "by_file": {
         "src/modules/navigator/rtl.cpp": [
           "math::max",
-          "RTL::rtl_type",
           "RTL::advance_rtl",
+          "RTL::rtl_type",
           "RTL::set_rtl_item"
         ]
       }
@@ -34233,8 +34233,8 @@
     },
     "modified_functions": {
       "all": [
-        "vehicle_status_update",
-        "Navigator::run"
+        "Navigator::run",
+        "vehicle_status_update"
       ],
       "by_file": {
         "src/modules/navigator/navigator.h": [
@@ -34449,12 +34449,12 @@
     },
     "modified_functions": {
       "all": [
-        "Mission::update_mission",
-        "MissionBlock::is_mission_item_reached",
-        "Mission::check_mission_valid",
-        "MissionFeasibilityChecker::checkMissionItemValidity",
         "Navigator::publish_mission_result",
-        "Mission::publish_navigator_mission_item"
+        "Mission::publish_navigator_mission_item",
+        "MissionFeasibilityChecker::checkMissionItemValidity",
+        "MissionBlock::is_mission_item_reached",
+        "Mission::update_mission",
+        "Mission::check_mission_valid"
       ],
       "by_file": {
         "src/modules/navigator/mission.cpp": [

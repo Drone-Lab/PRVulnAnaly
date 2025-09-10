@@ -1,0 +1,356 @@
+{
+  "timestamp": "2025-09-10 14:39:33",
+  "summary": {
+    "total_prs": 295,
+    "total_functions": 1264,
+    "missing_functions": 97,
+    "missing_percentage": 7.67,
+    "prs_with_missing": 41,
+    "prs_missing_percentage": 13.9
+  },
+  "details": {
+    "21776": {
+      "title": "Navigator: loiter: remove unnecessary _loiter_pos_set",
+      "missing_functions": [
+        "on_inactive"
+      ],
+      "count": 1
+    },
+    "21714": {
+      "title": "Navigator: Resume mission with last flight speed",
+      "missing_functions": [
+        "Navigator::set_cruising_speed",
+        "only",
+        "Navigator::get_cruising_speed",
+        "Navigator::reset_cruising_speed"
+      ],
+      "count": 4
+    },
+    "21594": {
+      "title": "Refactoring dataman to remove locking mechanisms and to use uORB",
+      "missing_functions": [
+        "readMissionItemAtIndex",
+        "Mission::readMissionItemAtIndex"
+      ],
+      "count": 2
+    },
+    "21464": {
+      "title": "RTL: fix Mission RTL vs normal RTL",
+      "missing_functions": [
+        "getShouldEngageMissionForLanding"
+      ],
+      "count": 1
+    },
+    "21904": {
+      "title": "Remove checkIfBelowHomeAltitude in Navigator",
+      "missing_functions": [
+        "checkIfBelowHomeAltitude"
+      ],
+      "count": 1
+    },
+    "22533": {
+      "title": "Double storage for rally points and geofence",
+      "missing_functions": [
+        "Geofence::clearDm",
+        "clearDm"
+      ],
+      "count": 2
+    },
+    "22532": {
+      "title": "Navigator/FlightTaskAuto yaw handling improvements/simplifications",
+      "missing_functions": [
+        "Navigator::get_yaw_acceptance",
+        "get_yaw_acceptance"
+      ],
+      "count": 2
+    },
+    "22394": {
+      "title": "Navigator: Geofence improvements",
+      "missing_functions": [
+        "altitude",
+        "getMaxVerDistanceHome",
+        "checkAll",
+        "setMaxVerDistHome",
+        "MissionFeasibilityChecker::checkGeofence",
+        "check",
+        "Geofence::check",
+        "Geofence::checkAll",
+        "checkGeofence"
+      ],
+      "count": 9
+    },
+    "4065": {
+      "title": "Follow me",
+      "missing_functions": [
+        "control::SuperBlock"
+      ],
+      "count": 1
+    },
+    "4046": {
+      "title": "MissionFeasibilityChecker geofence ignore NAV_CMD_DO_*",
+      "missing_functions": [
+        "item_contains_position"
+      ],
+      "count": 1
+    },
+    "3880": {
+      "title": "Loiter min altitude: Differentiate between loiter and takeoff",
+      "missing_functions": [
+        "Copyright",
+        "location"
+      ],
+      "count": 2
+    },
+    "3814": {
+      "title": "Px4.enhancement.3760.implement auto follow me.wip [WIP do not merge]",
+      "missing_functions": [
+        "mission_item_to_vehicle_command",
+        "control::SuperBlock"
+      ],
+      "count": 2
+    },
+    "3582": {
+      "title": "Navigator: Do not update a position setpoint for mission items not en…",
+      "missing_functions": [
+        "mission_item_to_position_setpoint"
+      ],
+      "count": 1
+    },
+    "4726": {
+      "title": "Added tracker to navigator to record the recent path.",
+      "missing_functions": [
+        "rules"
+      ],
+      "count": 1
+    },
+    "4533": {
+      "title": "Bring SITL back to life",
+      "missing_functions": [
+        "set_takeoff_position",
+        "set_loiter_position"
+      ],
+      "count": 2
+    },
+    "4363": {
+      "title": "FW add mavlink NAV_CONTROLLER_OUTPUT",
+      "missing_functions": [
+        "navigation_capabilities_update"
+      ],
+      "count": 1
+    },
+    "4344": {
+      "title": "Better granularity for flight failsafe modes",
+      "missing_functions": [
+        "Copyright"
+      ],
+      "count": 1
+    },
+    "16400": {
+      "title": "Pre-emptive geofence triggering",
+      "missing_functions": [
+        "Geofence::checkPolygons"
+      ],
+      "count": 1
+    },
+    "16377": {
+      "title": "Various RTL improvements (mainly VTOL specific)",
+      "missing_functions": [
+        "math::max",
+        "math::radians",
+        "math::constrain",
+        "math::min",
+        "journey"
+      ],
+      "count": 5
+    },
+    "17031": {
+      "title": "navigator: new navigator_status msg split out of mission_result",
+      "missing_functions": [
+        "publish_mission_result"
+      ],
+      "count": 1
+    },
+    "17029": {
+      "title": "[WIP]: move \"Follow Me\" out of navigator to flight_mode_manager",
+      "missing_functions": [
+        "track_target_velocity",
+        "reset_target_validity",
+        "update_position_sp",
+        "target_position_valid",
+        "set_follow_target_item",
+        "update_target_motion",
+        "target_velocity_valid",
+        "track_target_position",
+        "update_target_velocity"
+      ],
+      "count": 9
+    },
+    "10240": {
+      "title": "Avoidance Feedback Rebased",
+      "missing_functions": [
+        "fw_pos_ctrl_status_update"
+      ],
+      "count": 1
+    },
+    "10180": {
+      "title": "[WIP] Avoidance feedback",
+      "missing_functions": [
+        "fw_pos_ctrl_status_update"
+      ],
+      "count": 1
+    },
+    "10037": {
+      "title": "generic position controller status/feedback message",
+      "missing_functions": [
+        "fw_pos_ctrl_status_update"
+      ],
+      "count": 1
+    },
+    "9747": {
+      "title": "[WIP] mission_result split into mission_status and navigator_status",
+      "missing_functions": [
+        "publish_mission_result"
+      ],
+      "count": 1
+    },
+    "2011": {
+      "title": "MS5611 reliability",
+      "missing_functions": [
+        "set_loiter_item"
+      ],
+      "count": 1
+    },
+    "22846": {
+      "title": "Fix mission check for init mission",
+      "missing_functions": [
+        "MissionBase::initMission"
+      ],
+      "count": 1
+    },
+    "22742": {
+      "title": "Add time estimate for RTL mission land",
+      "missing_functions": [
+        "RtlDirect::getCruiseGroundSpeed",
+        "math::max",
+        "RtlDirect::getDescendRate",
+        "RtlDirect::get_wind",
+        "getCruiseSpeed",
+        "RtlDirect::getClimbRate",
+        "getDescendRate",
+        "getCruiseGroundSpeed",
+        "matrix::Vector2f",
+        "RtlDirect::getHoverLandSpeed",
+        "getClimbRate",
+        "RtlDirect::getCruiseSpeed",
+        "getHoverLandSpeed"
+      ],
+      "count": 13
+    },
+    "22731": {
+      "title": "RTL: change when to set a heading setpoint, generally leave it up to executer",
+      "missing_functions": [
+        "MissionBlock::setYawFromHeadingMode",
+        "setYawFromHeadingMode",
+        "desired_yaw"
+      ],
+      "count": 3
+    },
+    "22624": {
+      "title": "MissionFeasibilityChecker: remove below home check",
+      "missing_functions": [
+        "checkIfBelowHomeAltitude"
+      ],
+      "count": 1
+    },
+    "22985": {
+      "title": "FeasibilityChecks: MIS_TKO_LAND_REQ=5: only require both or neither TO/LND when landed",
+      "missing_functions": [
+        "get_takeoff_land_required"
+      ],
+      "count": 1
+    },
+    "23704": {
+      "title": "[RFC] Remove IDLE",
+      "missing_functions": [
+        "set_idle_item"
+      ],
+      "count": 1
+    },
+    "23576": {
+      "title": "Support straight line mission landings",
+      "missing_functions": [
+        "fabsf",
+        "isLanding"
+      ],
+      "count": 2
+    },
+    "23503": {
+      "title": "RTL Direct: terrain collision avoidance fix",
+      "missing_functions": [
+        "mission_instance_count"
+      ],
+      "count": 1
+    },
+    "23484": {
+      "title": "Fix: replay the mission cached items only upon reaching resume waypoint",
+      "missing_functions": [
+        "replayCachedGimbalCameraItems",
+        "haveCachedGimbalOrCameraItems",
+        "MissionBase::replayCachedGimbalCameraItems",
+        "MissionBase::haveCachedGimbalOrCameraItems"
+      ],
+      "count": 4
+    },
+    "24115": {
+      "title": "Navigator: Set altitude acceptance radius to infinity when moving to land point after transition",
+      "missing_functions": [
+        "MissionBase::isLanding"
+      ],
+      "count": 1
+    },
+    "23807": {
+      "title": "RTL: fix RTL time estimation of MC landing phase",
+      "missing_functions": [
+        "RTL::on_inactivation",
+        "on_inactivation"
+      ],
+      "count": 2
+    },
+    "24291": {
+      "title": "Refactor: create gimbal library",
+      "missing_functions": [
+        "Navigator::release_gimbal_control",
+        "Navigator::set_gimbal_neutral",
+        "set_gimbal_neutral",
+        "release_gimbal_control",
+        "acquire_gimbal_control",
+        "Navigator::acquire_gimbal_control"
+      ],
+      "count": 6
+    },
+    "24764": {
+      "title": "Cleanup: Navigator: Vehicle command refactor, FlightTaskAuto: parameter clarification",
+      "missing_functions": [
+        "Navigator::publish_vehicle_cmd",
+        "publish_vehicle_cmd",
+        "value"
+      ],
+      "count": 3
+    },
+    "25265": {
+      "title": "Navigator/FW mode manager: fix handling of counter-clockwise loiter",
+      "missing_functions": [
+        "mode",
+        "get_loiter_radius"
+      ],
+      "count": 2
+    },
+    "12364": {
+      "title": "navigator fix vehicle_status update",
+      "missing_functions": [
+        "vehicle_status_update"
+      ],
+      "count": 1
+    }
+  }
+}
