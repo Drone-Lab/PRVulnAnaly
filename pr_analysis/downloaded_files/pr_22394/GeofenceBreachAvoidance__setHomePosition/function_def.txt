@@ -1,0 +1,5 @@
+void GeofenceBreachAvoidance::setHomePosition(double lat, double lon, float alt)
+{
+	_home_lat_lon(0) = lat;
+	_home_lat_lon(1) = lon;
+}

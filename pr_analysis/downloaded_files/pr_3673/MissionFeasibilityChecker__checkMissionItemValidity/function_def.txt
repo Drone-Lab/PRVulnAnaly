@@ -1,0 +1,43 @@
+bool MissionFeasibilityChecker::checkMissionItemValidity(dm_item_t dm_current, size_t nMissionItems, bool condition_landed) {
+	// do not allow mission if we find unsupported item
+	for (size_t i = 0; i < nMissionItems; i++) {
+		struct mission_item_s missionitem;
+		const ssize_t len = sizeof(struct mission_item_s);
+
+		if (dm_read(dm_current, i, &missionitem, len) != len) {
+			// not supposed to happen unless the datamanager can't access the SD card, etc.
+			mavlink_log_critical(_mavlink_fd, "Rejecting Mission: Cannot access SD card");
+			return false;
+		}
+
+		// check if we find unsupported items and reject mission if so
+		if (missionitem.nav_cmd != NAV_CMD_IDLE &&
+			missionitem.nav_cmd != NAV_CMD_WAYPOINT &&
+			missionitem.nav_cmd != NAV_CMD_LOITER_UNLIMITED &&
+			missionitem.nav_cmd != NAV_CMD_LOITER_TURN_COUNT &&
+			missionitem.nav_cmd != NAV_CMD_LOITER_TIME_LIMIT &&
+			missionitem.nav_cmd != NAV_CMD_LAND &&
+			missionitem.nav_cmd != NAV_CMD_TAKEOFF &&
+			missionitem.nav_cmd != NAV_CMD_PATHPLANNING &&
+			missionitem.nav_cmd != NAV_CMD_DO_JUMP &&
+			missionitem.nav_cmd != NAV_CMD_DO_SET_SERVO &&
+			missionitem.nav_cmd != vehicle_command_s::VEHICLE_CMD_DO_DIGICAM_CONTROL &&
+			missionitem.nav_cmd != vehicle_command_s::VEHICLE_CMD_DO_VTOL_TRANSITION) {
+
+			mavlink_log_critical(_mavlink_fd, "Rejecting mission item %i: unsupported action.", (int)(i+1));
+			return false;
+		}
+
+		// check if the mission starts with a land command while the vehicle is landed
+		if (missionitem.nav_cmd == NAV_CMD_LAND &&
+			i == 0 &&
+			condition_landed) {
+
+			mavlink_log_critical(_mavlink_fd, "Rejecting mission that starts with LAND command while vehicle is landed.");
+			return false;
+		}
+
+
+	}
+	return true;
+}

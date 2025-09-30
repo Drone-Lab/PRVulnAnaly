@@ -1,0 +1,6 @@
+Mission::Mission(Navigator *navigator) :
+	MissionBlock(navigator),
+	ModuleParams(navigator)
+{
+	mission_init();
+}

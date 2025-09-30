@@ -1,0 +1,6 @@
+end_index = math::max(math::min(end_index, static_cast<int32_t>(_mission.count)), INT32_C(0));
+
+		for (int32_t index = start_index; index != end_index; index += math::signNoZero(_dataman_cache_size_signed)) {
+
+			_dataman_cache.load(static_cast<dm_item_t>(_mission.mission_dataman_id), index);
+		}

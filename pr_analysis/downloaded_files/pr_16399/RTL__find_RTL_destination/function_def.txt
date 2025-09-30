@@ -1,0 +1,160 @@
+void RTL::find_RTL_destination()
+{
+	// don't update RTL destination faster than 1 Hz
+	if (hrt_elapsed_time(&_destination_check_time) < 1_s) {
+		return;
+	}
+
+	if (!_navigator->home_position_valid()) {
+		return;
+	}
+
+	_destination_check_time = hrt_absolute_time();
+
+	// get home position:
+	home_position_s &home_landing_position = *_navigator->get_home_position();
+
+	// get global position
+	const vehicle_global_position_s &global_position = *_navigator->get_global_position();
+
+	// set destination to home per default, then check if other valid landing spot is closer
+	_destination.set(home_landing_position);
+
+	// get distance to home position
+	double dlat = home_landing_position.lat - global_position.lat;
+	double dlon = home_landing_position.lon - global_position.lon;
+
+	double lon_scale = cos(radians(global_position.lat));
+
+	auto coord_dist_sq = [lon_scale](double lat_diff, double lon_diff) -> double {
+		double lon_diff_scaled =  lon_scale * matrix::wrap(lon_diff, -180., 180.);
+		return lat_diff * lat_diff + lon_diff_scaled * lon_diff_scaled;
+	};
+
+	double min_dist_squared = coord_dist_sq(dlat, dlon);
+
+	_destination.type = RTL_DESTINATION_HOME;
+
+	const bool vtol_in_rw_mode = _navigator->get_vstatus()->is_vtol
+				     && _navigator->get_vstatus()->vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROTARY_WING;
+
+
+	// consider the mission landing if not RTL_HOME type set
+	if (rtl_type() != RTL_HOME && _navigator->get_mission_start_land_available()) {
+		double mission_landing_lat;
+		double mission_landing_lon;
+		float mission_landing_alt;
+		RTLDestinationType destination_type = RTL_DESTINATION_MISSION_LANDING;
+
+		if (vtol_in_rw_mode) {
+			mission_landing_lat = _navigator->get_mission_landing_lat();
+			mission_landing_lon = _navigator->get_mission_landing_lon();
+			mission_landing_alt = _navigator->get_mission_landing_alt();
+			destination_type = RTL_DESTINATION_HOME;
+
+		} else {
+			mission_landing_lat = _navigator->get_mission_landing_start_lat();
+			mission_landing_lon = _navigator->get_mission_landing_start_lon();
+			mission_landing_alt = _navigator->get_mission_landing_start_alt();
+		}
+
+		// compare home position to landing position to decide which is closer
+		dlat = mission_landing_lat - global_position.lat;
+		dlon = mission_landing_lon - global_position.lon;
+		double dist_squared = coord_dist_sq(dlat, dlon);
+
+		// set destination to mission landing if closest or in RTL_LAND or RTL_MISSION (so not in RTL_CLOSEST)
+		if (dist_squared < min_dist_squared || rtl_type() != RTL_CLOSEST) {
+			min_dist_squared = dist_squared;
+			_destination.lat = mission_landing_lat;
+			_destination.lon = mission_landing_lon;
+			_destination.alt = mission_landing_alt;
+			_destination.type = destination_type;
+
+
+		}
+	}
+
+	// do not consider rally point if RTL type is set to RTL_MISSION, so exit function and use either home or mission landing
+	if (rtl_type() == RTL_MISSION) {
+		return;
+	}
+
+	// compare to safe landing positions
+	mission_safe_point_s closest_safe_point {};
+	mission_stats_entry_s stats;
+	int ret = dm_read(DM_KEY_SAFE_POINTS, 0, &stats, sizeof(mission_stats_entry_s));
+	int num_safe_points = 0;
+
+	if (ret == sizeof(mission_stats_entry_s)) {
+		num_safe_points = stats.num_items;
+	}
+
+	// check if a safe point is closer than home or landing
+	int closest_index = 0;
+
+	for (int current_seq = 1; current_seq <= num_safe_points; ++current_seq) {
+		mission_safe_point_s mission_safe_point;
+
+		if (dm_read(DM_KEY_SAFE_POINTS, current_seq, &mission_safe_point, sizeof(mission_safe_point_s)) !=
+		    sizeof(mission_safe_point_s)) {
+			PX4_ERR("dm_read failed");
+			continue;
+		}
+
+		// TODO: take altitude into account for distance measurement
+		dlat = mission_safe_point.lat - global_position.lat;
+		dlon = mission_safe_point.lon - global_position.lon;
+		double dist_squared = coord_dist_sq(dlat, dlon);
+
+		if (dist_squared < min_dist_squared) {
+			closest_index = current_seq;
+			min_dist_squared = dist_squared;
+			closest_safe_point = mission_safe_point;
+		}
+	}
+
+	if (closest_index > 0) {
+		_destination.type = RTL_DESTINATION_SAFE_POINT;
+
+		// There is a safe point closer than home/mission landing
+		// TODO: handle all possible mission_safe_point.frame cases
+		switch (closest_safe_point.frame) {
+		case 0: // MAV_FRAME_GLOBAL
+			_destination.lat = closest_safe_point.lat;
+			_destination.lon = closest_safe_point.lon;
+			_destination.alt = closest_safe_point.alt;
+			_destination.yaw = home_landing_position.yaw;
+			break;
+
+		case 3: // MAV_FRAME_GLOBAL_RELATIVE_ALT
+			_destination.lat = closest_safe_point.lat;
+			_destination.lon = closest_safe_point.lon;
+			_destination.alt = closest_safe_point.alt + home_landing_position.alt; // alt of safe point is rel to home
+			_destination.yaw = home_landing_position.yaw;
+			break;
+
+		default:
+			mavlink_log_critical(_navigator->get_mavlink_log_pub(), "RTL: unsupported MAV_FRAME");
+			break;
+		}
+	}
+
+	// figure out how long the RTL will take
+	float rtl_xy_speed, rtl_z_speed;
+	get_rtl_xy_z_speed(rtl_xy_speed, rtl_z_speed);
+
+	matrix::Vector3f to_destination_vec;
+	get_vector_to_next_waypoint(global_position.lat, global_position.lon, _destination.lat, _destination.lon,
+				    &to_destination_vec(0), &to_destination_vec(1));
+	to_destination_vec(2) = _destination.alt - global_position.alt;
+
+	float time_to_home_s = time_to_home(to_destination_vec, get_wind(), rtl_xy_speed, rtl_z_speed);
+
+	float rtl_flight_time_ratio = time_to_home_s / (60 * _param_rtl_flt_time.get());
+	rtl_flight_time_s rtl_flight_time{};
+	rtl_flight_time.timestamp = hrt_absolute_time();
+	rtl_flight_time.rtl_limit_fraction = rtl_flight_time_ratio;
+	rtl_flight_time.rtl_time_s = time_to_home_s;
+	_rtl_flight_time_pub.publish(rtl_flight_time);
+}

@@ -1,0 +1,47 @@
+bool Geofence::insidePolygon(const PolygonInfo &polygon, double lat, double lon, float altitude)
+{
+	/**
+	 * Adaptation of algorithm originally presented as
+	 * PNPOLY - Point Inclusion in Polygon Test
+	 * W. Randolph Franklin (WRF)
+	 * Only supports non-complex polygons (not self intersecting)
+	 */
+
+	mission_fence_point_s temp_vertex_i{};
+	mission_fence_point_s temp_vertex_j{};
+	bool c = false;
+
+	for (unsigned i = 0, j = polygon.vertex_count - 1; i < polygon.vertex_count; j = i++) {
+
+		dm_item_t fence_dataman_id{static_cast<dm_item_t>(_stats.dataman_id)};
+		bool success = _dataman_cache.loadWait(fence_dataman_id, polygon.dataman_index + i,
+						       reinterpret_cast<uint8_t *>(&temp_vertex_i), sizeof(mission_fence_point_s));
+
+		if (!success) {
+			break;
+		}
+
+		success = _dataman_cache.loadWait(fence_dataman_id, polygon.dataman_index + j,
+						  reinterpret_cast<uint8_t *>(&temp_vertex_j), sizeof(mission_fence_point_s));
+
+		if (!success) {
+			break;
+		}
+
+		if (temp_vertex_i.frame != NAV_FRAME_GLOBAL && temp_vertex_i.frame != NAV_FRAME_GLOBAL_INT
+		    && temp_vertex_i.frame != NAV_FRAME_GLOBAL_RELATIVE_ALT
+		    && temp_vertex_i.frame != NAV_FRAME_GLOBAL_RELATIVE_ALT_INT) {
+			// TODO: handle different frames
+			PX4_ERR("Frame type %i not supported", (int)temp_vertex_i.frame);
+			break;
+		}
+
+		if (((double)temp_vertex_i.lon >= lon) != ((double)temp_vertex_j.lon >= lon) &&
+		    (lat <= (double)(temp_vertex_j.lat - temp_vertex_i.lat) * (lon - (double)temp_vertex_i.lon) /
+		     (double)(temp_vertex_j.lon - temp_vertex_i.lon) + (double)temp_vertex_i.lat)) {
+			c = !c;
+		}
+	}
+
+	return c;
+}

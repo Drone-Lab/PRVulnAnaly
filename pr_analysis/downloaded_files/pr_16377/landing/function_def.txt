@@ -1,0 +1,4 @@
+&& (_navigator->abort_landing())) {
+
+		do_abort_landing();
+	}

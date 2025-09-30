@@ -1,0 +1,24 @@
+Mission::on_activation()
+{
+	if (_mission_waypoints_changed) {
+		// do not set the closest mission item in the normal mission mode
+		if (_mission_execution_mode != mission_result_s::MISSION_EXECUTION_MODE_NORMAL) {
+			_current_mission_index = index_closest_mission_item();
+		}
+
+		_mission_waypoints_changed = false;
+	}
+
+	// we already reset the mission items
+	_execution_mode_changed = false;
+
+	set_mission_items();
+
+	// unpause triggering if it was paused
+	vehicle_command_s cmd = {};
+	cmd.command = vehicle_command_s::VEHICLE_CMD_DO_TRIGGER_CONTROL;
+	// unpause trigger
+	cmd.param1 = -1.0f;
+	cmd.param3 = 0.0f;
+	_navigator->publish_vehicle_cmd(&cmd);
+}

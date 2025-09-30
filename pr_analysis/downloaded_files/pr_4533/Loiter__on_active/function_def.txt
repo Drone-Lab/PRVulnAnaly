@@ -1,0 +1,11 @@
+Loiter::on_active()
+{
+	if (_navigator->get_reposition_triplet()->current.valid) {
+		reposition();
+	}
+
+	// reset the loiter position if we get disarmed
+	if (_navigator->get_vstatus()->arming_state != vehicle_status_s::ARMING_STATE_ARMED) {
+		_loiter_pos_set = false;
+	}
+}

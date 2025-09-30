@@ -1,0 +1,4 @@
+void Geofence::updateFence()
+{
+	_initiate_fence_updated = true;
+}

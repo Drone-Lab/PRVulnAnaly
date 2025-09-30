@@ -1,0 +1,77 @@
+bool FeasibilityChecker::checkMissionItemValidity(mission_item_s &mission_item, const int current_index)
+{
+	/* reject relative alt without home set */
+	if (mission_item.altitude_is_relative && !PX4_ISFINITE(_home_alt_msl)
+	    && MissionBlock::item_contains_position(mission_item)) {
+
+
+
+		mavlink_log_critical(_mavlink_log_pub, "Mission rejected: No home pos, WP %d uses rel alt\t", current_index + 1);
+		events::send<int16_t>(events::ID("navigator_mis_no_home_rel_alt"), {events::Log::Error, events::LogInternal::Info},
+				      "Mission rejected: No home position, waypoint {1} uses relative altitude",
+				      current_index + 1);
+		return false;
+
+	}
+
+	// check if we find unsupported items and reject mission if so
+	if (mission_item.nav_cmd != NAV_CMD_IDLE &&
+	    mission_item.nav_cmd != NAV_CMD_WAYPOINT &&
+	    mission_item.nav_cmd != NAV_CMD_LOITER_UNLIMITED &&
+	    mission_item.nav_cmd != NAV_CMD_LOITER_TIME_LIMIT &&
+	    mission_item.nav_cmd != NAV_CMD_RETURN_TO_LAUNCH &&
+	    mission_item.nav_cmd != NAV_CMD_LAND &&
+	    mission_item.nav_cmd != NAV_CMD_TAKEOFF &&
+	    mission_item.nav_cmd != NAV_CMD_LOITER_TO_ALT &&
+	    mission_item.nav_cmd != NAV_CMD_VTOL_TAKEOFF &&
+	    mission_item.nav_cmd != NAV_CMD_VTOL_LAND &&
+	    mission_item.nav_cmd != NAV_CMD_DELAY &&
+	    mission_item.nav_cmd != NAV_CMD_CONDITION_GATE &&
+	    mission_item.nav_cmd != NAV_CMD_DO_WINCH &&
+	    mission_item.nav_cmd != NAV_CMD_DO_GRIPPER &&
+	    mission_item.nav_cmd != NAV_CMD_DO_JUMP &&
+	    mission_item.nav_cmd != NAV_CMD_DO_CHANGE_SPEED &&
+	    mission_item.nav_cmd != NAV_CMD_DO_SET_HOME &&
+	    mission_item.nav_cmd != NAV_CMD_DO_LAND_START &&
+	    mission_item.nav_cmd != NAV_CMD_DO_TRIGGER_CONTROL &&
+	    mission_item.nav_cmd != NAV_CMD_DO_DIGICAM_CONTROL &&
+	    mission_item.nav_cmd != NAV_CMD_IMAGE_START_CAPTURE &&
+	    mission_item.nav_cmd != NAV_CMD_IMAGE_STOP_CAPTURE &&
+	    mission_item.nav_cmd != NAV_CMD_VIDEO_START_CAPTURE &&
+	    mission_item.nav_cmd != NAV_CMD_VIDEO_STOP_CAPTURE &&
+	    mission_item.nav_cmd != NAV_CMD_DO_CONTROL_VIDEO &&
+	    mission_item.nav_cmd != NAV_CMD_DO_MOUNT_CONFIGURE &&
+	    mission_item.nav_cmd != NAV_CMD_DO_MOUNT_CONTROL &&
+	    mission_item.nav_cmd != NAV_CMD_DO_GIMBAL_MANAGER_PITCHYAW &&
+	    mission_item.nav_cmd != NAV_CMD_DO_GIMBAL_MANAGER_CONFIGURE &&
+	    mission_item.nav_cmd != NAV_CMD_DO_SET_ROI &&
+	    mission_item.nav_cmd != NAV_CMD_DO_SET_ROI_LOCATION &&
+	    mission_item.nav_cmd != NAV_CMD_DO_SET_ROI_WPNEXT_OFFSET &&
+	    mission_item.nav_cmd != NAV_CMD_DO_SET_ROI_NONE &&
+	    mission_item.nav_cmd != NAV_CMD_DO_SET_CAM_TRIGG_DIST &&
+	    mission_item.nav_cmd != NAV_CMD_OBLIQUE_SURVEY &&
+	    mission_item.nav_cmd != NAV_CMD_DO_SET_CAM_TRIGG_INTERVAL &&
+	    mission_item.nav_cmd != NAV_CMD_SET_CAMERA_MODE &&
+	    mission_item.nav_cmd != NAV_CMD_SET_CAMERA_ZOOM &&
+	    mission_item.nav_cmd != NAV_CMD_SET_CAMERA_FOCUS &&
+	    mission_item.nav_cmd != NAV_CMD_DO_VTOL_TRANSITION) {
+
+		mavlink_log_critical(_mavlink_log_pub, "Mission rejected: item %i: unsupported cmd: %d\t",
+				     (int)(current_index + 1),
+				     (int)mission_item.nav_cmd);
+		events::send<uint16_t, uint16_t>(events::ID("navigator_mis_unsup_cmd"), {events::Log::Error, events::LogInternal::Warning},
+						 "Mission rejected: item {1}: unsupported command: {2}", current_index + 1, mission_item.nav_cmd);
+		return false;
+	}
+
+	// check if the mission starts with a land command while the vehicle is landed
+	if ((current_index == 0) && mission_item.nav_cmd == NAV_CMD_LAND && _is_landed) {
+
+		mavlink_log_critical(_mavlink_log_pub, "Mission rejected: starts with landing\t");
+		events::send(events::ID("navigator_mis_starts_w_landing"), {events::Log::Error, events::LogInternal::Info},
+			     "Mission rejected: starts with landing");
+		return false;
+	}
+
+	return true;
+}

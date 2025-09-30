@@ -1,0 +1,33 @@
+bool MissionFeasibilityChecker::checkMissionFeasible(int mavlink_fd, bool isRotarywing,
+	dm_item_t dm_current, size_t nMissionItems, Geofence &geofence,
+	float home_alt, bool home_valid, double curr_lat, double curr_lon, float max_waypoint_distance, bool &warning_issued)
+{
+	bool failed = false;
+	bool warned = false;
+	/* Init if not done yet */
+	init();
+
+	_mavlink_fd = mavlink_fd;
+
+	// first check if we have a valid position
+	if (!home_valid /* can later use global / local pos for finer granularity */) {
+		failed = true;
+		warned = true;
+		mavlink_log_info(_mavlink_fd, "Not yet ready for mission, no position lock.");
+	} else {
+		failed = failed || !check_dist_1wp(dm_current, nMissionItems, curr_lat, curr_lon, max_waypoint_distance, warning_issued);
+	}
+
+	// check if all mission item commands are supported
+	failed = failed || !checkMissionItemValidity(dm_current, nMissionItems);
+	failed = failed || !checkGeofence(dm_current, nMissionItems, geofence);
+	failed = failed || !checkHomePositionAltitude(dm_current, nMissionItems, home_alt, home_valid, warned);
+
+	if (isRotarywing) {
+		failed = failed || !checkMissionFeasibleRotarywing(dm_current, nMissionItems, geofence, home_alt, home_valid);
+	} else {
+		failed = failed || !checkMissionFeasibleFixedwing(dm_current, nMissionItems, geofence, home_alt, home_valid);
+	}
+
+	return !failed;
+}

@@ -1,0 +1,11 @@
+_mission_item.yaw = get_bearing_to_next_waypoint(
+				_navigator->get_global_position()->lat,
+				_navigator->get_global_position()->lon,
+				mission_item_next_position.lat,
+				mission_item_next_position.lon);
+		}
+
+		/* yaw is aligned now */
+		if (_work_item_type == WORK_ITEM_TYPE_ALIGN) {
+			new_work_item_type = WORK_ITEM_TYPE_DEFAULT;
+		}

@@ -1,0 +1,2 @@
+struct position_setpoint_triplet_s* get_reposition_triplet() { return &_reposition_triplet; }
+	struct position_setpoint_triplet_s* get_takeoff_triplet() { return &_takeoff_triplet; }

@@ -1,0 +1,41 @@
+void RTL::setRtlTypeAndDestination()
+{
+
+	init_rtl_mission_type();
+
+	if (_param_rtl_type.get() != 2) {
+		// check the closest allowed destination.
+		DestinationType destination_type{DestinationType::DESTINATION_TYPE_HOME};
+		DestinationPosition rtl_position;
+		float rtl_alt;
+		findRtlDestination(destination_type, rtl_position, rtl_alt);
+
+		switch (destination_type) {
+		case DestinationType::DESTINATION_TYPE_MISSION_LAND:
+			_rtl_type = RtlType::RTL_DIRECT_MISSION_LAND;
+			_rtl_mission_type_handle->setRtlAlt(rtl_alt);
+			break;
+
+		case DestinationType::DESTINATION_TYPE_SAFE_POINT: // Fallthrough
+		case DestinationType::DESTINATION_TYPE_HOME: // Fallthrough
+		default:
+
+			loiter_point_s landing_loiter;
+			landing_loiter.lat = rtl_position.lat;
+			landing_loiter.lon = rtl_position.lon;
+			landing_loiter.height_m = NAN;
+
+			land_approaches_s rtl_land_approaches{readVtolLandApproaches(rtl_position)};
+
+			if (rtl_land_approaches.isAnyApproachValid()) {
+				landing_loiter = chooseBestLandingApproach(rtl_land_approaches);
+			}
+
+			_rtl_type = RtlType::RTL_DIRECT;
+			_rtl_direct.setRtlAlt(rtl_alt);
+			_rtl_direct.setRtlPosition(rtl_position, landing_loiter);
+
+			break;
+		}
+	}
+}

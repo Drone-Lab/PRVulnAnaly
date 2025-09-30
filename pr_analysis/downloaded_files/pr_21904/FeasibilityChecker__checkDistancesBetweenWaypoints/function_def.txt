@@ -1,0 +1,39 @@
+bool FeasibilityChecker::checkDistancesBetweenWaypoints(const mission_item_s &mission_item)
+{
+	/* check only items with valid lat/lon */
+	if (!MissionBlock::item_contains_position(mission_item)) {
+		return true;
+	}
+
+	/* Compare it to last waypoint if already available. */
+	if (PX4_ISFINITE(_last_lat) && PX4_ISFINITE(_last_lon)) {
+		/* check distance from current position to item */
+		const float dist_between_waypoints = get_distance_to_next_waypoint(
+				mission_item.lat, mission_item.lon,
+				_last_lat, _last_lon);
+
+
+		if (dist_between_waypoints < 0.05f &&
+		    (mission_item.nav_cmd == NAV_CMD_CONDITION_GATE || _last_cmd == NAV_CMD_CONDITION_GATE)) {
+
+			/* Waypoints and gate are at the exact same position, which indicates an
+			 * invalid mission and makes calculating the direction from one waypoint
+			 * to another impossible. */
+			mavlink_log_critical(_mavlink_log_pub,
+					     "Distance between waypoint and gate too close: %d meters\t",
+					     (int)dist_between_waypoints);
+			events::send<float, float>(events::ID("navigator_mis_wp_gate_too_close"), {events::Log::Error, events::LogInternal::Info},
+						   "Distance between waypoint and gate too close: {1:.3m} (minimum: {2:.3m})", dist_between_waypoints, 0.05f);
+
+
+			return false;
+		}
+	}
+
+	_last_lat = mission_item.lat;
+	_last_lon = mission_item.lon;
+	_last_cmd = mission_item.nav_cmd;
+
+	/* We ran through all waypoints and have not found any distances between waypoints that are too far. */
+	return true;
+}

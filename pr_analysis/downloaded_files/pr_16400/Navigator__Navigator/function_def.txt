@@ -1,0 +1,34 @@
+Navigator::Navigator() :
+	ModuleParams(nullptr),
+	_loop_perf(perf_alloc(PC_ELAPSED, "navigator")),
+	_geofence(this),
+	_gf_breach_avoidance(this),
+	_mission(this),
+	_loiter(this),
+	_takeoff(this),
+	_land(this),
+	_precland(this),
+	_rtl(this),
+	_engineFailure(this),
+	_gpsFailure(this),
+	_follow_target(this)
+{
+	/* Create a list of our possible navigation types */
+	_navigation_mode_array[0] = &_mission;
+	_navigation_mode_array[1] = &_loiter;
+	_navigation_mode_array[2] = &_rtl;
+	_navigation_mode_array[3] = &_engineFailure;
+	_navigation_mode_array[4] = &_gpsFailure;
+	_navigation_mode_array[5] = &_takeoff;
+	_navigation_mode_array[6] = &_land;
+	_navigation_mode_array[7] = &_precland;
+	_navigation_mode_array[8] = &_follow_target;
+
+	_handle_back_trans_dec_mss = param_find("VT_B_DEC_MSS");
+	_handle_reverse_delay = param_find("VT_B_REV_DEL");
+
+	_local_pos_sub = orb_subscribe(ORB_ID(vehicle_local_position));
+	_vehicle_status_sub = orb_subscribe(ORB_ID(vehicle_status));
+
+	reset_triplets();
+}

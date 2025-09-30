@@ -1,0 +1,5 @@
+int		mission_instance_count() const { return _mission_result.instance_count; }
+
+	void 		set_mission_failure(const char *reason);
+
+	void 		setMissionLandingInProgress(bool in_progress) { _mission_landing_in_progress = in_progress; }

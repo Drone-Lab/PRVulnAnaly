@@ -1,0 +1,28 @@
+MissionBlock::set_land_item(struct mission_item_s *item)
+{
+	/* VTOL transition to RW before landing */
+	if (_navigator->force_vtol()) {
+
+		vehicle_command_s vcmd = {};
+		vcmd.command = NAV_CMD_DO_VTOL_TRANSITION;
+		vcmd.param1 = vtol_vehicle_status_s::VEHICLE_VTOL_STATE_MC;
+		vcmd.param2 = 0.0f;
+		_navigator->publish_vehicle_cmd(&vcmd);
+	}
+
+	/* set the land item */
+	item->nav_cmd = NAV_CMD_LAND;
+
+	// set land item to current position
+	item->lat = _navigator->get_global_position()->lat;
+	item->lon = _navigator->get_global_position()->lon;
+	item->yaw = NAN;
+
+	item->altitude = 0;
+	item->altitude_is_relative = false;
+	item->loiter_radius = _navigator->get_loiter_radius();
+	item->acceptance_radius = _navigator->get_acceptance_radius();
+	item->time_inside = 0.0f;
+	item->autocontinue = true;
+	item->origin = ORIGIN_ONBOARD;
+}

@@ -1,0 +1,21 @@
+void FollowTarget::update_position_sp(bool use_velocity, bool use_position, float yaw_rate)
+{
+	// convert mission item to current setpoint
+
+	struct position_setpoint_triplet_s *pos_sp_triplet = _navigator->get_position_setpoint_triplet();
+
+	// activate line following in pos control if position is valid
+
+	pos_sp_triplet->previous.valid = use_position;
+	pos_sp_triplet->previous = pos_sp_triplet->current;
+	mission_apply_limitation(_mission_item);
+	mission_item_to_position_setpoint(_mission_item, &pos_sp_triplet->current);
+	pos_sp_triplet->current.type = position_setpoint_s::SETPOINT_TYPE_FOLLOW_TARGET;
+	pos_sp_triplet->current.velocity_valid = use_velocity;
+	pos_sp_triplet->current.vx = _current_vel(0);
+	pos_sp_triplet->current.vy = _current_vel(1);
+	pos_sp_triplet->next.valid = false;
+	pos_sp_triplet->current.yawspeed_valid = PX4_ISFINITE(yaw_rate);
+	pos_sp_triplet->current.yawspeed = yaw_rate;
+	_navigator->set_position_setpoint_triplet_updated();
+}

@@ -1,0 +1,91 @@
+Mission::on_active()
+{
+	check_mission_valid(false);
+
+	/* Check if stored mission plan has changed */
+	const bool mission_sub_updated = _mission_sub.updated();
+
+	if (mission_sub_updated) {
+		_navigator->reset_triplets();
+		update_mission();
+	}
+
+	/* mission is running (and we are armed), need reset after disarm */
+	_need_mission_reset = true;
+
+	_mission_changed = false;
+
+	/* reset mission items if needed */
+	if (mission_sub_updated || _mission_waypoints_changed || _execution_mode_changed) {
+		if (_mission_waypoints_changed) {
+			// do not set the closest mission item in the normal mission mode
+			if (_mission_execution_mode != mission_result_s::MISSION_EXECUTION_MODE_NORMAL) {
+				_current_mission_index = index_closest_mission_item();
+			}
+
+			_mission_waypoints_changed = false;
+		}
+
+		_execution_mode_changed = false;
+		set_mission_items();
+	}
+
+	/* lets check if we reached the current mission item */
+	if (_mission_type != MISSION_TYPE_NONE && is_mission_item_reached_or_completed()) {
+		/* If we just completed a takeoff which was inserted before the right waypoint,
+		   there is no need to report that we reached it because we didn't. */
+		if (_work_item_type != WORK_ITEM_TYPE_TAKEOFF) {
+			set_mission_item_reached();
+		}
+
+		if (_mission_item.autocontinue) {
+			/* switch to next waypoint if 'autocontinue' flag set */
+			advance_mission();
+			set_mission_items();
+		}
+
+	} else {
+		/* if waypoint position reached allow loiter on the setpoint */
+		if (_waypoint_position_reached && _mission_item.nav_cmd != NAV_CMD_IDLE) {
+			_navigator->set_can_loiter_at_sp(true);
+		}
+	}
+
+	/* check if a cruise speed change has been commanded */
+	if (_mission_type != MISSION_TYPE_NONE) {
+		cruising_speed_sp_update();
+	}
+
+	/* see if we need to update the current yaw heading */
+	if (!_param_mis_mnt_yaw_ctl.get()
+	    && (_navigator->get_vstatus()->vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROTARY_WING)
+	    && (_navigator->get_vroi().mode != vehicle_roi_s::ROI_NONE)
+	    && !(_mission_item.nav_cmd == NAV_CMD_TAKEOFF
+		 || _mission_item.nav_cmd == NAV_CMD_VTOL_TAKEOFF
+		 || _mission_item.nav_cmd == NAV_CMD_DO_VTOL_TRANSITION
+		 || _mission_item.nav_cmd == NAV_CMD_LAND
+		 || _mission_item.nav_cmd == NAV_CMD_VTOL_LAND
+		 || _work_item_type == WORK_ITEM_TYPE_ALIGN)) {
+		// Mount control is disabled If the vehicle is in ROI-mode, the vehicle
+		// needs to rotate such that ROI is in the field of view.
+		// ROI only makes sense for multicopters.
+		heading_sp_update();
+	}
+
+	// TODO: Add vtol heading update method if required.
+	// Question: Why does vtol ever have to update heading?
+
+	/* check if landing needs to be aborted */
+	if ((_mission_item.nav_cmd == NAV_CMD_LAND)
+	    && (_navigator->abort_landing())) {
+
+		do_abort_landing();
+	}
+
+	if (_work_item_type == WORK_ITEM_TYPE_PRECISION_LAND) {
+		_navigator->get_precland()->on_active();
+
+	} else if (_navigator->get_precland()->is_activated()) {
+		_navigator->get_precland()->on_inactivation();
+	}
+}

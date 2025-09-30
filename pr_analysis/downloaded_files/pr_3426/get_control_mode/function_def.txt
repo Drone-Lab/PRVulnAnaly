@@ -1,0 +1,2 @@
+struct vtol_vehicle_status_s*	    get_vtol_status() { return &_vtol_vehicle_status; }
+    struct vehicle_control_mode_s*	    get_control_mode() { return &_control_mode; }

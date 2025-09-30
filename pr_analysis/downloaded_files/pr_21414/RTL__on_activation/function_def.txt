@@ -1,0 +1,57 @@
+void RTL::on_activation()
+{
+	_rtl_state = RTL_STATE_NONE;
+
+	// if a mission landing is desired we should only execute mission navigation mode if we currently are in fw mode
+	// In multirotor mode no landing pattern is required so we can just navigate to the land point directly and don't need to run mission
+	_should_engange_mission_for_landing = (_destination.type == RTL_DESTINATION_MISSION_LANDING)
+					      && _navigator->get_vstatus()->vehicle_type == vehicle_status_s::VEHICLE_TYPE_FIXED_WING;
+
+	// output the correct message, depending on where the RTL destination is
+	switch (_destination.type) {
+	case RTL_DESTINATION_HOME:
+		mavlink_log_info(_navigator->get_mavlink_log_pub(), "RTL: landing at home position.\t");
+		events::send(events::ID("rtl_land_at_home"), events::Log::Info, "RTL: landing at home position");
+		break;
+
+	case RTL_DESTINATION_MISSION_LANDING:
+		mavlink_log_info(_navigator->get_mavlink_log_pub(), "RTL: landing at mission landing.\t");
+		events::send(events::ID("rtl_land_at_mission"), events::Log::Info, "RTL: landing at mission landing");
+		break;
+
+	case RTL_DESTINATION_SAFE_POINT:
+		mavlink_log_info(_navigator->get_mavlink_log_pub(), "RTL: landing at safe landing point.\t");
+		events::send(events::ID("rtl_land_at_safe_point"), events::Log::Info, "RTL: landing at safe landing point");
+		break;
+	}
+
+	const vehicle_global_position_s &global_position = *_navigator->get_global_position();
+
+	if (_navigator->get_land_detected()->landed) {
+		// For safety reasons don't go into RTL if landed.
+		_rtl_state = RTL_STATE_LANDED;
+
+	} else if ((_destination.type == RTL_DESTINATION_MISSION_LANDING) && _navigator->getMissionLandingInProgress()) {
+		// we were just on a mission landing, set _rtl_state past RTL_STATE_LOITER such that navigator will engage mission mode,
+		// which will continue executing the landing
+		_rtl_state = RTL_STATE_LAND;
+
+
+	} else if ((global_position.alt < _destination.alt + _param_rtl_return_alt.get()) || _rtl_alt_min) {
+
+		// If lower than return altitude, climb up first.
+		// If rtl_alt_min is true then forcing altitude change even if above.
+		_rtl_state = RTL_STATE_CLIMB;
+
+	} else {
+		// Otherwise go straight to return
+		_rtl_state = RTL_STATE_RETURN;
+	}
+
+	// reset cruising speed and throttle to default for RTL
+	_navigator->reset_cruising_speed();
+	_navigator->set_cruising_throttle();
+
+	set_rtl_item();
+
+}

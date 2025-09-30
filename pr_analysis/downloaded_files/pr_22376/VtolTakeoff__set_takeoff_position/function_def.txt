@@ -1,0 +1,22 @@
+VtolTakeoff::set_takeoff_position()
+{
+	// set current mission item to takeoff
+	set_takeoff_item(&_mission_item, _transition_alt_amsl);
+
+	_mission_item.lat = _navigator->get_global_position()->lat;
+	_mission_item.lon = _navigator->get_global_position()->lon;
+
+	_navigator->get_mission_result()->finished = false;
+	_navigator->set_mission_result_updated();
+
+	// convert mission item to current setpoint
+	struct position_setpoint_triplet_s *pos_sp_triplet = _navigator->get_position_setpoint_triplet();
+	mission_apply_limitation(_mission_item);
+	mission_item_to_position_setpoint(_mission_item, &pos_sp_triplet->current);
+
+	pos_sp_triplet->previous.valid = false;
+	pos_sp_triplet->current.yaw_valid = true;
+	pos_sp_triplet->next.valid = false;
+
+	_navigator->set_position_setpoint_triplet_updated();
+}

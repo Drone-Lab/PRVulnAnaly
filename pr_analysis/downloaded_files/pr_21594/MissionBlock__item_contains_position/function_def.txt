@@ -1,0 +1,4 @@
+if (MissionBlock::item_contains_position(mission_item)) {
+			prev_pos_index = index;
+			return true;
+		}

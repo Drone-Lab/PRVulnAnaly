@@ -1,0 +1,7 @@
+_yaw_auto_max = math::radians(_param_yaw_auto_max.get());
+
+	_follow_target_position = _param_tracking_side.get();
+
+	if((_follow_target_position > FOLLOW_FROM_LEFT) || (_follow_target_position < FOLLOW_FROM_RIGHT)) {
+		_follow_target_position = FOLLOW_FROM_BEHIND;
+	}

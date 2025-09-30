@@ -1,0 +1,20 @@
+Navigator::params_update()
+{
+	updateParams();
+
+	if (_handle_back_trans_dec_mss != PARAM_INVALID) {
+		param_get(_handle_back_trans_dec_mss, &_param_back_trans_dec_mss);
+	}
+
+	if (_handle_reverse_delay != PARAM_INVALID) {
+		param_get(_handle_reverse_delay, &_param_reverse_delay);
+	}
+
+	if (_handle_mpc_jerk_max != PARAM_INVALID) {
+		param_get(_handle_mpc_jerk_max, &_param_mpc_jerk_max);
+	}
+
+	if (_handle_mpc_acc_hor != PARAM_INVALID) {
+		param_get(_handle_mpc_acc_hor, &_param_mpc_acc_hor);
+	}
+}

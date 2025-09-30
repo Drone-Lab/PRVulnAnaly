@@ -1,0 +1,11 @@
+&& MissionBlock::item_contains_position(mission_item)) {
+
+
+
+		mavlink_log_critical(_mavlink_log_pub, "Mission rejected: No home pos, WP %d uses rel alt\t", current_index + 1);
+		events::send<int16_t>(events::ID("navigator_mis_no_home_rel_alt"), {events::Log::Error, events::LogInternal::Info},
+				      "Mission rejected: No home position, waypoint {1} uses relative altitude",
+				      current_index + 1);
+		return false;
+
+	}

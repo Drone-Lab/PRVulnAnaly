@@ -1,0 +1,12 @@
+bool Geofence::isBelowMaxAltitude(float altitude)
+{
+	bool inside_fence = true;
+
+	if (_param_gf_max_ver_dist.get() > FLT_EPSILON && _navigator->home_alt_valid()) {
+
+		const float dist_z = altitude - _navigator->get_home_position()->alt;
+		inside_fence = dist_z < _param_gf_max_ver_dist.get();
+	}
+
+	return inside_fence;
+}

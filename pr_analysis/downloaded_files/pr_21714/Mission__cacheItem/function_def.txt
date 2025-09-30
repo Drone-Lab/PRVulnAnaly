@@ -1,0 +1,35 @@
+void Mission::cacheItem(const mission_item_s &mission_item)
+{
+	switch (mission_item.nav_cmd) {
+	case NAV_CMD_DO_GIMBAL_MANAGER_CONFIGURE:
+		_last_gimbal_configure_item = mission_item;
+		break;
+
+	case NAV_CMD_DO_GIMBAL_MANAGER_PITCHYAW:
+		_last_gimbal_control_item = mission_item;
+		break;
+
+	case NAV_CMD_SET_CAMERA_MODE:
+		_last_camera_mode_item = mission_item;
+		break;
+
+	case NAV_CMD_DO_SET_CAM_TRIGG_DIST:
+	case NAV_CMD_DO_TRIGGER_CONTROL:
+	case NAV_CMD_IMAGE_START_CAPTURE:
+	case NAV_CMD_IMAGE_STOP_CAPTURE:
+		_last_camera_trigger_item = mission_item;
+		break;
+
+	case NAV_CMD_DO_CHANGE_SPEED:
+		_last_speed_change_item = mission_item;
+		break;
+
+	case NAV_CMD_DO_VTOL_TRANSITION:
+		// delete speed changes after a VTOL transition
+		_last_speed_change_item = {};
+		break;
+
+	default:
+		break;
+	}
+}

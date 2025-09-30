@@ -1,0 +1,7 @@
+_responsiveness = math::constrain((float) _param_nav_ft_rs.get(), .1F, 1.0F);
+
+	_follow_target_position = _param_nav_ft_fs.get();
+
+	if ((_follow_target_position > FOLLOW_FROM_LEFT) || (_follow_target_position < FOLLOW_FROM_RIGHT)) {
+		_follow_target_position = FOLLOW_FROM_BEHIND;
+	}

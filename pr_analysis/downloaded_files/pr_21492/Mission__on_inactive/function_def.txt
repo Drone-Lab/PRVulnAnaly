@@ -1,0 +1,61 @@
+Mission::on_inactive()
+{
+	/* Without home a mission can't be valid yet anyway, let's wait. */
+	if (!_navigator->home_global_position_valid()) {
+		return;
+	}
+
+	if (_inited) {
+		if (_mission_sub.updated()) {
+			update_mission();
+
+			if (_mission_type == MISSION_TYPE_NONE && _mission.count > 0) {
+				_mission_type = MISSION_TYPE_MISSION;
+			}
+		}
+
+		/* reset the current mission if needed */
+		if (need_to_reset_mission()) {
+			reset_mission(_mission);
+			_navigator->reset_cruising_speed();
+			_current_mission_index = 0;
+		}
+
+	} else {
+
+		/* load missions from storage */
+		mission_s mission_state = {};
+
+		dm_lock(DM_KEY_MISSION_STATE);
+
+		/* read current state */
+		int read_res = dm_read(DM_KEY_MISSION_STATE, 0, &mission_state, sizeof(mission_s));
+
+		dm_unlock(DM_KEY_MISSION_STATE);
+
+		if (read_res == sizeof(mission_s)) {
+			_mission.dataman_id = mission_state.dataman_id;
+			_mission.count = mission_state.count;
+			_current_mission_index = mission_state.current_seq;
+
+			// find and store landing start marker (if available)
+			find_mission_land_start();
+		}
+
+		/* On init let's check the mission, maybe there is already one available. */
+		check_mission_valid(false);
+
+		_inited = true;
+	}
+
+	/* require takeoff after non-loiter or landing */
+	if (!_navigator->get_can_loiter_at_sp() || _navigator->get_land_detected()->landed) {
+		_need_takeoff = true;
+	}
+
+	/* reset so current mission item gets restarted if mission was paused */
+	_work_item_type = WORK_ITEM_TYPE_DEFAULT;
+
+	/* reset so MISSION_ITEM_REACHED isn't published */
+	_navigator->get_mission_result()->seq_reached = -1;
+}

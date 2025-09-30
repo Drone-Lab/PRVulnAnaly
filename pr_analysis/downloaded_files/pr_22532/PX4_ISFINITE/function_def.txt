@@ -1,0 +1,35 @@
+const float mission_item_loiter_radius_abs = (PX4_ISFINITE(_mission_item.loiter_radius)
+				&& fabsf(_mission_item.loiter_radius) > FLT_EPSILON) ? fabsf(_mission_item.loiter_radius) :
+				_navigator->get_loiter_radius();
+
+		dist = get_distance_to_point_global_wgs84(_mission_item.lat, _mission_item.lon, mission_item_altitude_amsl,
+				_navigator->get_global_position()->lat,
+				_navigator->get_global_position()->lon,
+				_navigator->get_global_position()->alt,
+				&dist_xy, &dist_z);
+
+		if ((_mission_item.nav_cmd == NAV_CMD_TAKEOFF || _mission_item.nav_cmd == NAV_CMD_VTOL_TAKEOFF)
+		    && _navigator->get_vstatus()->vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROTARY_WING) {
+
+			/* We want to avoid the edge case where the acceptance radius is bigger or equal than
+			 * the altitude of the takeoff waypoint above home. Otherwise, we do not really follow
+			 * take-off procedures like leaving the landing gear down. */
+
+			float takeoff_alt = _mission_item.altitude_is_relative ?
+					    _mission_item.altitude :
+					    (_mission_item.altitude - _navigator->get_home_position()->alt);
+
+			float altitude_acceptance_radius = _navigator->get_altitude_acceptance_radius();
+
+			/* It should be safe to just use half of the takoeff_alt as an acceptance radius. */
+			if (takeoff_alt > 0 && takeoff_alt < altitude_acceptance_radius) {
+				altitude_acceptance_radius = takeoff_alt / 2.0f;
+			}
+
+			/* require only altitude for takeoff for multicopter */
+			if (_navigator->get_global_position()->alt >
+			    mission_item_altitude_amsl - altitude_acceptance_radius) {
+				_waypoint_position_reached = true;
+			}
+
+		}

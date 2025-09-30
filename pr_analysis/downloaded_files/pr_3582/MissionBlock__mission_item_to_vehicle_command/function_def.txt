@@ -1,0 +1,18 @@
+MissionBlock::mission_item_to_vehicle_command(const struct mission_item_s *item, struct vehicle_command_s *cmd)
+{
+	// we're expecting a mission command item here so assign the "raw" inputs to the command
+	// (MAV_FRAME_MISSION mission item)
+	cmd->param1 = item->params[0];
+	cmd->param2 = item->params[1];
+	cmd->param3 = item->params[2];
+	cmd->param4 = item->params[3];
+	cmd->param5 = item->params[4];
+	cmd->param6 = item->params[5];
+	cmd->param7 = item->params[6];
+
+	cmd->target_system = _navigator->get_vstatus()->system_id;
+	cmd->target_component = _navigator->get_vstatus()->component_id;
+	cmd->source_system = _navigator->get_vstatus()->system_id;
+	cmd->source_component = _navigator->get_vstatus()->component_id;
+	cmd->confirmation = false;
+}

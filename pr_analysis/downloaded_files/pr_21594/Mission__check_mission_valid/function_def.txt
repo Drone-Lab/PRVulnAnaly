@@ -1,0 +1,18 @@
+Mission::check_mission_valid(bool force)
+{
+	if ((!_home_inited && _navigator->home_global_position_valid()) || force) {
+
+		MissionFeasibilityChecker _missionFeasibilityChecker(_navigator, _dataman_client);
+
+		_navigator->get_mission_result()->valid =
+			_missionFeasibilityChecker.checkMissionFeasible(_mission);
+
+		_navigator->get_mission_result()->seq_total = _mission.count;
+		_navigator->increment_mission_instance_count();
+		_navigator->set_mission_result_updated();
+		_home_inited = _navigator->home_global_position_valid();
+
+		// find and store landing start marker (if available)
+		find_mission_land_start();
+	}
+}

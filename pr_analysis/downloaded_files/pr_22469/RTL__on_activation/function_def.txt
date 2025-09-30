@@ -1,0 +1,21 @@
+void RTL::on_activation()
+{
+	setRtlTypeAndDestination();
+
+	switch (_rtl_type) {
+	case RtlType::RTL_DIRECT_MISSION_LAND:	// Fall through
+	case RtlType::RTL_MISSION_FAST: // Fall through
+	case RtlType::RTL_MISSION_FAST_REVERSE:
+		_rtl_mission_type_handle->setReturnAltMin(_enforce_rtl_alt);
+		_rtl_mission_type_handle->on_activation();
+		break;
+
+	case RtlType::RTL_DIRECT:
+		_rtl_direct.setReturnAltMin(_enforce_rtl_alt);
+		_rtl_direct.on_activation();
+		break;
+
+	default:
+		break;
+	}
+}

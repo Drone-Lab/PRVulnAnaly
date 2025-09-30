@@ -1,0 +1,31 @@
+void MissionBase::onMissionUpdate(bool has_mission_items_changed)
+{
+	_is_current_planned_mission_item_valid = _mission.count > 0;
+
+	if (has_mission_items_changed) {
+		_dataman_cache.invalidate();
+		_load_mission_index = -1;
+
+		check_mission_valid();
+
+		// only warn if the check failed on merit
+		if ((!_navigator->get_mission_result()->valid) && _mission.count > 0U) {
+			PX4_WARN("mission check failed");
+		}
+	}
+
+	if (isActive()) {
+		_mission_has_been_activated = true;
+		_navigator->reset_triplets();
+		update_mission();
+		set_mission_items();
+
+	} else {
+		if (has_mission_items_changed) {
+			_mission_has_been_activated = false;
+		}
+	}
+
+	// reset as when we update mission we don't want to proceed at previous index
+	_inactivation_index = -1;
+}

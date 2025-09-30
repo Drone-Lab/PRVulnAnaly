@@ -1,0 +1,21 @@
+Mission::advance_mission()
+{
+	if (_takeoff) {
+		_takeoff = false;
+
+	} else {
+		switch (_mission_type) {
+		case MISSION_TYPE_ONBOARD:
+			_current_onboard_mission_index++;
+			break;
+
+		case MISSION_TYPE_OFFBOARD:
+			_current_offboard_mission_index++;
+			break;
+
+		case MISSION_TYPE_NONE:
+		default:
+			break;
+		}
+	}
+}

@@ -1,0 +1,3 @@
+int loadFromFile(const char *filename);
+
+	bool isEmpty() { return (!_fence_updated || (_num_polygons == 0)); }

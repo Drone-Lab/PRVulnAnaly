@@ -1,0 +1,12 @@
+Loiter::on_activation()
+{
+	if (_navigator->get_reposition_triplet()->current.valid) {
+		reposition();
+
+	} else {
+		set_loiter_position();
+	}
+
+	// reset cruising speed to default
+	_navigator->reset_cruising_speed();
+}

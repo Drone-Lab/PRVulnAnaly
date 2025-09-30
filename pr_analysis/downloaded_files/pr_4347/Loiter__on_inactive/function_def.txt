@@ -1,0 +1,3 @@
+Loiter::on_inactive()
+{
+}

@@ -1,0 +1,21 @@
+if (_navigator->get_vstatus()->vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROTARY_WING
+		    && PX4_ISFINITE(_navigator->get_yaw_acceptance(_mission_item.yaw))) {
+
+			const float yaw_err = wrap_pi(_mission_item.yaw - _navigator->get_local_position()->heading);
+
+			/* accept yaw if reached or if timeout is set in which case we ignore not forced headings */
+			if (fabsf(yaw_err) < _navigator->get_yaw_threshold()
+			    || (_navigator->get_yaw_timeout() >= FLT_EPSILON && !_mission_item.force_heading)) {
+
+				_waypoint_yaw_reached = true;
+			}
+
+			/* if heading needs to be reached, the timeout is enabled and we don't make it, abort mission */
+			if (!_waypoint_yaw_reached && _mission_item.force_heading &&
+			    (_navigator->get_yaw_timeout() >= FLT_EPSILON) &&
+			    (now - _time_wp_reached >= (hrt_abstime)_navigator->get_yaw_timeout() * 1e6f)) {
+
+				_navigator->set_mission_failure("unable to reach heading within timeout");
+			}
+
+		}

@@ -1,0 +1,63 @@
+MissionBase::do_abort_landing()
+{
+	// Abort FW landing, loiter above landing site in at least MIS_LND_ABRT_ALT
+	if (_mission_type == MissionType::MISSION_TYPE_NONE) {
+		return;
+	}
+
+	if (_mission_item.nav_cmd != NAV_CMD_LAND) {
+		return;
+	}
+
+	const float alt_landing = get_absolute_altitude_for_item(_mission_item);
+	const float alt_sp = math::max(alt_landing + _navigator->get_landing_abort_min_alt(),
+				       _global_pos_sub.get().alt);
+
+	// turn current landing waypoint into an indefinite loiter
+	_mission_item.nav_cmd = NAV_CMD_LOITER_UNLIMITED;
+	_mission_item.altitude_is_relative = false;
+	_mission_item.altitude = alt_sp;
+	_mission_item.loiter_radius = _navigator->get_loiter_radius();
+	_mission_item.acceptance_radius = _navigator->get_acceptance_radius();
+	_mission_item.autocontinue = false;
+	_mission_item.origin = ORIGIN_ONBOARD;
+
+	mission_item_to_position_setpoint(_mission_item, &_navigator->get_position_setpoint_triplet()->current);
+
+	// XXX: this is a hack to invalidate the "next" position setpoint for the fixed-wing position controller during
+	// the landing abort hold. otherwise, the "next" setpoint would still register as a "LAND" point, and trigger
+	// the early landing configuration (flaps and landing airspeed) during the hold.
+	_navigator->get_position_setpoint_triplet()->next.lat = (double)NAN;
+	_navigator->get_position_setpoint_triplet()->next.lon = (double)NAN;
+	_navigator->get_position_setpoint_triplet()->next.alt = NAN;
+
+	publish_navigator_mission_item(); // for logging
+	_navigator->set_position_setpoint_triplet_updated();
+
+	mavlink_log_info(_navigator->get_mavlink_log_pub(), "Holding at %d m above landing waypoint.\t",
+			 (int)(alt_sp - alt_landing));
+	events::send<float>(events::ID("mission_holding_above_landing"), events::Log::Info,
+			    "Holding at {1:.0m_v} above landing waypoint", alt_sp - alt_landing);
+
+	// reset mission index to start of landing
+	if (hasMissionLandStart()) {
+		_is_current_planned_mission_item_valid = true;
+		setMissionIndex(_mission.land_start_index);
+
+	} else {
+		// move mission index back (landing approach point)
+		_is_current_planned_mission_item_valid = goToPreviousItem(false);
+	}
+
+	// send reposition cmd to get out of mission
+	vehicle_command_s vcmd = {};
+
+	vcmd.command = vehicle_command_s::VEHICLE_CMD_DO_REPOSITION;
+	vcmd.param1 = -1;
+	vcmd.param2 = 1;
+	vcmd.param5 = _mission_item.lat;
+	vcmd.param6 = _mission_item.lon;
+	vcmd.param7 = alt_sp;
+
+	_navigator->publish_vehicle_cmd(&vcmd);
+}

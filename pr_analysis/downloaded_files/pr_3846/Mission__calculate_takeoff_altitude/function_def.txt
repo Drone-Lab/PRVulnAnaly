@@ -1,0 +1,15 @@
+Mission::calculate_takeoff_altitude(struct mission_item_s *mission_item)
+{
+	/* calculate takeoff altitude */
+	float takeoff_alt = get_absolute_altitude_for_item(*mission_item);
+
+	/* takeoff to at least NAV_TAKEOFF_ALT above home/ground, even if first waypoint is lower */
+	if (_navigator->get_land_detected()->landed) {
+		takeoff_alt = fmaxf(takeoff_alt, _navigator->get_global_position()->alt + _param_takeoff_alt.get());
+
+	} else {
+		takeoff_alt = fmaxf(takeoff_alt, _navigator->get_home_position()->alt + _param_takeoff_alt.get());
+	}
+
+	return takeoff_alt;
+}

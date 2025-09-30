@@ -1,0 +1,3 @@
+MissionBlock::MissionBlock(Navigator *navigator, const char *name) :
+	NavigatorMode(navigator, name),
+	_mission_item({0}

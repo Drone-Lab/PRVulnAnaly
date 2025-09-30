@@ -1,0 +1,56 @@
+bool Geofence::isInsidePolygonOrCircle(double lat, double lon, float altitude)
+{
+	if (isEmpty()) {
+		/* Empty fence -> accept all points */
+		return true;
+	}
+
+	/* Vertical check */
+	if (_altitude_max > _altitude_min) { // only enable vertical check if configured properly
+		if (altitude > _altitude_max || altitude < _altitude_min) {
+			return false;
+		}
+	}
+
+	/* Horizontal check: iterate all polygons & circles */
+	bool outside_exclusion = true;
+	bool inside_inclusion = false;
+	bool had_inclusion_areas = false;
+
+	for (int polygon_index = 0; polygon_index < _num_polygons; ++polygon_index) {
+		if (_polygons[polygon_index].fence_type == NAV_CMD_FENCE_CIRCLE_INCLUSION) {
+			bool inside = insideCircle(_polygons[polygon_index], lat, lon, altitude);
+
+			if (inside) {
+				inside_inclusion = true;
+			}
+
+			had_inclusion_areas = true;
+
+		} else if (_polygons[polygon_index].fence_type == NAV_CMD_FENCE_CIRCLE_EXCLUSION) {
+			bool inside = insideCircle(_polygons[polygon_index], lat, lon, altitude);
+
+			if (inside) {
+				outside_exclusion = false;
+			}
+
+		} else { // it's a polygon
+			bool inside = insidePolygon(_polygons[polygon_index], lat, lon, altitude);
+
+			if (_polygons[polygon_index].fence_type == NAV_CMD_FENCE_POLYGON_VERTEX_INCLUSION) {
+				if (inside) {
+					inside_inclusion = true;
+				}
+
+				had_inclusion_areas = true;
+
+			} else { // exclusion
+				if (inside) {
+					outside_exclusion = false;
+				}
+			}
+		}
+	}
+
+	return (!had_inclusion_areas || inside_inclusion) && outside_exclusion;
+}

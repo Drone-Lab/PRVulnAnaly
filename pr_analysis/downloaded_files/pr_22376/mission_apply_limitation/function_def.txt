@@ -1,0 +1,40 @@
+*/
+	void mission_apply_limitation(mission_item_s &item);
+
+	void setLoiterToAltMissionItem(mission_item_s &item, const DestinationPosition &dest, float loiter_radius,
+				       HeadingMode heading_mode) const;
+
+	void setLoiterHoldMissionItem(mission_item_s &item, const DestinationPosition &dest, float loiter_time,
+				      float loiter_radius, HeadingMode heading_mode) const;
+
+	void setMoveToPositionMissionItem(mission_item_s &item, const DestinationPosition &dest,
+					  HeadingMode heading_mode) const;
+
+	void setLandMissionItem(mission_item_s &item, const DestinationPosition &dest, HeadingMode heading_mode) const;
+
+	float setYawFromHeadingMode(const DestinationPosition &dest, HeadingMode heading_mode) const;
+
+	void startPrecLand(uint16_t land_precision);
+
+	/**
+	 * @brief Issue a command for mission items with a nav_cmd that specifies an action
+	 *
+	 * Execute the specified command inside the mission item. The action depends on the nav_cmd
+	 * value (which correlates to the MAVLink's MAV_CMD enum values) and the params defined in the
+	 * mission item.
+	 *
+	 * This is used for commands like MAV_CMD_DO* in MAVLink, where immediate actions are defined.
+	 * For more information, refer to: https://mavlink.io/en/services/mission.html#mavlink_commands
+	 *
+	 * @param item Mission item to execute
+	 */
+	void issue_command(const mission_item_s &item);
+
+	/**
+	 * [s] Get the time to stay that's specified in the mission item
+	 */
+	float get_time_inside(const mission_item_s &item) const;
+
+	float get_absolute_altitude_for_item(const mission_item_s &mission_item) const;
+
+	mission_item_s _mission_item{}

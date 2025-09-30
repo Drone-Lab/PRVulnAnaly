@@ -1,0 +1,57 @@
+*/
+	void updateFence();
+
+	/**
+	 * Return whether the system obeys the geofence.
+	 *
+	 * @return true: system is obeying fence, false: system is violating fence
+	 */
+	bool check(const vehicle_global_position_s &global_position, const sensor_gps_s &gps_position);
+
+	/**
+	 * Return whether a mission item obeys the geofence.
+	 *
+	 * @return true: system is obeying fence, false: system is violating fence
+	 */
+	bool check(const struct mission_item_s &mission_item);
+
+	/**
+	 * Check if a point passes the Geofence test.
+	 * In addition to checkPolygons(), this takes all additional parameters into account.
+	 *
+	 * @return false for a geofence violation
+	 */
+	bool checkAll(double lat, double lon, float altitude);
+
+	bool isCloserThanMaxDistToHome(double lat, double lon, float altitude);
+
+	bool isBelowMaxAltitude(float altitude);
+
+	virtual bool isInsidePolygonOrCircle(double lat, double lon, float altitude);
+
+	int clearDm();
+
+	bool valid();
+
+	/**
+	 * Load a single inclusion polygon, replacing any already existing polygons.
+	 * The file has one of the following formats:
+	 * - Decimal Degrees:
+	 * 0 900
+	 * 47.475273548913222 8.52672100067138672
+	 * 47.4608261578541359 8.53414535522460938
+	 * 47.4613484218861217 8.56444358825683594
+	 * 47.4830758091035534 8.53470325469970703
+	 *
+	 * - Degree-Minute-Second:
+	 * 0 900
+	 * DMS -26 -34 -10.4304 151 50 14.5428
+	 * DMS -26 -34 -11.8416 151 50 21.8580
+	 * DMS -26 -34 -36.5628 151 50 28.1112
+	 * DMS -26 -34 -37.1640 151 50 24.1620
+	 *
+	 * Where the first line is min, max altitude in meters AMSL.
+	 */
+	int loadFromFile(const char *filename);
+
+	bool isEmpty() { return (!_fence_updated || (_num_polygons == 0)); }

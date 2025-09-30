@@ -1,0 +1,14 @@
+void FollowTarget::reset_target_validity()
+{
+	_yaw_rate = NAN;
+	_previous_target_motion = {};
+	_current_target_motion = {};
+	_target_updates = 0;
+	_current_vel.zero();
+	_acceleration.zero();
+	_est_target_vel.zero();
+	_target_distance.zero();
+	_target_position_offset.zero();
+	reset_mission_item_reached();
+	_follow_target_state = SET_WAIT_FOR_TARGET_POSITION;
+}

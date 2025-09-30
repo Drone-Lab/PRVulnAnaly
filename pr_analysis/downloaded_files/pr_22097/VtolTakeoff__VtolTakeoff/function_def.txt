@@ -1,0 +1,5 @@
+VtolTakeoff::VtolTakeoff(Navigator *navigator) :
+	MissionBlock(navigator),
+	ModuleParams(navigator)
+{
+}

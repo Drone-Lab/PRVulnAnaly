@@ -1,0 +1,6 @@
+Loiter::on_active()
+{
+	if (_navigator->get_reposition_triplet()->current.valid) {
+		reposition();
+	}
+}

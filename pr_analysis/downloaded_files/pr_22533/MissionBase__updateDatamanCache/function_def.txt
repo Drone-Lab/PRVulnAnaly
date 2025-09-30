@@ -1,0 +1,19 @@
+MissionBase::updateDatamanCache()
+{
+	if ((_mission.count > 0) && (_mission.current_seq != _load_mission_index)) {
+
+		int32_t start_index = _mission.current_seq;
+		int32_t end_index = start_index + _dataman_cache_size_signed;
+
+		end_index = math::max(math::min(end_index, static_cast<int32_t>(_mission.count)), INT32_C(0));
+
+		for (int32_t index = start_index; index != end_index; index += math::signNoZero(_dataman_cache_size_signed)) {
+
+			_dataman_cache.load(static_cast<dm_item_t>(_mission.mission_dataman_id), index);
+		}
+
+		_load_mission_index = _mission.current_seq;
+	}
+
+	_dataman_cache.update();
+}

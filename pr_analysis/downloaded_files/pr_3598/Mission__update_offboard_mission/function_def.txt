@@ -1,0 +1,50 @@
+Mission::update_offboard_mission()
+{
+	bool failed = true;
+
+	if (orb_copy(ORB_ID(offboard_mission), _navigator->get_offboard_mission_sub(), &_offboard_mission) == OK) {
+		warnx("offboard mission updated: dataman_id=%d, count=%d, current_seq=%d", _offboard_mission.dataman_id, _offboard_mission.count, _offboard_mission.current_seq);
+		/* determine current index */
+		if (_offboard_mission.current_seq >= 0 && _offboard_mission.current_seq < (int)_offboard_mission.count) {
+			_current_offboard_mission_index = _offboard_mission.current_seq;
+		} else {
+			/* if less items available, reset to first item */
+			if (_current_offboard_mission_index >= (int)_offboard_mission.count) {
+				_current_offboard_mission_index = 0;
+
+			/* if not initialized, set it to 0 */
+			} else if (_current_offboard_mission_index < 0) {
+				_current_offboard_mission_index = 0;
+			}
+			/* otherwise, just leave it */
+		}
+
+		/* Check mission feasibility, for now do not handle the return value,
+		 * however warnings are issued to the gcs via mavlink from inside the MissionFeasiblityChecker */
+		dm_item_t dm_current = DM_KEY_WAYPOINTS_OFFBOARD(_offboard_mission.dataman_id);
+
+		failed = !_missionFeasibilityChecker.checkMissionFeasible(_navigator->get_mavlink_fd(), _navigator->get_vstatus()->is_rotary_wing,
+				dm_current, (size_t) _offboard_mission.count, _navigator->get_geofence(),
+				_navigator->get_home_position()->alt, _navigator->home_position_valid(),
+				_navigator->get_global_position()->lat, _navigator->get_global_position()->lon,
+				_param_dist_1wp.get(), _navigator->get_mission_result()->warning, _navigator->get_acceptance_radius(),
+				_navigator->get_vstatus()->condition_landed);
+
+		_navigator->get_mission_result()->valid = !failed;
+		_navigator->increment_mission_instance_count();
+		_navigator->set_mission_result_updated();
+
+	} else {
+		PX4_WARN("offboard mission update failed, handle: %d", _navigator->get_offboard_mission_sub());
+	}
+
+	if (failed) {
+		_offboard_mission.count = 0;
+		_offboard_mission.current_seq = 0;
+		_current_offboard_mission_index = 0;
+
+		warnx("mission check failed");
+	}
+
+	set_current_offboard_mission_item();
+}

@@ -1,0 +1,18 @@
+MissionBase::set_mission_items()
+{
+	if (_is_current_planned_mission_item_valid) {
+		/* By default set the mission item to the current planned mission item. Depending on request, it can be altered. */
+		loadCurrentMissionItem();
+
+		/* force vtol land */
+		if (_navigator->force_vtol() && _mission_item.nav_cmd == NAV_CMD_LAND) {
+			_mission_item.nav_cmd = NAV_CMD_VTOL_LAND;
+		}
+
+		setActiveMissionItems();
+
+	} else {
+		setEndOfMissionItems();
+		_navigator->mode_completed(vehicle_status_s::NAVIGATION_STATE_AUTO_MISSION);
+	}
+}

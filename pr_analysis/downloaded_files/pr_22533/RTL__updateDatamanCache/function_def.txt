@@ -1,0 +1,95 @@
+void RTL::updateDatamanCache()
+{
+	bool success;
+
+	switch (_dataman_state) {
+
+	case DatamanState::UpdateRequestWait:
+
+		if (_initiate_safe_points_updated) {
+			_initiate_safe_points_updated = false;
+			_dataman_state	= DatamanState::Read;
+		}
+
+		break;
+
+	case DatamanState::Read:
+
+		_dataman_state	= DatamanState::ReadWait;
+		success = _dataman_client_safepoint.readAsync(DM_KEY_SAFE_POINTS_STATE, 0, reinterpret_cast<uint8_t *>(&_stats),
+				sizeof(mission_stats_entry_s));
+
+		if (!success) {
+			_error_state = DatamanState::Read;
+			_dataman_state = DatamanState::Error;
+		}
+
+		break;
+
+	case DatamanState::ReadWait:
+
+		_dataman_client_safepoint.update();
+
+		if (_dataman_client_safepoint.lastOperationCompleted(success)) {
+
+			if (!success) {
+				_error_state = DatamanState::ReadWait;
+				_dataman_state = DatamanState::Error;
+
+			} else if (_opaque_id != _stats.opaque_id) {
+
+				_opaque_id = _stats.opaque_id;
+				_safe_points_updated = false;
+
+				_dataman_cache_safepoint.invalidate();
+
+				if (_dataman_cache_safepoint.size() != _stats.num_items) {
+					_dataman_cache_safepoint.resize(_stats.num_items);
+				}
+
+				for (int index = 0; index < _dataman_cache_safepoint.size(); ++index) {
+					_dataman_cache_safepoint.load(static_cast<dm_item_t>(_stats.dataman_id), index);
+				}
+
+				_dataman_state = DatamanState::Load;
+
+			} else {
+				_dataman_state = DatamanState::UpdateRequestWait;
+			}
+		}
+
+		break;
+
+	case DatamanState::Load:
+
+		_dataman_cache_safepoint.update();
+
+		if (!_dataman_cache_safepoint.isLoading()) {
+			_dataman_state = DatamanState::UpdateRequestWait;
+			_safe_points_updated = true;
+		}
+
+		break;
+
+	case DatamanState::Error:
+		PX4_ERR("Safe points update failed! state: %" PRIu8, static_cast<uint8_t>(_error_state));
+		_dataman_state = DatamanState::UpdateRequestWait;
+		break;
+
+	default:
+		break;
+
+	}
+
+	if (_mission_id != _mission_sub.get().mission_id) {
+		_mission_id = _mission_sub.get().mission_id;
+		const dm_item_t dm_item = static_cast<dm_item_t>(_mission_sub.get().mission_dataman_id);
+		_dataman_cache_landItem.invalidate();
+
+		if (_mission_sub.get().land_index > 0) {
+			_dataman_cache_landItem.load(dm_item, _mission_sub.get().land_index);
+		}
+	}
+
+	_dataman_cache_landItem.update();
+}

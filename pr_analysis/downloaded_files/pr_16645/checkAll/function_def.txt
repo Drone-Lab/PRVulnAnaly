@@ -1,0 +1,4 @@
+bool Geofence::checkAll(const struct vehicle_global_position_s &global_position)
+{
+	return checkAll(global_position.lat, global_position.lon, global_position.alt);
+}

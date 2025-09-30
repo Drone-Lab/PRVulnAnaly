@@ -1,0 +1,23 @@
+void MissionBase::updateMavlinkMission()
+{
+	if (_mission_sub.updated()) {
+		mission_s new_mission;
+		_mission_sub.update(&new_mission);
+
+		if (isMissionValid(new_mission)) {
+			/* Relevant mission items updated externally*/
+			if (checkMissionDataChanged(new_mission)) {
+				bool mission_items_changed = (new_mission.mission_id != _mission.mission_id);
+
+				if (new_mission.current_seq < 0) {
+					new_mission.current_seq = math::max(math::min(_mission.current_seq, static_cast<int32_t>(new_mission.count) - 1),
+									    INT32_C(0));
+				}
+
+				_mission = new_mission;
+
+				onMissionUpdate(mission_items_changed);
+			}
+		}
+	}
+}

@@ -1,0 +1,8 @@
+void 		calculate_breaking_stop(double &lat, double &lon, float &yaw);
+	void        	stop_capturing_images();
+
+	void mode_completed(uint8_t nav_state, uint8_t result = mode_completed_s::RESULT_SUCCESS);
+
+private:
+
+	int _local_pos_sub{-1}

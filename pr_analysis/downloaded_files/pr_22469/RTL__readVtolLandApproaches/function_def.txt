@@ -1,0 +1,56 @@
+land_approaches_s RTL::readVtolLandApproaches(DestinationPosition rtl_position) const
+{
+
+	// go through all mission items in the rally point storage. If we find a mission item of type NAV_CMD_RALLY_POINT
+	// which is within MAX_DIST_FROM_HOME_FOR_LAND_APPROACHES of our current home position then treat ALL following mission items of type NAV_CMD_LOITER_TO_ALT which come
+	// BEFORE the next mission item of type NAV_CMD_RALLY_POINT as land approaches for the home position
+	land_approaches_s vtol_land_approaches{};
+
+	if (!_safe_points_updated) {
+		return vtol_land_approaches;
+	}
+
+	bool foundHomeLandApproaches = false;
+	uint8_t sector_counter = 0;
+
+	for (int current_seq = 1; current_seq <= _stats.num_items; ++current_seq) {
+		mission_item_s mission_item{};
+
+		bool success_mission_item = _dataman_cache_safepoint.loadWait(DM_KEY_SAFE_POINTS, current_seq,
+					    reinterpret_cast<uint8_t *>(&mission_item),
+					    sizeof(mission_item_s));
+
+		if (!success_mission_item) {
+			PX4_ERR("dm_read failed");
+			break;
+		}
+
+		if (mission_item.nav_cmd == NAV_CMD_RALLY_POINT) {
+
+			if (foundHomeLandApproaches) {
+				break;
+			}
+
+			const float dist_to_safepoint = get_distance_to_next_waypoint(mission_item.lat, mission_item.lon, rtl_position.lat,
+							rtl_position.lon);
+
+			if (dist_to_safepoint < MAX_DIST_FROM_HOME_FOR_LAND_APPROACHES) {
+				foundHomeLandApproaches = true;
+				vtol_land_approaches.land_location_lat_lon = matrix::Vector2d(mission_item.lat, mission_item.lon);
+			}
+
+			sector_counter = 0;
+		}
+
+		if (foundHomeLandApproaches && mission_item.nav_cmd == NAV_CMD_LOITER_TO_ALT) {
+			vtol_land_approaches.approaches[sector_counter].lat = mission_item.lat;
+			vtol_land_approaches.approaches[sector_counter].lon = mission_item.lon;
+			vtol_land_approaches.approaches[sector_counter].height_m = MissionBlock::get_absolute_altitude_for_item(mission_item,
+					_home_pos_sub.get().alt);
+			vtol_land_approaches.approaches[sector_counter].loiter_radius_m = mission_item.loiter_radius;
+			sector_counter++;
+		}
+	}
+
+	return vtol_land_approaches;
+}

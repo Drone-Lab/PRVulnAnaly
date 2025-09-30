@@ -1,0 +1,40 @@
+bool MissionFeasibilityChecker::checkHomePositionAltitude(dm_item_t dm_current, size_t nMissionItems,
+	float home_alt, bool home_valid, bool &warning_issued, bool throw_error)
+{
+	/* Check if all all waypoints are above the home altitude, only return false if bool throw_error = true */
+	for (size_t i = 0; i < nMissionItems; i++) {
+		struct mission_item_s missionitem;
+		const ssize_t len = sizeof(struct mission_item_s);
+
+		if (dm_read(dm_current, i, &missionitem, len) != len) {
+			warning_issued = true;
+			/* not supposed to happen unless the datamanager can't access the SD card, etc. */
+			return false;
+		}
+
+		/* always reject relative alt without home set */
+		if (missionitem.altitude_is_relative && !home_valid) {
+			mavlink_log_critical(_mavlink_fd, "Rejecting Mission: No home pos, WP %d uses rel alt", i);
+			warning_issued = true;
+			return false;
+		}
+
+		/* calculate the global waypoint altitude */
+		float wp_alt = (missionitem.altitude_is_relative) ? missionitem.altitude + home_alt : missionitem.altitude;
+
+		if (home_alt > wp_alt) {
+
+			warning_issued = true;
+
+			if (throw_error) {
+				mavlink_log_critical(_mavlink_fd, "Rejecting Mission: Waypoint %d below home", i);
+				return false;
+			} else	{
+				mavlink_log_critical(_mavlink_fd, "Warning: Waypoint %d below home", i);
+				return true;
+			}
+		}
+	}
+
+	return true;
+}

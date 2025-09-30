@@ -1,0 +1,98 @@
+Mission::read_mission_item(bool onboard, int offset, struct mission_item_s *mission_item)
+{
+	/* select onboard/offboard mission */
+	int *mission_index_ptr;
+	dm_item_t dm_item;
+
+	struct mission_s *mission = (onboard) ? &_onboard_mission : &_offboard_mission;
+	int current_index = (onboard) ? _current_onboard_mission_index : _current_offboard_mission_index;
+	int index_to_read = current_index + offset;
+
+	/* do not work on empty missions */
+	if (mission->count == 0) {
+		return false;
+	}
+
+	if (onboard) {
+		/* onboard mission */
+		mission_index_ptr = (offset == 0) ? &_current_onboard_mission_index : &index_to_read;
+		dm_item = DM_KEY_WAYPOINTS_ONBOARD;
+
+	} else {
+		/* offboard mission */
+		mission_index_ptr = (offset == 0) ? &_current_offboard_mission_index : &index_to_read;
+		dm_item = DM_KEY_WAYPOINTS_OFFBOARD(_offboard_mission.dataman_id);
+	}
+
+	/* Repeat this several times in case there are several DO JUMPS that we need to follow along, however, after
+	 * 10 iterations we have to assume that the DO JUMPS are probably cycling and give up. */
+	for (int i = 0; i < 10; i++) {
+
+		if (*mission_index_ptr < 0 || *mission_index_ptr >= (int)mission->count) {
+			/* mission item index out of bounds - if they are equal, we just reached the end */
+			if (*mission_index_ptr != (int)mission->count) {
+				mavlink_and_console_log_critical(_navigator->get_mavlink_fd(), "[wpm] err: index: %d, max: %d", *mission_index_ptr, (int)mission->count);
+			}
+			return false;
+		}
+
+		const ssize_t len = sizeof(struct mission_item_s);
+
+		/* read mission item to temp storage first to not overwrite current mission item if data damaged */
+		struct mission_item_s mission_item_tmp;
+
+		/* read mission item from datamanager */
+		if (dm_read(dm_item, *mission_index_ptr, &mission_item_tmp, len) != len) {
+			/* not supposed to happen unless the datamanager can't access the SD card, etc. */
+			mavlink_and_console_log_critical(_navigator->get_mavlink_fd(),
+			                     "ERROR waypoint could not be read");
+			return false;
+		}
+
+		/* check for DO_JUMP item, and whether it hasn't not already been repeated enough times */
+		if (mission_item_tmp.nav_cmd == NAV_CMD_DO_JUMP) {
+
+			/* do DO_JUMP as many times as requested */
+			if (mission_item_tmp.do_jump_current_count < mission_item_tmp.do_jump_repeat_count) {
+
+				/* only raise the repeat count if this is for the current mission item
+				* but not for the read ahead mission item */
+				if (offset == 0) {
+					(mission_item_tmp.do_jump_current_count)++;
+					/* save repeat count */
+					if (dm_write(dm_item, *mission_index_ptr, DM_PERSIST_POWER_ON_RESET,
+					    &mission_item_tmp, len) != len) {
+						/* not supposed to happen unless the datamanager can't access the
+						 * dataman */
+						mavlink_log_critical(_navigator->get_mavlink_fd(),
+								     "ERROR DO JUMP waypoint could not be written");
+						return false;
+					}
+					report_do_jump_mission_changed(*mission_index_ptr,
+								       mission_item_tmp.do_jump_repeat_count);
+				}
+				/* set new mission item index and repeat
+				* we don't have to validate here, if it's invalid, we should realize this later .*/
+				*mission_index_ptr = mission_item_tmp.do_jump_mission_index;
+
+			} else {
+				if (offset == 0) {
+					mavlink_log_info(_navigator->get_mavlink_fd(),
+							     "DO JUMP repetitions completed");
+				}
+				/* no more DO_JUMPS, therefore just try to continue with next mission item */
+				(*mission_index_ptr)++;
+			}
+
+		} else {
+			/* if it's not a DO_JUMP, then we were successful */
+			memcpy(mission_item, &mission_item_tmp, sizeof(struct mission_item_s));
+			return true;
+		}
+	}
+
+	/* we have given up, we don't want to cycle forever */
+	mavlink_log_critical(_navigator->get_mavlink_fd(),
+			     "ERROR DO JUMP is cycling, giving up");
+	return false;
+}

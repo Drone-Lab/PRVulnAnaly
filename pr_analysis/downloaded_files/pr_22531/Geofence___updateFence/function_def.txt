@@ -1,0 +1,97 @@
+void Geofence::_updateFence()
+{
+	mission_fence_point_s mission_fence_point;
+	bool is_circle_area = false;
+
+	// iterate over all polygons and store their starting vertices
+	_num_polygons = 0;
+	int current_seq = 1;
+
+	while (current_seq <= _dataman_cache.size()) {
+
+		bool success = _dataman_cache.loadWait(DM_KEY_FENCE_POINTS, current_seq,
+						       reinterpret_cast<uint8_t *>(&mission_fence_point),
+						       sizeof(mission_fence_point_s));
+
+		if (!success) {
+			PX4_ERR("loadWait failed, seq: %i", current_seq);
+			break;
+		}
+
+		switch (mission_fence_point.nav_cmd) {
+		case NAV_CMD_FENCE_RETURN_POINT:
+			// TODO: do we need to store this?
+			++current_seq;
+			break;
+
+		case NAV_CMD_FENCE_CIRCLE_INCLUSION:
+		case NAV_CMD_FENCE_CIRCLE_EXCLUSION:
+			is_circle_area = true;
+
+		/* FALLTHROUGH */
+		case NAV_CMD_FENCE_POLYGON_VERTEX_EXCLUSION:
+		case NAV_CMD_FENCE_POLYGON_VERTEX_INCLUSION:
+			if (!is_circle_area && mission_fence_point.vertex_count == 0) {
+				++current_seq; // avoid endless loop
+				PX4_ERR("Polygon with 0 vertices. Skipping");
+
+			} else {
+				if (_polygons) {
+					// resize: this is somewhat inefficient, but we do not expect there to be many polygons
+					PolygonInfo *new_polygons = new PolygonInfo[_num_polygons + 1];
+
+					if (new_polygons) {
+						memcpy(new_polygons, _polygons, sizeof(PolygonInfo) * _num_polygons);
+					}
+
+					delete[](_polygons);
+					_polygons = new_polygons;
+
+				} else {
+					_polygons = new PolygonInfo[1];
+				}
+
+				if (!_polygons) {
+					_num_polygons = 0;
+					PX4_ERR("alloc failed");
+					return;
+				}
+
+				PolygonInfo &polygon = _polygons[_num_polygons];
+				polygon.dataman_index = current_seq;
+				polygon.fence_type = mission_fence_point.nav_cmd;
+
+				if (is_circle_area) {
+					polygon.circle_radius = mission_fence_point.circle_radius;
+					current_seq += 1;
+
+				} else {
+					polygon.vertex_count = mission_fence_point.vertex_count;
+					current_seq += mission_fence_point.vertex_count;
+				}
+
+				// check if requiremetns for Home location are met
+				const bool home_check_okay = checkHomeRequirementsForGeofence(polygon);
+
+				// check if current position is inside the fence and vehicle is armed
+				const bool current_position_check_okay = checkCurrentPositionRequirementsForGeofence(polygon);
+
+				//check if current mission point inside the geofence
+				const bool current_mission_check_okay = checkMissionRequirementsForGeofence(polygon);
+
+				// discard the polygon if at least one check fails by not incrementing the counter in that case
+				if (home_check_okay && current_position_check_okay  && current_mission_check_okay) {
+					++_num_polygons;
+
+				}
+			}
+
+			break;
+
+		default:
+			PX4_ERR("unhandled Fence command: %i", (int)mission_fence_point.nav_cmd);
+			++current_seq;
+			break;
+		}
+	}
+}

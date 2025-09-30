@@ -102,13 +102,15 @@ def get_previous_commit_info(blob_url):
         print(f"获取前一个提交信息时出错: {str(e)}")
         return None, None
 
-def download_file_from_commit(commit_url, file_path):
+def download_file_from_base_commit(base_commit, file_path, owner="PX4", repo="PX4-Autopilot"):
     """
-    使用提交URL下载特定文件内容
+    从基础提交点下载文件内容
     
     Args:
-        commit_url: 提交的API URL
+        base_commit: 基础提交的SHA
         file_path: 文件路径
+        owner: 仓库所有者
+        repo: 仓库名称
         
     Returns:
         文件内容
@@ -116,59 +118,30 @@ def download_file_from_commit(commit_url, file_path):
     # GitHub访问令牌
     headers = {
         "Authorization": os.getenv("GITHUB_AUTHORIZATION"),
-        "Accept": "application/vnd.github.v3+json",
+        "Accept": "application/vnd.github.v3.raw",
         "User-Agent": "GitHub-API-Client"
     }
     
     try:
-        # 从commit_url获取仓库信息
-        response = requests.get(commit_url, headers=headers)
-        if response.status_code != 200:
-            print(f"获取提交信息失败，状态码: {response.status_code}")
-            return None
-            
-        commit_data = response.json()
-        # 构建raw内容URL
-        repo_url = commit_data.get("html_url", "")
-        if not repo_url:
-            print("未找到仓库URL")
-            return None
-            
-        # 从HTML URL提取仓库信息和提交SHA
-        # 例如: https://github.com/PX4/PX4-Autopilot/commit/e5503480e3a025728f760d0dcd05dd2a450b33a9
-        match = re.search(r'github\.com/([^/]+)/([^/]+)/commit/([^/]+)$', repo_url)
-        if not match:
-            print(f"无法从URL解析仓库信息: {repo_url}")
-            return None
-            
-        owner = match.group(1)
-        repo = match.group(2)
-        commit_sha = match.group(3)
-        
-        # 构建文件内容的API URL
-        file_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}?ref={commit_sha}"
-        raw_headers = {
-            "Authorization": os.getenv("GITHUB_AUTHORIZATION"),
-            "Accept": "application/vnd.github.v3.raw",
-            "User-Agent": "GitHub-API-Client"
-        }
+        # 直接构建文件内容的API URL
+        file_url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}?ref={base_commit}"
         
         # 获取文件内容
-        file_response = requests.get(file_url, headers=raw_headers)
+        file_response = requests.get(file_url, headers=headers)
         if file_response.status_code != 200:
             # 尝试直接从raw链接获取
-            raw_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{commit_sha}/{file_path}"
-            file_response = requests.get(raw_url, headers=raw_headers)
+            raw_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{base_commit}/{file_path}"
+            file_response = requests.get(raw_url, headers=headers)
             
             if file_response.status_code != 200:
                 print(f"获取文件内容失败，状态码: {file_response.status_code}")
                 return None
                 
         # 添加日志验证
-        print(f"正在下载提交 {commit_sha} 中的文件 {file_path}")
+        print(f"正在下载提交 {base_commit} 中的文件 {file_path}")
         
         if file_response.status_code == 200:
-            print(f"成功下载提交 {commit_sha} 中的文件 {file_path}")
+            print(f"成功下载提交 {base_commit} 中的文件 {file_path}")
             
         return file_response.text
         
@@ -222,6 +195,37 @@ def extract_cpp_function(content, function_name):
         print(f"提取函数定义时出错: {str(e)}")
         return None
 
+def get_pr_base_commit(pr_number, owner="PX4", repo="PX4-Autopilot"):
+    """获取PR创建时的基础提交"""
+    # GitHub访问令牌
+    headers = {
+        "Authorization": os.getenv("GITHUB_AUTHORIZATION"),
+        "Accept": "application/vnd.github.v3+json",
+        "User-Agent": "GitHub-API-Client"
+    }
+    
+    api_url = f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}"
+    
+    try:
+        response = requests.get(api_url, headers=headers)
+        if response.status_code != 200:
+            print(f"获取PR信息失败，状态码: {response.status_code}")
+            return None
+            
+        pr_data = response.json()
+        # 获取PR的基础分支和提交点
+        base_commit = pr_data.get("base", {}).get("sha")
+        
+        if not base_commit:
+            print(f"未找到PR #{pr_number}的基础提交")
+            return None
+            
+        return base_commit
+        
+    except Exception as e:
+        print(f"获取PR基础提交时出错: {str(e)}")
+        return None
+
 def process_pr(pr, existing_functions=None):
     """
     处理单个PR，提取修改的函数在之前版本中的定义
@@ -235,6 +239,12 @@ def process_pr(pr, existing_functions=None):
     """
     pr_number = pr.get('number')
     print(f"\n处理PR #{pr_number}: {pr.get('title', '')}")
+    
+    # 获取PR的基础提交
+    base_commit = get_pr_base_commit(pr_number)
+    if not base_commit:
+        print(f"未能获取PR #{pr_number}的基础提交")
+        return {}
     
     # 检查是否有modified_functions字段
     if 'modified_functions' not in pr:
@@ -281,42 +291,15 @@ def process_pr(pr, existing_functions=None):
             print(f"未找到函数 {function_name} 对应的文件")
             continue
             
-        # 获取patch信息
-        patch_info = patches.get(file_path)
-        if not patch_info:
-            print(f"未找到文件 {file_path} 的patch信息")
-            continue
-            
-        # 获取blob_url
-        blob_url = patch_info.get('blob_url')
-        if not blob_url:
-            print(f"未找到文件 {file_path} 的blob_url")
-            continue
-            
-        # 获取前一个提交信息
-        previous_commit, previous_url = get_previous_commit_info(blob_url)
-        if not previous_commit or not previous_url:
-            print(f"未找到当前提交的前一个提交信息")
-            continue
+        # 使用PR的基础提交而不是获取blob_url的父提交
+        print(f"使用PR基础提交 {base_commit} 获取函数 {function_name} 的原始定义")
         
-        # 从blob_url中提取文件路径
-        match = re.search(r'github\.com/([^/]+)/([^/]+)/blob/([^/]+)/(.+)$', blob_url)
-        if not match:
-            print(f"无法从URL解析仓库信息: {blob_url}")
-            continue
-            
-        file_path_url = match.group(4)
-        repo = "PX4/PX4-Autopilot"
-        
-        # URL解码文件路径
-        import urllib.parse
-        file_path = urllib.parse.unquote(file_path_url)
-        
-        # 下载前一个版本的文件内容
-        print(f"下载 {file_path} 的前一个版本 ({previous_commit})")
-        content = download_file_from_commit(previous_url, file_path)
+        # 下载基础提交版本的文件
+        print(f"下载 {file_path} 的基础版本 ({base_commit})")
+        content = download_file_from_base_commit(base_commit, file_path)
+        print(content)
         if not content:
-            print(f"无法获取文件 {file_path} 在提交 {previous_commit} 的内容")
+            print(f"无法获取文件 {file_path} 在提交 {base_commit} 的内容")
             continue
             
         # 提取函数定义
@@ -325,7 +308,7 @@ def process_pr(pr, existing_functions=None):
         if function_def:
             result[function_name] = {
                 "file": file_path,
-                "commit": previous_commit,
+                "commit": base_commit,
                 "source": function_def
             }
             print(f"成功提取函数 {function_name}")

@@ -1,0 +1,27 @@
+bool Geofence::isBelowMaxAltitude(float altitude)
+{
+	bool inside_fence = true;
+
+	if (isHomeRequired() && _navigator->home_alt_valid()) {
+
+		const float max_vertical_distance = _param_gf_max_ver_dist.get();
+		const float home_alt = _navigator->get_home_position()->alt;
+
+		float dist_z = altitude - home_alt;
+
+		if (max_vertical_distance > FLT_EPSILON && (dist_z > max_vertical_distance)) {
+			if (hrt_elapsed_time(&_last_vertical_range_warning) > GEOFENCE_RANGE_WARNING_LIMIT) {
+				mavlink_log_critical(_navigator->get_mavlink_log_pub(), "Maximum altitude above home reached (%.5f)\t",
+						     (double)max_vertical_distance);
+				events::send<float>(events::ID("navigator_geofence_max_alt_from_home"), {events::Log::Critical, events::LogInternal::Warning},
+						    "Geofence: maximum altitude above home reached ({1:.0m_v})",
+						    max_vertical_distance);
+				_last_vertical_range_warning = hrt_absolute_time();
+			}
+
+			inside_fence = false;
+		}
+	}
+
+	return inside_fence;
+}

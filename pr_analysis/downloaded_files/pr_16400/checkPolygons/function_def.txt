@@ -1,0 +1,14 @@
+* Check if a point passes the Geofence test.
+	 * In addition to checkPolygons(), this takes all additional parameters into account.
+	 *
+	 * @return false for a geofence violation
+	 */
+	bool checkAll(double lat, double lon, float altitude);
+
+	/**
+	 * print Geofence status to the console
+	 */
+	void printStatus();
+
+private:
+	Navigator	*_navigator{nullptr}

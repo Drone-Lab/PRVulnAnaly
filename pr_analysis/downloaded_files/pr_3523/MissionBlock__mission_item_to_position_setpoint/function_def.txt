@@ -1,0 +1,44 @@
+MissionBlock::mission_item_to_position_setpoint(const struct mission_item_s *item, struct position_setpoint_s *sp)
+{
+	sp->valid = true;
+	sp->lat = item->lat;
+	sp->lon = item->lon;
+	sp->alt = item->altitude_is_relative ? item->altitude + _navigator->get_home_position()->alt : item->altitude;
+	sp->yaw = item->yaw;
+	sp->loiter_radius = (item->loiter_radius > NAV_EPSILON_POSITION) ? item->loiter_radius :
+				_navigator->get_loiter_radius();
+	sp->loiter_direction = item->loiter_direction;
+	sp->pitch_min = item->pitch_min;
+	sp->acceptance_radius = item->acceptance_radius;
+
+	switch (item->nav_cmd) {
+	case NAV_CMD_DO_SET_SERVO:
+			/* Set current position for loitering set point*/
+			sp->lat = _navigator->get_global_position()->lat;
+			sp->lon = _navigator->get_global_position()->lon;
+			sp->alt = _navigator->get_global_position()->alt;
+			sp->type = position_setpoint_s::SETPOINT_TYPE_LOITER;
+			break;
+	case NAV_CMD_IDLE:
+		sp->type = position_setpoint_s::SETPOINT_TYPE_IDLE;
+		break;
+
+	case NAV_CMD_TAKEOFF:
+		sp->type = position_setpoint_s::SETPOINT_TYPE_TAKEOFF;
+		break;
+
+	case NAV_CMD_LAND:
+		sp->type = position_setpoint_s::SETPOINT_TYPE_LAND;
+		break;
+
+	case NAV_CMD_LOITER_TIME_LIMIT:
+	case NAV_CMD_LOITER_TURN_COUNT:
+	case NAV_CMD_LOITER_UNLIMITED:
+		sp->type = position_setpoint_s::SETPOINT_TYPE_LOITER;
+		break;
+
+	default:
+		sp->type = position_setpoint_s::SETPOINT_TYPE_POSITION;
+		break;
+	}
+}

@@ -1,0 +1,18 @@
+void Navigator::params_update()
+{
+	updateParams();
+
+	if (_handle_back_trans_dec_mss != PARAM_INVALID) {
+		param_get(_handle_back_trans_dec_mss, &_param_back_trans_dec_mss);
+	}
+
+	if (_handle_mpc_jerk_auto != PARAM_INVALID) {
+		param_get(_handle_mpc_jerk_auto, &_param_mpc_jerk_auto);
+	}
+
+	if (_handle_mpc_acc_hor != PARAM_INVALID) {
+		param_get(_handle_mpc_acc_hor, &_param_mpc_acc_hor);
+	}
+
+	_mission.set_payload_deployment_timeout(_param_mis_payload_delivery_timeout.get());
+}

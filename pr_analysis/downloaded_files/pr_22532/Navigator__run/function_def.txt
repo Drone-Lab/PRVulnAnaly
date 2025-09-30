@@ -1,0 +1,749 @@
+void Navigator::run()
+{
+
+	/* Try to load the geofence:
+	 * if /fs/microsd/etc/geofence.txt load from this file */
+	struct stat buffer;
+
+	if (stat(GEOFENCE_FILENAME, &buffer) == 0) {
+		PX4_INFO("Loading geofence from %s", GEOFENCE_FILENAME);
+		_geofence.loadFromFile(GEOFENCE_FILENAME);
+	}
+
+	params_update();
+
+	/* wakeup source(s) */
+	px4_pollfd_struct_t fds[3] {};
+
+	/* Setup of loop */
+	fds[0].fd = _local_pos_sub;
+	fds[0].events = POLLIN;
+	fds[1].fd = _vehicle_status_sub;
+	fds[1].events = POLLIN;
+	fds[2].fd = _mission_sub;
+	fds[2].events = POLLIN;
+
+	uint32_t geofence_id{0};
+	uint32_t safe_points_id{0};
+
+	/* rate-limit position subscription to 20 Hz / 50 ms */
+	orb_set_interval(_local_pos_sub, 50);
+
+	while (!should_exit()) {
+
+		/* wait for up to 1000ms for data */
+		int pret = px4_poll(&fds[0], (sizeof(fds) / sizeof(fds[0])), 1000);
+
+		if (pret == 0) {
+			/* Let the loop run anyway, don't do `continue` here. */
+
+		} else if (pret < 0) {
+			/* this is undesirable but not much we can do - might want to flag unhappy status */
+			PX4_ERR("poll error %d, %d", pret, errno);
+			px4_usleep(10000);
+			continue;
+		}
+
+		perf_begin(_loop_perf);
+
+		orb_copy(ORB_ID(vehicle_local_position), _local_pos_sub, &_local_pos);
+		orb_copy(ORB_ID(vehicle_status), _vehicle_status_sub, &_vstatus);
+
+		if (fds[2].revents & POLLIN) {
+			mission_s mission;
+			orb_copy(ORB_ID(mission), _mission_sub, &mission);
+
+			if (mission.geofence_id != geofence_id) {
+				geofence_id = mission.geofence_id;
+				_geofence.updateFence();
+			}
+
+			if (mission.safe_points_id != safe_points_id) {
+				safe_points_id = mission.safe_points_id;
+				_rtl.updateSafePoints();
+			}
+		}
+
+		/* gps updated */
+		if (_gps_pos_sub.updated()) {
+			_gps_pos_sub.copy(&_gps_pos);
+		}
+
+		/* global position updated */
+		if (_global_pos_sub.updated()) {
+			_global_pos_sub.copy(&_global_pos);
+		}
+
+		/* check for parameter updates */
+		if (_parameter_update_sub.updated()) {
+			// clear update
+			parameter_update_s pupdate;
+			_parameter_update_sub.copy(&pupdate);
+
+			// update parameters from storage
+			params_update();
+		}
+
+		_land_detected_sub.update(&_land_detected);
+		_position_controller_status_sub.update();
+		_home_pos_sub.update(&_home_pos);
+
+		// Handle Vehicle commands
+		int vehicle_command_updates = 0;
+
+		while (_vehicle_command_sub.updated() && (vehicle_command_updates < vehicle_command_s::ORB_QUEUE_LENGTH)) {
+			vehicle_command_updates++;
+			const unsigned last_generation = _vehicle_command_sub.get_last_generation();
+
+			vehicle_command_s cmd{};
+			_vehicle_command_sub.copy(&cmd);
+
+			if (_vehicle_command_sub.get_last_generation() != last_generation + 1) {
+				PX4_ERR("vehicle_command lost, generation %d -> %d", last_generation, _vehicle_command_sub.get_last_generation());
+			}
+
+			if (cmd.command == vehicle_command_s::VEHICLE_CMD_DO_GO_AROUND) {
+
+				// DO_GO_AROUND is currently handled by the position controller (unacknowledged)
+				// TODO: move DO_GO_AROUND handling to navigator
+				publish_vehicle_command_ack(cmd, vehicle_command_ack_s::VEHICLE_CMD_RESULT_ACCEPTED);
+
+			} else if (cmd.command == vehicle_command_s::VEHICLE_CMD_DO_REPOSITION
+				   && _vstatus.arming_state == vehicle_status_s::ARMING_STATE_ARMED) {
+				// only update the reposition setpoint if armed, as it otherwise won't get executed until the vehicle switches to loiter,
+				// which can lead to dangerous and unexpected behaviors (see loiter.cpp, there is an if(armed) in there too)
+
+				vehicle_global_position_s position_setpoint{};
+
+				if (PX4_ISFINITE(cmd.param5) && PX4_ISFINITE(cmd.param6)) {
+					position_setpoint.lat = cmd.param5;
+					position_setpoint.lon = cmd.param6;
+
+				} else {
+					position_setpoint.lat = get_global_position()->lat;
+					position_setpoint.lon = get_global_position()->lon;
+				}
+
+				position_setpoint.alt = PX4_ISFINITE(cmd.param7) ? cmd.param7 : get_global_position()->alt;
+
+				if (geofence_allows_position(position_setpoint)) {
+					position_setpoint_triplet_s *rep = get_reposition_triplet();
+					position_setpoint_triplet_s *curr = get_position_setpoint_triplet();
+
+					// store current position as previous position and goal as next
+					rep->previous.yaw = get_local_position()->heading;
+					rep->previous.lat = get_global_position()->lat;
+					rep->previous.lon = get_global_position()->lon;
+					rep->previous.alt = get_global_position()->alt;
+
+
+					rep->current.type = position_setpoint_s::SETPOINT_TYPE_LOITER;
+
+					bool only_alt_change_requested = false;
+
+					// If no argument for ground speed, use default value.
+					if (cmd.param1 <= 0 || !PX4_ISFINITE(cmd.param1)) {
+						// on entering Loiter mode, reset speed setpoint to default
+						if (_navigation_mode != &_loiter) {
+							rep->current.cruising_speed = -1.f;
+
+						} else {
+							rep->current.cruising_speed = get_cruising_speed();
+						}
+
+					} else {
+						rep->current.cruising_speed = cmd.param1;
+					}
+
+					rep->current.cruising_throttle = get_cruising_throttle();
+					rep->current.acceptance_radius = get_acceptance_radius();
+
+					// Go on and check which changes had been requested
+					if (PX4_ISFINITE(cmd.param4)) {
+						rep->current.yaw = cmd.param4;
+
+					} else {
+						rep->current.yaw = NAN;
+					}
+
+					if (PX4_ISFINITE(cmd.param5) && PX4_ISFINITE(cmd.param6)) {
+						// Position change with optional altitude change
+						rep->current.lat = cmd.param5;
+						rep->current.lon = cmd.param6;
+
+						if (PX4_ISFINITE(cmd.param7)) {
+							rep->current.alt = cmd.param7;
+
+						} else {
+							rep->current.alt = get_global_position()->alt;
+						}
+
+					} else if (PX4_ISFINITE(cmd.param7) || PX4_ISFINITE(cmd.param4)) {
+						// Position is not changing, thus we keep the setpoint
+						rep->current.lat = PX4_ISFINITE(curr->current.lat) ? curr->current.lat : get_global_position()->lat;
+						rep->current.lon = PX4_ISFINITE(curr->current.lon) ? curr->current.lon : get_global_position()->lon;
+
+						if (PX4_ISFINITE(cmd.param7)) {
+							rep->current.alt = cmd.param7;
+							only_alt_change_requested = true;
+
+						} else {
+							rep->current.alt = get_global_position()->alt;
+						}
+
+					} else {
+						// All three set to NaN - pause vehicle
+						rep->current.alt = get_global_position()->alt;
+
+						if (_vstatus.vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROTARY_WING
+						    && (get_position_setpoint_triplet()->current.type != position_setpoint_s::SETPOINT_TYPE_TAKEOFF)) {
+
+							calculate_breaking_stop(rep->current.lat, rep->current.lon);
+
+						} else {
+							// For fixedwings we can use the current vehicle's position to define the loiter point
+							rep->current.lat = get_global_position()->lat;
+							rep->current.lon = get_global_position()->lon;
+						}
+					}
+
+					if (only_alt_change_requested) {
+						if (PX4_ISFINITE(curr->current.loiter_radius) && curr->current.loiter_radius > FLT_EPSILON) {
+							rep->current.loiter_radius = curr->current.loiter_radius;
+
+
+						} else {
+							rep->current.loiter_radius = get_loiter_radius();
+						}
+
+						if (PX4_ISFINITE(curr->current.loiter_minor_radius) && fabsf(curr->current.loiter_minor_radius) > FLT_EPSILON) {
+							rep->current.loiter_minor_radius = curr->current.loiter_minor_radius;
+
+						} else {
+							rep->current.loiter_minor_radius = NAN;
+						}
+
+						if (PX4_ISFINITE(curr->current.loiter_orientation) && fabsf(curr->current.loiter_minor_radius) > FLT_EPSILON) {
+							rep->current.loiter_orientation = curr->current.loiter_orientation;
+
+						} else {
+							rep->current.loiter_orientation = 0.0f;
+						}
+
+						if (curr->current.loiter_pattern > 0) {
+							rep->current.loiter_pattern = curr->current.loiter_pattern;
+
+						} else {
+							rep->current.loiter_pattern = position_setpoint_s::LOITER_TYPE_ORBIT;
+						}
+
+						rep->current.loiter_direction_counter_clockwise = curr->current.loiter_direction_counter_clockwise;
+					}
+
+					rep->previous.timestamp = hrt_absolute_time();
+
+					rep->current.valid = true;
+					rep->current.timestamp = hrt_absolute_time();
+
+					rep->next.valid = false;
+
+					_time_loitering_after_gf_breach = 0; // have to manually reset this in all LOITER cases
+
+				} else {
+					mavlink_log_critical(&_mavlink_log_pub, "Reposition is outside geofence\t");
+					events::send(events::ID("navigator_reposition_outside_geofence"), {events::Log::Error, events::LogInternal::Info},
+						     "Reposition is outside geofence");
+				}
+
+				// CMD_DO_REPOSITION is acknowledged by commander
+
+			} else if (cmd.command == vehicle_command_s::VEHICLE_CMD_DO_CHANGE_ALTITUDE
+				   && _vstatus.arming_state == vehicle_status_s::ARMING_STATE_ARMED) {
+				// only update the setpoint if armed, as it otherwise won't get executed until the vehicle switches to loiter,
+				// which can lead to dangerous and unexpected behaviors (see loiter.cpp, there is an if(armed) in there too)
+
+				// A VEHICLE_CMD_DO_CHANGE_ALTITUDE has the exact same effect as a VEHICLE_CMD_DO_REPOSITION with only the altitude
+				// field populated, this logic is copied from above.
+
+				// only supports MAV_FRAME_GLOBAL and MAV_FRAMEs with absolute altitude amsl
+
+				vehicle_global_position_s position_setpoint{};
+				position_setpoint.lat = get_global_position()->lat;
+				position_setpoint.lon = get_global_position()->lon;
+				position_setpoint.alt = PX4_ISFINITE(cmd.param1) ? cmd.param1 : get_global_position()->alt;
+
+				if (geofence_allows_position(position_setpoint)) {
+					position_setpoint_triplet_s *rep = get_reposition_triplet();
+					position_setpoint_triplet_s *curr = get_position_setpoint_triplet();
+
+					// store current position as previous position and goal as next
+					rep->previous.yaw = get_local_position()->heading;
+					rep->previous.lat = get_global_position()->lat;
+					rep->previous.lon = get_global_position()->lon;
+					rep->previous.alt = get_global_position()->alt;
+
+					rep->current.type = position_setpoint_s::SETPOINT_TYPE_LOITER;
+
+					// on entering Loiter mode, reset speed setpoint to default
+					if (_navigation_mode != &_loiter) {
+						rep->current.cruising_speed = -1.f;
+
+					} else {
+						rep->current.cruising_speed = get_cruising_speed();
+					}
+
+					rep->current.cruising_throttle = get_cruising_throttle();
+					rep->current.acceptance_radius = get_acceptance_radius();
+					rep->current.yaw = NAN;
+
+					// Position is not changing, thus we keep the setpoint
+					rep->current.lat = PX4_ISFINITE(curr->current.lat) ? curr->current.lat : get_global_position()->lat;
+					rep->current.lon = PX4_ISFINITE(curr->current.lon) ? curr->current.lon : get_global_position()->lon;
+
+					// set the altitude corresponding to command
+					rep->current.alt = PX4_ISFINITE(cmd.param1) ? cmd.param1 : get_global_position()->alt;
+
+					if (_vstatus.vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROTARY_WING
+					    && (get_position_setpoint_triplet()->current.type != position_setpoint_s::SETPOINT_TYPE_TAKEOFF)) {
+
+						calculate_breaking_stop(rep->current.lat, rep->current.lon);
+					}
+
+					if (PX4_ISFINITE(curr->current.loiter_radius) && curr->current.loiter_radius > FLT_EPSILON) {
+						rep->current.loiter_radius = curr->current.loiter_radius;
+
+					} else {
+						rep->current.loiter_radius = get_loiter_radius();
+					}
+
+					rep->current.loiter_direction_counter_clockwise = curr->current.loiter_direction_counter_clockwise;
+
+					rep->previous.timestamp = hrt_absolute_time();
+
+					rep->current.valid = true;
+					rep->current.timestamp = hrt_absolute_time();
+
+					rep->next.valid = false;
+
+					_time_loitering_after_gf_breach = 0; // have to manually reset this in all LOITER cases
+
+				} else {
+					mavlink_log_critical(&_mavlink_log_pub, "Altitude change is outside geofence\t");
+					events::send(events::ID("navigator_change_altitude_outside_geofence"), {events::Log::Error, events::LogInternal::Info},
+						     "Altitude change is outside geofence");
+				}
+
+				// DO_CHANGE_ALTITUDE is acknowledged by commander
+
+			} else if (cmd.command == vehicle_command_s::VEHICLE_CMD_DO_ORBIT &&
+				   get_vstatus()->vehicle_type == vehicle_status_s::VEHICLE_TYPE_FIXED_WING) {
+
+				// for multicopters the orbit command is directly executed by the orbit flighttask
+
+				vehicle_global_position_s position_setpoint{};
+				position_setpoint.lat = PX4_ISFINITE(cmd.param5) ? cmd.param5 : get_global_position()->lat;
+				position_setpoint.lon = PX4_ISFINITE(cmd.param6) ? cmd.param6 : get_global_position()->lon;
+				position_setpoint.alt = PX4_ISFINITE(cmd.param7) ? cmd.param7 : get_global_position()->alt;
+
+				if (geofence_allows_position(position_setpoint)) {
+					position_setpoint_triplet_s *rep = get_reposition_triplet();
+					rep->current.type = position_setpoint_s::SETPOINT_TYPE_LOITER;
+					rep->current.loiter_radius = get_loiter_radius();
+					rep->current.loiter_direction_counter_clockwise = false;
+					rep->current.loiter_orientation = 0.0f;
+					rep->current.loiter_pattern = position_setpoint_s::LOITER_TYPE_ORBIT;
+					rep->current.cruising_throttle = get_cruising_throttle();
+
+					// on entering Loiter mode, reset speed setpoint to default
+					if (_navigation_mode != &_loiter) {
+						rep->current.cruising_speed = -1.f;
+
+					} else {
+						rep->current.cruising_speed = get_cruising_speed();
+					}
+
+					if (PX4_ISFINITE(cmd.param1)) {
+						rep->current.loiter_radius = fabsf(cmd.param1);
+						rep->current.loiter_direction_counter_clockwise = cmd.param1 < 0;
+					}
+
+					rep->current.lat = position_setpoint.lat;
+					rep->current.lon = position_setpoint.lon;
+					rep->current.alt = position_setpoint.alt;
+
+					rep->current.valid = true;
+					rep->current.timestamp = hrt_absolute_time();
+
+					_time_loitering_after_gf_breach = 0; // have to manually reset this in all LOITER cases
+
+				} else {
+					mavlink_log_critical(&_mavlink_log_pub, "Orbit is outside geofence");
+				}
+
+			} else if (cmd.command == vehicle_command_s::VEHICLE_CMD_DO_FIGUREEIGHT &&
+				   get_vstatus()->vehicle_type == vehicle_status_s::VEHICLE_TYPE_FIXED_WING) {
+#ifdef CONFIG_FIGURE_OF_EIGHT
+				// Only valid for fixed wing mode
+
+				vehicle_global_position_s position_setpoint{};
+				position_setpoint.lat = PX4_ISFINITE(cmd.param5) ? cmd.param5 : get_global_position()->lat;
+				position_setpoint.lon = PX4_ISFINITE(cmd.param6) ? cmd.param6 : get_global_position()->lon;
+				position_setpoint.alt = PX4_ISFINITE(cmd.param7) ? cmd.param7 : get_global_position()->alt;
+
+				if (geofence_allows_position(position_setpoint)) {
+					position_setpoint_triplet_s *rep = get_reposition_triplet();
+					rep->current.type = position_setpoint_s::SETPOINT_TYPE_LOITER;
+					rep->current.loiter_minor_radius = fabsf(get_loiter_radius());
+					rep->current.loiter_direction_counter_clockwise = get_loiter_radius() < 0;
+					rep->current.loiter_orientation = 0.0f;
+					rep->current.loiter_pattern = position_setpoint_s::LOITER_TYPE_FIGUREEIGHT;
+					rep->current.cruising_speed = get_cruising_speed();
+
+					if (PX4_ISFINITE(cmd.param2) && fabsf(cmd.param2) > FLT_EPSILON) {
+						rep->current.loiter_minor_radius = fabsf(cmd.param2);
+					}
+
+					rep->current.loiter_radius = 2.5f * rep->current.loiter_minor_radius;
+
+					if (PX4_ISFINITE(cmd.param1)) {
+						rep->current.loiter_radius = fabsf(cmd.param1);
+						rep->current.loiter_direction_counter_clockwise = cmd.param1 < 0;
+					}
+
+					rep->current.loiter_radius = math::max(rep->current.loiter_radius, 2.0f * rep->current.loiter_minor_radius);
+
+					if (PX4_ISFINITE(cmd.param4)) {
+						rep->current.loiter_orientation = cmd.param4;
+					}
+
+					rep->current.lat = position_setpoint.lat;
+					rep->current.lon = position_setpoint.lon;
+					rep->current.alt = position_setpoint.alt;
+
+					rep->current.valid = true;
+					rep->current.timestamp = hrt_absolute_time();
+
+					_time_loitering_after_gf_breach = 0; // have to manually reset this in all LOITER cases
+
+				} else {
+					mavlink_log_critical(&_mavlink_log_pub, "Figure 8 is outside geofence");
+				}
+
+#endif // CONFIG_FIGURE_OF_EIGHT
+
+			} else if (cmd.command == vehicle_command_s::VEHICLE_CMD_NAV_TAKEOFF) {
+				position_setpoint_triplet_s *rep = get_takeoff_triplet();
+
+				// store current position as previous position and goal as next
+				rep->previous.yaw = get_local_position()->heading;
+				rep->previous.lat = get_global_position()->lat;
+				rep->previous.lon = get_global_position()->lon;
+				rep->previous.alt = get_global_position()->alt;
+
+				rep->current.loiter_radius = get_loiter_radius();
+				rep->current.loiter_direction_counter_clockwise = false;
+				rep->current.type = position_setpoint_s::SETPOINT_TYPE_TAKEOFF;
+				rep->current.cruising_speed = -1.f; // reset to default
+
+				if (home_global_position_valid()) {
+
+					rep->previous.valid = true;
+					rep->previous.timestamp = hrt_absolute_time();
+
+				} else {
+					rep->previous.valid = false;
+				}
+
+				// Don't set a yaw setpoint for takeoff, as Navigator doesn't handle the yaw reset.
+				// The yaw setpoint generation is handled by FlightTaskAuto.
+				rep->current.yaw = NAN;
+
+				if (PX4_ISFINITE(cmd.param5) && PX4_ISFINITE(cmd.param6)) {
+					rep->current.lat = cmd.param5;
+					rep->current.lon = cmd.param6;
+
+				} else {
+					// If one of them is non-finite set the current global position as target
+					rep->current.lat = get_global_position()->lat;
+					rep->current.lon = get_global_position()->lon;
+
+				}
+
+				rep->current.alt = cmd.param7;
+
+				rep->current.valid = true;
+				rep->current.timestamp = hrt_absolute_time();
+
+				rep->next.valid = false;
+
+				// CMD_NAV_TAKEOFF is acknowledged by commander
+
+#if CONFIG_MODE_NAVIGATOR_VTOL_TAKEOFF
+
+			} else if (cmd.command == vehicle_command_s::VEHICLE_CMD_NAV_VTOL_TAKEOFF) {
+
+				_vtol_takeoff.setTransitionAltitudeAbsolute(cmd.param7);
+
+				// after the transition the vehicle will establish on a loiter at this position
+				_vtol_takeoff.setLoiterLocation(matrix::Vector2d(cmd.param5, cmd.param6));
+
+				// loiter height is the height above takeoff altitude at which the vehicle will establish on a loiter circle
+				_vtol_takeoff.setLoiterHeight(cmd.param1);
+#endif //CONFIG_MODE_NAVIGATOR_VTOL_TAKEOFF
+
+			} else if (cmd.command == vehicle_command_s::VEHICLE_CMD_DO_LAND_START) {
+
+				// find NAV_CMD_DO_LAND_START in the mission and
+				// use MAV_CMD_MISSION_START to start the mission from the next item containing a position setpoint
+				uint8_t result{vehicle_command_ack_s::VEHICLE_CMD_RESULT_ACCEPTED};
+
+				if (_mission.get_land_start_available()) {
+					vehicle_command_s vcmd = {};
+					vcmd.command = vehicle_command_s::VEHICLE_CMD_MISSION_START;
+					vcmd.param1 = _mission.get_land_start_index();
+					publish_vehicle_cmd(&vcmd);
+
+				} else {
+					PX4_WARN("planned mission landing not available");
+					result = vehicle_command_ack_s::VEHICLE_CMD_RESULT_CANCELLED;
+				}
+
+				publish_vehicle_command_ack(cmd, result);
+
+			} else if (cmd.command == vehicle_command_s::VEHICLE_CMD_MISSION_START) {
+				if (_mission_result.valid && PX4_ISFINITE(cmd.param1) && (cmd.param1 >= 0)) {
+					if (!_mission.set_current_mission_index(cmd.param1)) {
+						PX4_WARN("CMD_MISSION_START failed");
+					}
+				}
+
+				// CMD_MISSION_START is acknowledged by commander
+
+			} else if (cmd.command == vehicle_command_s::VEHICLE_CMD_DO_CHANGE_SPEED) {
+				if (cmd.param2 > FLT_EPSILON) {
+					// XXX not differentiating ground and airspeed yet
+					set_cruising_speed(cmd.param2);
+
+				} else {
+					reset_cruising_speed();
+
+					/* if no speed target was given try to set throttle */
+					if (cmd.param3 > FLT_EPSILON) {
+						set_cruising_throttle(cmd.param3 / 100);
+
+					} else {
+						set_cruising_throttle();
+					}
+				}
+
+				// TODO: handle responses for supported DO_CHANGE_SPEED options?
+				publish_vehicle_command_ack(cmd, vehicle_command_ack_s::VEHICLE_CMD_RESULT_ACCEPTED);
+
+			} else if (cmd.command == vehicle_command_s::VEHICLE_CMD_DO_SET_ROI
+				   || cmd.command == vehicle_command_s::VEHICLE_CMD_NAV_ROI
+				   || cmd.command == vehicle_command_s::VEHICLE_CMD_DO_SET_ROI_LOCATION
+				   || cmd.command == vehicle_command_s::VEHICLE_CMD_DO_SET_ROI_WPNEXT_OFFSET
+				   || cmd.command == vehicle_command_s::VEHICLE_CMD_DO_SET_ROI_NONE) {
+				_vroi = {};
+
+				switch (cmd.command) {
+				case vehicle_command_s::VEHICLE_CMD_DO_SET_ROI:
+				case vehicle_command_s::VEHICLE_CMD_NAV_ROI:
+					_vroi.mode = cmd.param1;
+					break;
+
+				case vehicle_command_s::VEHICLE_CMD_DO_SET_ROI_LOCATION:
+					_vroi.mode = vehicle_command_s::VEHICLE_ROI_LOCATION;
+					_vroi.lat = cmd.param5;
+					_vroi.lon = cmd.param6;
+					_vroi.alt = cmd.param7;
+					break;
+
+				case vehicle_command_s::VEHICLE_CMD_DO_SET_ROI_WPNEXT_OFFSET:
+					_vroi.mode = vehicle_command_s::VEHICLE_ROI_WPNEXT;
+					_vroi.pitch_offset = (float)cmd.param5 * M_DEG_TO_RAD_F;
+					_vroi.roll_offset = (float)cmd.param6 * M_DEG_TO_RAD_F;
+					_vroi.yaw_offset = (float)cmd.param7 * M_DEG_TO_RAD_F;
+					break;
+
+				case vehicle_command_s::VEHICLE_CMD_DO_SET_ROI_NONE:
+					_vroi.mode = vehicle_command_s::VEHICLE_ROI_NONE;
+					break;
+
+				default:
+					_vroi.mode = vehicle_command_s::VEHICLE_ROI_NONE;
+					break;
+				}
+
+				_vroi.timestamp = hrt_absolute_time();
+
+				_vehicle_roi_pub.publish(_vroi);
+
+				publish_vehicle_command_ack(cmd, vehicle_command_ack_s::VEHICLE_CMD_RESULT_ACCEPTED);
+
+			} else if (cmd.command == vehicle_command_s::VEHICLE_CMD_DO_VTOL_TRANSITION
+				   && get_vstatus()->nav_state != vehicle_status_s::NAVIGATION_STATE_AUTO_VTOL_TAKEOFF) {
+				// reset cruise speed and throttle to default when transitioning (VTOL Takeoff handles it separately)
+				reset_cruising_speed();
+				set_cruising_throttle();
+			}
+		}
+
+		/* Check for traffic */
+		check_traffic();
+
+		/* Check geofence violation */
+		geofence_breach_check();
+
+		/* Do stuff according to navigation state set by commander */
+		NavigatorMode *navigation_mode_new{nullptr};
+
+		switch (_vstatus.nav_state) {
+		case vehicle_status_s::NAVIGATION_STATE_AUTO_MISSION:
+			_pos_sp_triplet_published_invalid_once = false;
+
+			navigation_mode_new = &_mission;
+
+			break;
+
+		case vehicle_status_s::NAVIGATION_STATE_AUTO_LOITER:
+			_pos_sp_triplet_published_invalid_once = false;
+			navigation_mode_new = &_loiter;
+			break;
+
+		case vehicle_status_s::NAVIGATION_STATE_AUTO_RTL:
+
+			// If we are already in mission landing, do not switch.
+			if (_navigation_mode == &_mission && _mission.isLanding()) {
+				navigation_mode_new = &_mission;
+				break;
+
+			} else {
+				_pos_sp_triplet_published_invalid_once = false;
+			}
+
+#if CONFIG_MODE_NAVIGATOR_VTOL_TAKEOFF
+
+			// If we are in VTOL takeoff, do not switch until it is finished.
+			if (_navigation_mode == &_vtol_takeoff && !get_mission_result()->finished) {
+				navigation_mode_new = &_vtol_takeoff;
+
+			} else
+#endif //CONFIG_MODE_NAVIGATOR_VTOL_TAKEOFF
+			{
+				navigation_mode_new = &_rtl;
+			}
+
+			break;
+
+		case vehicle_status_s::NAVIGATION_STATE_AUTO_TAKEOFF:
+			_pos_sp_triplet_published_invalid_once = false;
+			navigation_mode_new = &_takeoff;
+			break;
+
+#if CONFIG_MODE_NAVIGATOR_VTOL_TAKEOFF
+
+		case vehicle_status_s::NAVIGATION_STATE_AUTO_VTOL_TAKEOFF:
+			_pos_sp_triplet_published_invalid_once = false;
+			navigation_mode_new = &_vtol_takeoff;
+			break;
+#endif //CONFIG_MODE_NAVIGATOR_VTOL_TAKEOFF
+
+		case vehicle_status_s::NAVIGATION_STATE_AUTO_LAND:
+			_pos_sp_triplet_published_invalid_once = false;
+			navigation_mode_new = &_land;
+			break;
+
+		case vehicle_status_s::NAVIGATION_STATE_AUTO_PRECLAND:
+			_pos_sp_triplet_published_invalid_once = false;
+			navigation_mode_new = &_precland;
+			_precland.set_mode(PrecLandMode::Required);
+			break;
+
+		case vehicle_status_s::NAVIGATION_STATE_MANUAL:
+		case vehicle_status_s::NAVIGATION_STATE_ACRO:
+		case vehicle_status_s::NAVIGATION_STATE_ALTCTL:
+		case vehicle_status_s::NAVIGATION_STATE_POSCTL:
+		case vehicle_status_s::NAVIGATION_STATE_DESCEND:
+		case vehicle_status_s::NAVIGATION_STATE_TERMINATION:
+		case vehicle_status_s::NAVIGATION_STATE_OFFBOARD:
+		case vehicle_status_s::NAVIGATION_STATE_STAB:
+		default:
+			navigation_mode_new = nullptr;
+			break;
+		}
+
+		// Do not execute any state machine while we are disarmed
+		if (_vstatus.arming_state != vehicle_status_s::ARMING_STATE_ARMED) {
+			navigation_mode_new = nullptr;
+		}
+
+		/* we have a new navigation mode: reset triplet */
+		if (_navigation_mode != navigation_mode_new) {
+			// We don't reset the triplet in the following two cases:
+			// 1)  if we just did an auto-takeoff and are now
+			// going to loiter. Otherwise, we lose the takeoff altitude and end up lower
+			// than where we wanted to go.
+			// 2) We switch to loiter and the current position setpoint already has a valid loiter point.
+			// In that case we can assume that the vehicle has already established a loiter and we don't need to set a new
+			// loiter position.
+			//
+			// FIXME: a better solution would be to add reset where they are needed and remove
+			//        this general reset here.
+
+			const bool current_mode_is_takeoff = _navigation_mode == &_takeoff;
+			const bool new_mode_is_loiter = navigation_mode_new == &_loiter;
+			const bool valid_loiter_setpoint = (_pos_sp_triplet.current.valid
+							    && _pos_sp_triplet.current.type == position_setpoint_s::SETPOINT_TYPE_LOITER);
+
+			const bool did_not_switch_takeoff_to_loiter = !(current_mode_is_takeoff && new_mode_is_loiter);
+			const bool did_not_switch_to_loiter_with_valid_loiter_setpoint = !(new_mode_is_loiter && valid_loiter_setpoint);
+
+			if (did_not_switch_takeoff_to_loiter && did_not_switch_to_loiter_with_valid_loiter_setpoint) {
+				reset_triplets();
+			}
+
+
+			// transition to hover in Descend mode
+			if (_vstatus.nav_state == vehicle_status_s::NAVIGATION_STATE_DESCEND &&
+			    _vstatus.is_vtol && _vstatus.vehicle_type == vehicle_status_s::VEHICLE_TYPE_FIXED_WING &&
+			    force_vtol()) {
+				vehicle_command_s vcmd = {};
+				vcmd.command = NAV_CMD_DO_VTOL_TRANSITION;
+				vcmd.param1 = vtol_vehicle_status_s::VEHICLE_VTOL_STATE_MC;
+				publish_vehicle_cmd(&vcmd);
+				mavlink_log_info(&_mavlink_log_pub, "Transition to hover mode and descend.\t");
+				events::send(events::ID("navigator_transition_descend"), events::Log::Critical,
+					     "Transition to hover mode and descend");
+			}
+
+		}
+
+		_navigation_mode = navigation_mode_new;
+
+		/* iterate through navigation modes and set active/inactive for each */
+		for (unsigned int i = 0; i < NAVIGATOR_MODE_ARRAY_SIZE; i++) {
+			if (_navigation_mode_array[i]) {
+				_navigation_mode_array[i]->run(_navigation_mode == _navigation_mode_array[i]);
+			}
+		}
+
+		/* if nothing is running, set position setpoint triplet invalid once */
+		if (_navigation_mode == nullptr && !_pos_sp_triplet_published_invalid_once) {
+			_pos_sp_triplet_published_invalid_once = true;
+			reset_triplets();
+		}
+
+		if (_pos_sp_triplet_updated) {
+			publish_position_setpoint_triplet();
+		}
+
+		if (_mission_result_updated) {
+			publish_mission_result();
+		}
+
+		_geofence.run();
+
+		perf_end(_loop_perf);
+	}
+}

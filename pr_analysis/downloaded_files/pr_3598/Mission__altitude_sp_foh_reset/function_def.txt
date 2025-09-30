@@ -1,0 +1,4 @@
+Mission::altitude_sp_foh_reset()
+{
+	_min_current_sp_distance_xy = FLT_MAX;
+}

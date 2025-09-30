@@ -1,0 +1,11 @@
+MissionBlock::setLoiterItemFromCurrentPositionSetpoint(struct mission_item_s *item)
+{
+	setLoiterItemCommonFields(item);
+
+	const position_setpoint_triplet_s *pos_sp_triplet = _navigator->get_position_setpoint_triplet();
+
+	item->lat = pos_sp_triplet->current.lat;
+	item->lon = pos_sp_triplet->current.lon;
+	item->altitude = pos_sp_triplet->current.alt;
+	item->loiter_radius = pos_sp_triplet->current.loiter_radius;
+}

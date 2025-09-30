@@ -1,0 +1,2 @@
+*/
+	float get_cruising_speed() { return _cruising_speed_current_mode; }

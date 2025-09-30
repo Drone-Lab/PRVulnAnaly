@@ -1,0 +1,50 @@
+Mission::altitude_sp_foh_update()
+{
+	struct position_setpoint_triplet_s *pos_sp_triplet = _navigator->get_position_setpoint_triplet();
+
+	/* Don't change setpoint if last and current waypoint are not valid */
+	if (!pos_sp_triplet->previous.valid || !pos_sp_triplet->current.valid ||
+			!PX4_ISFINITE(_mission_item_previous_alt)) {
+		return;
+	}
+
+	/* Do not try to find a solution if the last waypoint is inside the acceptance radius of the current one */
+	if (_distance_current_previous - _navigator->get_acceptance_radius(_mission_item.acceptance_radius) < 0.0f) {
+		return;
+	}
+
+	/* Don't do FOH for landing and takeoff waypoints, the ground may be near
+	 * and the FW controller has a custom landing logic */
+	if (_mission_item.nav_cmd == NAV_CMD_LAND || _mission_item.nav_cmd == NAV_CMD_TAKEOFF) {
+		return;
+	}
+
+
+	/* Calculate distance to current waypoint */
+	float d_current = get_distance_to_next_waypoint(_mission_item.lat, _mission_item.lon,
+			_navigator->get_global_position()->lat, _navigator->get_global_position()->lon);
+
+	/* Save distance to waypoint if it is the smallest ever achieved, however make sure that
+	 * _min_current_sp_distance_xy is never larger than the distance between the current and the previous wp */
+	_min_current_sp_distance_xy = math::min(math::min(d_current, _min_current_sp_distance_xy),
+			_distance_current_previous);
+
+	/* if the minimal distance is smaller then the acceptance radius, we should be at waypoint alt
+	 * navigator will soon switch to the next waypoint item (if there is one) as soon as we reach this altitude */
+	if (_min_current_sp_distance_xy < _navigator->get_acceptance_radius(_mission_item.acceptance_radius)) {
+		pos_sp_triplet->current.alt = get_absolute_altitude_for_item(_mission_item);
+	} else {
+		/* update the altitude sp of the 'current' item in the sp triplet, but do not update the altitude sp
+		* of the mission item as it is used to check if the mission item is reached
+		* The setpoint is set linearly and such that the system reaches the current altitude at the acceptance
+		* radius around the current waypoint
+		**/
+		float delta_alt = (get_absolute_altitude_for_item(_mission_item) - _mission_item_previous_alt);
+		float grad = -delta_alt/(_distance_current_previous - _navigator->get_acceptance_radius(_mission_item.acceptance_radius));
+		float a = _mission_item_previous_alt - grad * _distance_current_previous;
+		pos_sp_triplet->current.alt = a + grad * _min_current_sp_distance_xy;
+
+	}
+
+	_navigator->set_position_setpoint_triplet_updated();
+}

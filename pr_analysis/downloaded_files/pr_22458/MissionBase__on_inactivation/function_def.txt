@@ -1,0 +1,22 @@
+MissionBase::on_inactivation()
+{
+	_navigator->disable_camera_trigger();
+
+	_navigator->stop_capturing_images();
+	_navigator->set_gimbal_neutral(); // point forward
+	_navigator->release_gimbal_control();
+
+	if (_navigator->get_precland()->is_activated()) {
+		_navigator->get_precland()->on_inactivation();
+	}
+
+	/* reset so current mission item gets restarted if mission was paused */
+	_work_item_type = WorkItemType::WORK_ITEM_TYPE_DEFAULT;
+
+	/* reset so MISSION_ITEM_REACHED isn't published */
+	_navigator->get_mission_result()->seq_reached = -1;
+
+	_mission_type = MissionType::MISSION_TYPE_NONE;
+
+	_inactivation_index = _mission.current_seq;
+}

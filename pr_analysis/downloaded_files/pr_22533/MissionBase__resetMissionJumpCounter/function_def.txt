@@ -1,0 +1,32 @@
+void MissionBase::resetMissionJumpCounter()
+{
+	const dm_item_t mission_dataman_id = static_cast<dm_item_t>(_mission.mission_dataman_id);
+
+	for (size_t mission_index = 0u; mission_index < _mission.count; mission_index++) {
+		mission_item_s mission_item;
+
+		bool success = _dataman_client.readSync(mission_dataman_id, mission_index, reinterpret_cast<uint8_t *>(&mission_item),
+							sizeof(mission_item_s), MAX_DATAMAN_LOAD_WAIT);
+
+		if (!success) {
+			/* not supposed to happen unless the datamanager can't access the SD card, etc. */
+			mavlink_log_critical(_navigator->get_mavlink_log_pub(), "Mission could not reset jump count.\t");
+			events::send(events::ID("mission_failed_set_jump_count"), events::Log::Error,
+				     "Mission could not reset jump count");
+			break;
+		}
+
+		if (mission_item.nav_cmd == NAV_CMD_DO_JUMP) {
+			mission_item.do_jump_current_count = 0u;
+
+			bool write_success = _dataman_cache.writeWait(mission_dataman_id, mission_index,
+					     reinterpret_cast<uint8_t *>(&mission_item),
+					     sizeof(struct mission_item_s));
+
+			if (!write_success) {
+				PX4_ERR("Could not write mission item for jump count reset.");
+				break;
+			}
+		}
+	}
+}

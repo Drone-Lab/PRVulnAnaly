@@ -1,0 +1,4 @@
+Loiter::on_inactive()
+{
+	_loiter_pos_set = false;
+}

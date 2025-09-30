@@ -1,0 +1,4 @@
+Navigator::navigation_capabilities_update()
+{
+	orb_copy(ORB_ID(navigation_capabilities), _capabilities_sub, &_nav_caps);
+}

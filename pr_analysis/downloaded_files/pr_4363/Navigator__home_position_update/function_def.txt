@@ -1,0 +1,9 @@
+Navigator::home_position_update(bool force)
+{
+	bool updated = false;
+	orb_check(_home_pos_sub, &updated);
+
+	if (updated || force) {
+		orb_copy(ORB_ID(home_position), _home_pos_sub, &_home_pos);
+	}
+}

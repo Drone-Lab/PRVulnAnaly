@@ -1,0 +1,285 @@
+Navigator::task_main()
+{
+	_mavlink_fd = px4_open(MAVLINK_LOG_DEVICE, 0);
+	_geofence.setMavlinkFd(_mavlink_fd);
+
+	bool have_geofence_position_data = false;
+
+	/* Try to load the geofence:
+	 * if /fs/microsd/etc/geofence.txt load from this file
+	 * else clear geofence data in datamanager */
+	struct stat buffer;
+
+	if (stat(GEOFENCE_FILENAME, &buffer) == 0) {
+		warnx("Try to load geofence.txt");
+		_geofence.loadFromFile(GEOFENCE_FILENAME);
+
+	} else {
+		if (_geofence.clearDm() != OK) {
+			mavlink_log_critical(_mavlink_fd, "failed clearing geofence");
+		}
+	}
+
+	/* do subscriptions */
+	_global_pos_sub = orb_subscribe(ORB_ID(vehicle_global_position));
+	_gps_pos_sub = orb_subscribe(ORB_ID(vehicle_gps_position));
+	_sensor_combined_sub = orb_subscribe(ORB_ID(sensor_combined));
+	_capabilities_sub = orb_subscribe(ORB_ID(navigation_capabilities));
+	_vstatus_sub = orb_subscribe(ORB_ID(vehicle_status));
+	_control_mode_sub = orb_subscribe(ORB_ID(vehicle_control_mode));
+	_home_pos_sub = orb_subscribe(ORB_ID(home_position));
+	_onboard_mission_sub = orb_subscribe(ORB_ID(onboard_mission));
+	_offboard_mission_sub = orb_subscribe(ORB_ID(offboard_mission));
+	_param_update_sub = orb_subscribe(ORB_ID(parameter_update));
+	_vehicle_command_sub = orb_subscribe(ORB_ID(vehicle_command));
+
+	/* copy all topics first time */
+	vehicle_status_update();
+	vehicle_control_mode_update();
+	global_position_update();
+	gps_position_update();
+	sensor_combined_update();
+	home_position_update(true);
+	navigation_capabilities_update();
+	params_update();
+
+	hrt_abstime mavlink_open_time = 0;
+	const hrt_abstime mavlink_open_interval = 500000;
+
+	/* wakeup source(s) */
+	px4_pollfd_struct_t fds[1] = {};
+
+	/* Setup of loop */
+	fds[0].fd = _global_pos_sub;
+	fds[0].events = POLLIN;
+
+	bool global_pos_available_once = false;
+
+	while (!_task_should_exit) {
+
+		/* wait for up to 200ms for data */
+		int pret = px4_poll(&fds[0], (sizeof(fds) / sizeof(fds[0])), 1000);
+
+		if (pret == 0) {
+			/* timed out - periodic check for _task_should_exit, etc. */
+			if (global_pos_available_once) {
+				PX4_WARN("navigator timed out");
+			}
+			continue;
+
+		} else if (pret < 0) {
+			/* this is undesirable but not much we can do - might want to flag unhappy status */
+			PX4_WARN("nav: poll error %d, %d", pret, errno);
+			continue;
+		}
+
+		global_pos_available_once = true;
+
+		perf_begin(_loop_perf);
+
+		if (_mavlink_fd < 0 && hrt_absolute_time() > mavlink_open_time) {
+			/* try to reopen the mavlink log device with specified interval */
+			mavlink_open_time = hrt_abstime() + mavlink_open_interval;
+			_mavlink_fd = px4_open(MAVLINK_LOG_DEVICE, 0);
+		}
+
+		bool updated;
+
+		/* gps updated */
+		orb_check(_gps_pos_sub, &updated);
+		if (updated) {
+			gps_position_update();
+			if (_geofence.getSource() == Geofence::GF_SOURCE_GPS) {
+				have_geofence_position_data = true;
+			}
+		}
+
+		/* sensors combined updated */
+		orb_check(_sensor_combined_sub, &updated);
+		if (updated) {
+			sensor_combined_update();
+		}
+
+		/* parameters updated */
+		orb_check(_param_update_sub, &updated);
+		if (updated) {
+			params_update();
+			updateParams();
+		}
+
+		/* vehicle control mode updated */
+		orb_check(_control_mode_sub, &updated);
+		if (updated) {
+			vehicle_control_mode_update();
+		}
+
+		/* vehicle status updated */
+		orb_check(_vstatus_sub, &updated);
+		if (updated) {
+			vehicle_status_update();
+		}
+
+		/* navigation capabilities updated */
+		orb_check(_capabilities_sub, &updated);
+		if (updated) {
+			navigation_capabilities_update();
+		}
+
+		/* home position updated */
+		orb_check(_home_pos_sub, &updated);
+		if (updated) {
+			home_position_update();
+		}
+
+		orb_check(_vehicle_command_sub, &updated);
+		if (updated) {
+			vehicle_command_s cmd;
+			orb_copy(ORB_ID(vehicle_command), _vehicle_command_sub, &cmd);
+
+			if (cmd.command == vehicle_command_s::VEHICLE_CMD_DO_REPOSITION) {
+				warnx("navigator: got reposition command");
+			}
+
+			if (cmd.command == vehicle_command_s::VEHICLE_CMD_DO_PAUSE_CONTINUE) {
+				warnx("navigator: got pause/continue command");
+			}
+		}
+
+		/* global position updated */
+		if (fds[0].revents & POLLIN) {
+			global_position_update();
+			if (_geofence.getSource() == Geofence::GF_SOURCE_GLOBALPOS) {
+				have_geofence_position_data = true;
+			}
+		}
+
+		/* Check geofence violation */
+		static hrt_abstime last_geofence_check = 0;
+		if (have_geofence_position_data &&
+			(_geofence.getGeofenceAction() != geofence_result_s::GF_ACTION_NONE) &&
+			(hrt_elapsed_time(&last_geofence_check) > GEOFENCE_CHECK_INTERVAL)) {
+			bool inside = _geofence.inside(_global_pos, _gps_pos, _sensor_combined.baro_alt_meter[0], _home_pos, home_position_valid());
+			last_geofence_check = hrt_absolute_time();
+			have_geofence_position_data = false;
+
+			_geofence_result.geofence_action = _geofence.getGeofenceAction();
+			if (!inside) {
+				/* inform other apps via the mission result */
+				_geofence_result.geofence_violated = true;
+				publish_geofence_result();
+
+				/* Issue a warning about the geofence violation once */
+				if (!_geofence_violation_warning_sent) {
+					mavlink_log_critical(_mavlink_fd, "Geofence violation");
+					_geofence_violation_warning_sent = true;
+				}
+			} else {
+				/* inform other apps via the mission result */
+				_geofence_result.geofence_violated = false;
+				publish_geofence_result();
+				/* Reset the _geofence_violation_warning_sent field */
+				_geofence_violation_warning_sent = false;
+			}
+		}
+
+		/* Do stuff according to navigation state set by commander */
+		switch (_vstatus.nav_state) {
+			case vehicle_status_s::NAVIGATION_STATE_MANUAL:
+			case vehicle_status_s::NAVIGATION_STATE_ACRO:
+			case vehicle_status_s::NAVIGATION_STATE_ALTCTL:
+			case vehicle_status_s::NAVIGATION_STATE_POSCTL:
+			case vehicle_status_s::NAVIGATION_STATE_TERMINATION:
+			case vehicle_status_s::NAVIGATION_STATE_OFFBOARD:
+				_navigation_mode = nullptr;
+				_can_loiter_at_sp = false;
+				break;
+			case vehicle_status_s::NAVIGATION_STATE_AUTO_MISSION:
+				if (_nav_caps.abort_landing) {
+					// pos controller aborted landing, requests loiter
+					// above landing waypoint
+					_navigation_mode = &_loiter;
+					_pos_sp_triplet_published_invalid_once = false;
+				} else {
+					_pos_sp_triplet_published_invalid_once = false;
+					_navigation_mode = &_mission;
+				}
+				break;
+			case vehicle_status_s::NAVIGATION_STATE_AUTO_LOITER:
+				_pos_sp_triplet_published_invalid_once = false;
+				_navigation_mode = &_loiter;
+				break;
+			case vehicle_status_s::NAVIGATION_STATE_AUTO_RCRECOVER:
+				_pos_sp_triplet_published_invalid_once = false;
+				if (_param_rcloss_obc.get() != 0) {
+					_navigation_mode = &_rcLoss;
+				} else {
+					_navigation_mode = &_rtl;
+				}
+				break;
+			case vehicle_status_s::NAVIGATION_STATE_AUTO_RTL:
+				_pos_sp_triplet_published_invalid_once = false;
+				_navigation_mode = &_rtl;
+				break;
+			case vehicle_status_s::NAVIGATION_STATE_AUTO_TAKEOFF:
+				_pos_sp_triplet_published_invalid_once = false;
+				_navigation_mode = &_takeoff;
+				break;
+			case vehicle_status_s::NAVIGATION_STATE_AUTO_LAND:
+				_pos_sp_triplet_published_invalid_once = false;
+				_navigation_mode = &_land;
+				break;
+			case vehicle_status_s::NAVIGATION_STATE_AUTO_RTGS:
+				/* Use complex data link loss mode only when enabled via param
+				* otherwise use rtl */
+				_pos_sp_triplet_published_invalid_once = false;
+				if (_param_datalinkloss_obc.get() != 0) {
+					_navigation_mode = &_dataLinkLoss;
+				} else {
+					_navigation_mode = &_rtl;
+				}
+				break;
+			case vehicle_status_s::NAVIGATION_STATE_AUTO_LANDENGFAIL:
+				_pos_sp_triplet_published_invalid_once = false;
+				_navigation_mode = &_engineFailure;
+				break;
+			case vehicle_status_s::NAVIGATION_STATE_AUTO_LANDGPSFAIL:
+				_pos_sp_triplet_published_invalid_once = false;
+				_navigation_mode = &_gpsFailure;
+				break;
+			default:
+				_navigation_mode = nullptr;
+				_can_loiter_at_sp = false;
+				break;
+		}
+
+		/* iterate through navigation modes and set active/inactive for each */
+		for (unsigned int i = 0; i < NAVIGATOR_MODE_ARRAY_SIZE; i++) {
+			_navigation_mode_array[i]->run(_navigation_mode == _navigation_mode_array[i]);
+		}
+
+		/* if nothing is running, set position setpoint triplet invalid once */
+		if (_navigation_mode == nullptr && !_pos_sp_triplet_published_invalid_once) {
+			_pos_sp_triplet_published_invalid_once = true;
+			_pos_sp_triplet.previous.valid = false;
+			_pos_sp_triplet.current.valid = false;
+			_pos_sp_triplet.next.valid = false;
+			_pos_sp_triplet_updated = true;
+		}
+
+		if (_pos_sp_triplet_updated) {
+			publish_position_setpoint_triplet();
+			_pos_sp_triplet_updated = false;
+		}
+
+		if (_mission_result_updated) {
+			publish_mission_result();
+			_mission_result_updated = false;
+		}
+
+		perf_end(_loop_perf);
+	}
+	warnx("exiting.");
+
+	_navigator_task = -1;
+	return;
+}

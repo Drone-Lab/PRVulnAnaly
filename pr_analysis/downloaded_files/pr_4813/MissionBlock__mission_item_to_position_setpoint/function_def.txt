@@ -1,0 +1,68 @@
+MissionBlock::mission_item_to_position_setpoint(const struct mission_item_s *item, struct position_setpoint_s *sp)
+{
+	/* set the correct setpoint for vtol transition */
+
+	if(item->nav_cmd == NAV_CMD_DO_VTOL_TRANSITION && PX4_ISFINITE(item->yaw)
+			&& item->params[0] >= vtol_vehicle_status_s::VEHICLE_VTOL_STATE_FW - 0.5f) {
+		sp->type = position_setpoint_s::SETPOINT_TYPE_POSITION;
+		waypoint_from_heading_and_distance(_navigator->get_global_position()->lat,
+										   _navigator->get_global_position()->lon,
+										   item->yaw,
+										   1000000.0f,
+										   &sp->lat,
+										   &sp->lon);
+		sp->alt = _navigator->get_global_position()->alt;
+	}
+
+
+	/* don't change the setpoint for non-position items */
+	if (!item_contains_position(item)) {
+		return;
+	}
+
+	sp->valid = true;
+	sp->lat = item->lat;
+	sp->lon = item->lon;
+	sp->alt = item->altitude_is_relative ? item->altitude + _navigator->get_home_position()->alt : item->altitude;
+	sp->yaw = item->yaw;
+	sp->loiter_radius = (item->loiter_radius > NAV_EPSILON_POSITION) ? item->loiter_radius :
+				_navigator->get_loiter_radius();
+	sp->loiter_direction = item->loiter_direction;
+	sp->pitch_min = item->pitch_min;
+	sp->acceptance_radius = item->acceptance_radius;
+	sp->disable_mc_yaw_control = false;
+	sp->cruising_speed = _navigator->get_cruising_speed();
+	sp->cruising_throttle = _navigator->get_cruising_throttle();
+
+	switch (item->nav_cmd) {
+	case NAV_CMD_IDLE:
+		sp->type = position_setpoint_s::SETPOINT_TYPE_IDLE;
+		break;
+
+	case NAV_CMD_TAKEOFF:
+	case NAV_CMD_VTOL_TAKEOFF:
+		sp->type = position_setpoint_s::SETPOINT_TYPE_TAKEOFF;
+		break;
+
+	case NAV_CMD_LAND:
+	case NAV_CMD_VTOL_LAND:
+		sp->type = position_setpoint_s::SETPOINT_TYPE_LAND;
+		if(_navigator->get_vstatus()->is_vtol && _param_vtol_wv_land.get()){
+			sp->disable_mc_yaw_control = true;
+		}
+		break;
+
+	case NAV_CMD_LOITER_TIME_LIMIT:
+	case NAV_CMD_LOITER_TURN_COUNT:
+	case NAV_CMD_LOITER_UNLIMITED:
+		sp->type = position_setpoint_s::SETPOINT_TYPE_LOITER;
+		if(_navigator->get_vstatus()->is_vtol && _param_vtol_wv_loiter.get()){
+			sp->disable_mc_yaw_control = true;
+		}
+		break;
+
+	default:
+		sp->type = position_setpoint_s::SETPOINT_TYPE_POSITION;
+		break;
+	}
+}

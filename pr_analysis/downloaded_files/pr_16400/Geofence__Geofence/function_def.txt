@@ -1,0 +1,10 @@
+Geofence::Geofence(Navigator *navigator) :
+	ModuleParams(navigator),
+	_navigator(navigator),
+	_sub_airdata(ORB_ID(vehicle_air_data))
+{
+	// we assume there's no concurrent fence update on startup
+	if (_navigator != nullptr) {
+		_updateFence();
+	}
+}

@@ -1,0 +1,29 @@
+float Navigator::get_altitude_acceptance_radius()
+{
+	if (get_vstatus()->vehicle_type == vehicle_status_s::VEHICLE_TYPE_FIXED_WING) {
+		const position_setpoint_s &next_sp = get_position_setpoint_triplet()->next;
+
+		if (!force_vtol() && next_sp.type == position_setpoint_s::SETPOINT_TYPE_LAND && next_sp.valid) {
+			// Use separate (tighter) altitude acceptance for clean altitude starting point before FW landing
+			return _param_nav_fw_altl_rad.get();
+
+		} else {
+			return _param_nav_fw_alt_rad.get();
+		}
+
+	} else if (get_vstatus()->vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROVER) {
+		return INFINITY;
+
+	} else {
+		float alt_acceptance_radius = _param_nav_mc_alt_rad.get();
+
+		const position_controller_status_s &pos_ctrl_status = _position_controller_status_sub.get();
+
+		if ((pos_ctrl_status.timestamp > _pos_sp_triplet.timestamp)
+		    && pos_ctrl_status.altitude_acceptance > alt_acceptance_radius) {
+			alt_acceptance_radius = pos_ctrl_status.altitude_acceptance;
+		}
+
+		return alt_acceptance_radius;
+	}
+}

@@ -1,0 +1,22 @@
+Mission::check_mission_valid()
+{
+	/* check if the home position became valid in the meantime */
+	if (!_home_inited && _navigator->home_position_valid()) {
+
+		dm_item_t dm_current = DM_KEY_WAYPOINTS_OFFBOARD(_offboard_mission.dataman_id);
+
+		_navigator->get_mission_result()->valid = _missionFeasibilityChecker.checkMissionFeasible(_navigator->get_mavlink_log_pub(), (_navigator->get_vstatus()->is_rotary_wing || _navigator->get_vstatus()->is_vtol),
+				dm_current, (size_t) _offboard_mission.count, _navigator->get_geofence(),
+				_navigator->get_home_position()->alt, _navigator->home_position_valid(),
+				_navigator->get_global_position()->lat, _navigator->get_global_position()->lon,
+				_param_dist_1wp.get(), _navigator->get_mission_result()->warning, _navigator->get_default_acceptance_radius(),
+				_navigator->get_land_detected()->landed);
+
+		_navigator->increment_mission_instance_count();
+		_navigator->set_mission_result_updated();
+
+		_home_inited = true;
+	}
+
+	return _navigator->get_mission_result()->valid;
+}

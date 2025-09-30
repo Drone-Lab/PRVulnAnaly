@@ -1,0 +1,20 @@
+~FollowTarget() = default;
+
+	void on_inactive() override;
+	void on_activation() override;
+	void on_active() override;
+
+private:
+
+	static constexpr int TARGET_TIMEOUT_MS = 2500;
+	static constexpr int TARGET_ACCEPTANCE_RADIUS_M = 5;
+	static constexpr int INTERPOLATION_PNTS = 20;
+	static constexpr float FF_K = .25F;
+	static constexpr float OFFSET_M = 8;
+
+	enum FollowTargetState {
+		TRACK_POSITION,
+		TRACK_VELOCITY,
+		SET_WAIT_FOR_TARGET_POSITION,
+		WAIT_FOR_TARGET_POSITION
+	}

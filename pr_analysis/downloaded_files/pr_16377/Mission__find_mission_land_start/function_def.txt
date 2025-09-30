@@ -1,0 +1,61 @@
+Mission::find_mission_land_start()
+{
+	/* return true if a MAV_CMD_DO_LAND_START, NAV_CMD_VTOL_LAND or NAV_CMD_LAND is found and internally save the index
+	 *  return false if not found
+	 */
+
+	const dm_item_t dm_current = (dm_item_t)_mission.dataman_id;
+	struct mission_item_s missionitem = {};
+	struct mission_item_s missionitem_prev = {}; //to store mission item before currently checked on, needed to get pos of wp before NAV_CMD_DO_LAND_START
+
+	_land_start_available = false;
+
+	bool found_land_start_marker = false;
+
+	for (size_t i = 1; i < _mission.count; i++) {
+		const ssize_t len = sizeof(missionitem);
+		missionitem_prev = missionitem; // store the last mission item before reading a new one
+
+		if (dm_read(dm_current, i, &missionitem, len) != len) {
+			/* not supposed to happen unless the datamanager can't access the SD card, etc. */
+			PX4_ERR("dataman read failure");
+			break;
+		}
+
+		if (missionitem.nav_cmd == NAV_CMD_DO_LAND_START) {
+			found_land_start_marker = true;
+			_land_start_index = i;
+		}
+
+		if (found_land_start_marker && !_land_start_available && i > _land_start_index
+		    && item_contains_position(missionitem)) {
+			// use the position of any waypoint after the land start marker which specifies a position.
+			_landing_start_lat = missionitem.lat;
+			_landing_start_lon = missionitem.lon;
+			_landing_start_alt = missionitem.altitude_is_relative ?	missionitem.altitude +
+					     _navigator->get_home_position()->alt : missionitem.altitude;
+			_land_start_available = true;
+		}
+
+		if (((missionitem.nav_cmd == NAV_CMD_VTOL_LAND) && _navigator->get_vstatus()->is_vtol) ||
+		    (missionitem.nav_cmd == NAV_CMD_LAND)) {
+
+			_landing_lat = missionitem.lat;
+			_landing_lon = missionitem.lon;
+			_landing_alt = missionitem.altitude_is_relative ?	missionitem.altitude + _navigator->get_home_position()->alt :
+				       missionitem.altitude;
+
+			// don't have a valid land start yet, use the landing item itself then
+			if (!_land_start_available) {
+				_land_start_index = i;
+				_landing_start_lat = _landing_lat;
+				_landing_start_lon = _landing_lon;
+				_landing_start_alt = _landing_alt;
+				_land_start_available = true;
+			}
+
+		}
+	}
+
+	return _land_start_available;
+}

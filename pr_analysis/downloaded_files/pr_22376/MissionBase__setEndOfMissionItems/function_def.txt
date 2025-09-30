@@ -1,0 +1,31 @@
+void MissionBase::setEndOfMissionItems()
+{
+	position_setpoint_triplet_s *pos_sp_triplet = _navigator->get_position_setpoint_triplet();
+
+	if (_land_detected_sub.get().landed) {
+		_mission_item.nav_cmd = NAV_CMD_IDLE;
+
+	} else {
+		if (pos_sp_triplet->current.valid && pos_sp_triplet->current.type == position_setpoint_s::SETPOINT_TYPE_LOITER) {
+			setLoiterItemFromCurrentPositionSetpoint(&_mission_item);
+
+		} else {
+			setLoiterItemFromCurrentPosition(&_mission_item);
+		}
+	}
+
+	/* update position setpoint triplet  */
+	pos_sp_triplet->previous.valid = false;
+	mission_apply_limitation(_mission_item);
+	mission_item_to_position_setpoint(_mission_item, &pos_sp_triplet->current);
+	pos_sp_triplet->next.valid = false;
+
+	// set mission finished
+	_navigator->get_mission_result()->finished = true;
+	_navigator->set_mission_result_updated();
+
+	publish_navigator_mission_item(); // for logging
+	_navigator->set_position_setpoint_triplet_updated();
+
+	_mission_type = MissionType::MISSION_TYPE_NONE;
+}

@@ -1,0 +1,2 @@
+float get_yaw_threshold() const { return math::radians(_param_mis_yaw_err.get()); }
+	float get_lndmc_alt_max() const { return _param_lndmc_alt_max.get(); }

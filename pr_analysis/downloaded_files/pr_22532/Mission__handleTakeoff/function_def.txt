@@ -1,0 +1,116 @@
+void Mission::handleTakeoff(WorkItemType &new_work_item_type, mission_item_s next_mission_items[],
+			    size_t &num_found_items)
+{
+	position_setpoint_triplet_s *pos_sp_triplet = _navigator->get_position_setpoint_triplet();
+
+	/* do climb before going to setpoint if needed and not already executing climb */
+	/* in fixed-wing this whole block will be ignored and a takeoff item is always propagated */
+	if (PX4_ISFINITE(_mission_init_climb_altitude_amsl) &&
+	    _work_item_type == WorkItemType::WORK_ITEM_TYPE_DEFAULT) {
+
+		new_work_item_type = WorkItemType::WORK_ITEM_TYPE_CLIMB;
+
+		/* use current mission item as next position item */
+		num_found_items = 1u;
+		next_mission_items[0u] = _mission_item;
+		next_mission_items[0u].nav_cmd = NAV_CMD_WAYPOINT;
+
+		mavlink_log_info(_navigator->get_mavlink_log_pub(), "Climb to %.1f meters above home\t",
+				 (double)(_mission_init_climb_altitude_amsl - _navigator->get_home_position()->alt));
+		events::send<float>(events::ID("mission_climb_before_start"), events::Log::Info,
+				    "Climb to {1:.1m_v} above home", _mission_init_climb_altitude_amsl - _navigator->get_home_position()->alt);
+
+		if (_land_detected_sub.get().landed) {
+			_mission_item.nav_cmd = NAV_CMD_TAKEOFF;
+
+		} else {
+			_mission_item.nav_cmd = NAV_CMD_LOITER_TO_ALT;
+		}
+
+		_mission_item.lat = _global_pos_sub.get().lat;
+		_mission_item.lon = _global_pos_sub.get().lon;
+		_mission_item.yaw = NAN; // FlightTaskAuto handles yaw directly
+		_mission_item.altitude = _mission_init_climb_altitude_amsl;
+		_mission_item.altitude_is_relative = false;
+		_mission_item.autocontinue = true;
+		_mission_item.time_inside = 0.0f;
+
+		_mission_init_climb_altitude_amsl = NAN;
+
+	} else if (_mission_item.nav_cmd == NAV_CMD_TAKEOFF
+		   && _work_item_type == WorkItemType::WORK_ITEM_TYPE_DEFAULT
+		   && _vehicle_status_sub.get().vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROTARY_WING) {
+
+		/* if there is no need to do a takeoff but we have a takeoff item, treat is as waypoint */
+		_mission_item.nav_cmd = NAV_CMD_WAYPOINT;
+		/* ignore yaw here, otherwise it might yaw before heading_sp_update takes over */
+		_mission_item.yaw = NAN;
+
+	} else if (_mission_item.nav_cmd == NAV_CMD_VTOL_TAKEOFF
+		   && _work_item_type == WorkItemType::WORK_ITEM_TYPE_DEFAULT) {
+		// if the vehicle is already in fixed wing mode then the current mission item
+		// will be accepted immediately and the work items will be skipped
+		new_work_item_type = WorkItemType::WORK_ITEM_TYPE_CLIMB;
+
+
+		/* ignore yaw here, otherwise it might yaw before heading_sp_update takes over */
+		_mission_item.yaw = NAN;
+	}
+
+	/* if we just did a normal takeoff navigate to the actual waypoint now */
+	if (_mission_item.nav_cmd == NAV_CMD_TAKEOFF &&
+	    _work_item_type == WorkItemType::WORK_ITEM_TYPE_CLIMB) {
+
+		_mission_item.nav_cmd = NAV_CMD_WAYPOINT;
+		/* ignore yaw here, otherwise it might yaw before heading_sp_update takes over */
+		_mission_item.yaw = NAN;
+	}
+
+	/* if we just did a VTOL takeoff, prepare transition */
+	if (_mission_item.nav_cmd == NAV_CMD_VTOL_TAKEOFF &&
+	    _work_item_type == WorkItemType::WORK_ITEM_TYPE_CLIMB &&
+	    _vehicle_status_sub.get().vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROTARY_WING &&
+	    !_land_detected_sub.get().landed) {
+
+		/* set yaw setpoint to heading of VTOL_TAKEOFF wp against current position */
+		_mission_item.yaw = get_bearing_to_next_waypoint(
+					    _global_pos_sub.get().lat, _global_pos_sub.get().lon,
+					    _mission_item.lat, _mission_item.lon);
+
+		_mission_item.force_heading = true;
+
+		new_work_item_type = WorkItemType::WORK_ITEM_TYPE_ALIGN_HEADING;
+
+		/* set position setpoint to current while aligning */
+		_mission_item.lat = _global_pos_sub.get().lat;
+		_mission_item.lon = _global_pos_sub.get().lon;
+	}
+
+	/* heading is aligned now, prepare transition */
+	if (_mission_item.nav_cmd == NAV_CMD_VTOL_TAKEOFF &&
+	    _work_item_type == WorkItemType::WORK_ITEM_TYPE_ALIGN_HEADING &&
+	    _vehicle_status_sub.get().vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROTARY_WING &&
+	    !_land_detected_sub.get().landed) {
+
+		/* check if the vtol_takeoff waypoint is on top of us */
+		if (do_need_move_to_takeoff()) {
+			new_work_item_type = WorkItemType::WORK_ITEM_TYPE_TRANSITION_AFTER_TAKEOFF;
+		}
+
+		set_vtol_transition_item(&_mission_item, vtol_vehicle_status_s::VEHICLE_VTOL_STATE_FW);
+		_mission_item.yaw = NAN;
+
+		// keep current setpoints (FW position controller generates wp to track during transition)
+		pos_sp_triplet->current.type = position_setpoint_s::SETPOINT_TYPE_POSITION;
+	}
+
+	/* takeoff completed and transitioned, move to takeoff wp as fixed wing */
+	if (_mission_item.nav_cmd == NAV_CMD_VTOL_TAKEOFF
+	    && _work_item_type == WorkItemType::WORK_ITEM_TYPE_TRANSITION_AFTER_TAKEOFF) {
+
+		new_work_item_type = WorkItemType::WORK_ITEM_TYPE_DEFAULT;
+		_mission_item.nav_cmd = NAV_CMD_WAYPOINT;
+		_mission_item.autocontinue = true;
+		_mission_item.time_inside = 0.0f;
+	}
+}

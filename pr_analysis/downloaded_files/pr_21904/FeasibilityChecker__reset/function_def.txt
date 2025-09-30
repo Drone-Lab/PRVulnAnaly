@@ -1,0 +1,33 @@
+void FeasibilityChecker::reset()
+{
+
+	_is_landed = false;
+	_home_alt_msl = NAN;
+	_home_lat_lon = matrix::Vector2d((double)NAN, (double)NAN);
+	_current_position_lat_lon = matrix::Vector2d((double)NAN, (double)NAN);
+	_vehicle_type = VehicleType::RotaryWing;
+
+	_mission_validity_failed = false;
+	_takeoff_failed = false;
+	_land_pattern_validity_failed = false;
+	_distance_first_waypoint_failed = false;
+	_distance_between_waypoints_failed = false;
+	_below_home_alt_failed = false;
+	_fixed_wing_land_approach_failed = false;
+	_takeoff_land_available_failed = false;
+
+	_found_item_with_position = false;
+	_has_vtol_takeoff = false;
+	_has_takeoff = false;
+
+	_landing_valid = false;
+	_do_land_start_index = -1;
+	_landing_approach_index = -1;
+	_mission_item_previous = {};
+
+	_first_waypoint_found = false;
+
+	_last_lat = (double)NAN;
+	_last_lon = (double)NAN;
+	_last_cmd = -1;
+}

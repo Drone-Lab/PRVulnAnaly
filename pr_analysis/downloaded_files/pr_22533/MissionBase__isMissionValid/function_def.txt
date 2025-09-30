@@ -1,0 +1,14 @@
+bool MissionBase::isMissionValid(mission_s &mission) const
+{
+	bool ret_val{false};
+
+	if (((mission.current_seq < mission.count) || (mission.count == 0U && mission.current_seq <= 0)) &&
+	    (mission.mission_dataman_id == DM_KEY_WAYPOINTS_OFFBOARD_0
+	     || mission.mission_dataman_id == DM_KEY_WAYPOINTS_OFFBOARD_1) &&
+	    (mission.timestamp != 0u)) {
+		ret_val = true;
+
+	}
+
+	return ret_val;
+}

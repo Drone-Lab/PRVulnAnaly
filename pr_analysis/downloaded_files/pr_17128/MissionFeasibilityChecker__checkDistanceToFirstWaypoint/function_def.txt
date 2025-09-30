@@ -1,0 +1,46 @@
+MissionFeasibilityChecker::checkDistanceToFirstWaypoint(const mission_s &mission, float max_distance)
+{
+	if (max_distance <= 0.0f) {
+		/* param not set, check is ok */
+		return true;
+	}
+
+	/* find first waypoint (with lat/lon) item in datamanager */
+	for (size_t i = 0; i < mission.count; i++) {
+
+		struct mission_item_s mission_item {};
+
+		if (!(dm_read((dm_item_t)mission.dataman_id, i, &mission_item, sizeof(mission_item_s)) == sizeof(mission_item_s))) {
+			/* error reading, mission is invalid */
+			mavlink_log_info(_navigator->get_mavlink_log_pub(), "Error reading offboard mission.");
+			return false;
+		}
+
+		/* check only items with valid lat/lon */
+		if (!MissionBlock::item_contains_position(mission_item)) {
+			continue;
+		}
+
+		/* check distance from current position to item */
+		float dist_to_1wp = get_distance_to_next_waypoint(
+					    mission_item.lat, mission_item.lon,
+					    _navigator->get_home_position()->lat, _navigator->get_home_position()->lon);
+
+		if (dist_to_1wp < max_distance) {
+
+			return true;
+
+		} else {
+			/* item is too far from home */
+			mavlink_log_critical(_navigator->get_mavlink_log_pub(),
+					     "First waypoint too far away: %d meters, %d max.",
+					     (int)dist_to_1wp, (int)max_distance);
+
+			_navigator->get_mission_result()->warning = true;
+			return false;
+		}
+	}
+
+	/* no waypoints found in mission, then we will not fly far away */
+	return true;
+}

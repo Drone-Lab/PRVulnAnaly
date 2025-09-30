@@ -1,0 +1,7 @@
+RTL::on_inactive()
+{
+	/* reset RTL state only if setpoint moved */
+	if (!_navigator->get_can_loiter_at_sp()) {
+		_rtl_state = RTL_STATE_NONE;
+	}
+}

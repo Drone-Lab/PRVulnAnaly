@@ -1,0 +1,27 @@
+Mission::set_current_mission_index(uint16_t index)
+{
+	if (index == _current_mission_index) {
+		return true; // nothing to do, so return true
+
+	} else if (_navigator->get_mission_result()->valid && (index < _mission.count)) {
+
+		_current_mission_index = index;
+
+		// a mission index is set manually which has the higher priority than the closest mission item
+		// as it is set by the user
+		_mission_waypoints_changed = false;
+
+		// update mission items if already in active mission
+		if (_navigator->is_planned_mission()) {
+			// prevent following "previous - current" line
+			_navigator->get_position_setpoint_triplet()->previous.valid = false;
+			_navigator->get_position_setpoint_triplet()->current.valid = false;
+			_navigator->get_position_setpoint_triplet()->next.valid = false;
+			set_mission_items();
+		}
+
+		return true;
+	}
+
+	return false;
+}

@@ -1,0 +1,7 @@
+void Mission::replayCachedTriggerItems()
+{
+	if (_last_camera_trigger_item.nav_cmd > 0) {
+		issue_command(_last_camera_trigger_item);
+		_last_camera_trigger_item = {}; // delete cached item
+	}
+}

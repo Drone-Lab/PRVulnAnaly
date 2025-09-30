@@ -1,0 +1,111 @@
+void Mission::setActiveMissionItems()
+{
+	/* Get mission item that comes after current if available */
+	static constexpr size_t max_num_next_items{2u};
+	int32_t next_mission_items_index[max_num_next_items];
+	size_t num_found_items;
+
+	getNextPositionItems(_mission.current_seq + 1, next_mission_items_index, num_found_items, max_num_next_items);
+
+	mission_item_s next_mission_items[max_num_next_items];
+	const dm_item_t dataman_id = static_cast<dm_item_t>(_mission.dataman_id);
+
+	for (size_t i = 0U; i < num_found_items; i++) {
+		mission_item_s next_mission_item;
+		bool success = _dataman_cache.loadWait(dataman_id, next_mission_items_index[i],
+						       reinterpret_cast<uint8_t *>(&next_mission_item), sizeof(next_mission_item), MAX_DATAMAN_LOAD_WAIT);
+
+		if (success) {
+			next_mission_items[i] = next_mission_item;
+
+		} else {
+			num_found_items = i;
+			break;
+		}
+	}
+
+	/*********************************** handle mission item *********************************************/
+	WorkItemType new_work_item_type = WorkItemType::WORK_ITEM_TYPE_DEFAULT;
+
+	position_setpoint_triplet_s *pos_sp_triplet = _navigator->get_position_setpoint_triplet();
+	const position_setpoint_s current_setpoint_copy = pos_sp_triplet->current;
+
+	if (item_contains_position(_mission_item)) {
+
+		handleTakeoff(new_work_item_type, next_mission_items, num_found_items);
+
+		handleLanding(new_work_item_type, next_mission_items, num_found_items);
+
+		// TODO Precision land needs to be refactored: https://github.com/PX4/Firmware/issues/14320
+		if (new_work_item_type != WorkItemType::WORK_ITEM_TYPE_PRECISION_LAND) {
+			mission_apply_limitation(_mission_item);
+			mission_item_to_position_setpoint(_mission_item, &pos_sp_triplet->current);
+		}
+
+		// Allow a rotary wing vehicle to decelerate before reaching a wp with a hold time or a timeout
+		// This is done by setting the position triplet's next position's valid flag to false,
+		// which makes the FlightTask disregard the next position
+		// TODO: Setting the next waypoint's validity flag to handle braking / correct waypoint behavior
+		// seems hacky, handle this more properly.
+		const bool brake_for_hold = _vehicle_status_sub.get().vehicle_type == vehicle_status_s::VEHICLE_TYPE_ROTARY_WING
+					    && (get_time_inside(_mission_item) > FLT_EPSILON || item_has_timeout(_mission_item));
+
+		if (_mission_item.autocontinue && !brake_for_hold) {
+			/* try to process next mission item */
+			if (num_found_items >= 1u) {
+				/* got next mission item, update setpoint triplet */
+				mission_item_to_position_setpoint(next_mission_items[0u], &pos_sp_triplet->next);
+
+			} else {
+				/* next mission item is not available */
+				pos_sp_triplet->next.valid = false;
+			}
+
+		} else {
+			/* vehicle will be paused on current waypoint, don't set next item */
+			pos_sp_triplet->next.valid = false;
+		}
+
+	} else if (item_contains_gate(_mission_item)) {
+		// The mission item is a gate, let's check if the next item in the list provides
+		// a position to go towards.
+
+		if (num_found_items > 0u) {
+			// We have a position, convert it to the setpoint and update setpoint triplet
+			mission_apply_limitation(next_mission_items[0u]);
+			mission_item_to_position_setpoint(next_mission_items[0u], &pos_sp_triplet->current);
+		}
+
+		if (num_found_items >= 2u) {
+			/* got next mission item, update setpoint triplet */
+			mission_apply_limitation(next_mission_items[1u]);
+			mission_item_to_position_setpoint(next_mission_items[1u], &pos_sp_triplet->next);
+
+		} else {
+			pos_sp_triplet->next.valid = false;
+		}
+
+	} else {
+		handleVtolTransition(new_work_item_type, next_mission_items, num_found_items);
+	}
+
+	// Only set the previous position item if the current one really changed
+	if ((_work_item_type != WorkItemType::WORK_ITEM_TYPE_MOVE_TO_LAND) &&
+	    !position_setpoint_equal(&pos_sp_triplet->current, &current_setpoint_copy)) {
+		pos_sp_triplet->previous = current_setpoint_copy;
+	}
+
+	issue_command(_mission_item);
+
+	/* set current work item type */
+	_work_item_type = new_work_item_type;
+
+	reset_mission_item_reached();
+
+	if (_mission_type == MissionType::MISSION_TYPE_MISSION) {
+		set_mission_result();
+	}
+
+	publish_navigator_mission_item(); // for logging
+	_navigator->set_position_setpoint_triplet_updated();
+}

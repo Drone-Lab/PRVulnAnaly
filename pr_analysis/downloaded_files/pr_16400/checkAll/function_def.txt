@@ -1,0 +1,10 @@
+*/
+	bool checkAll(double lat, double lon, float altitude);
+
+	/**
+	 * print Geofence status to the console
+	 */
+	void printStatus();
+
+private:
+	Navigator	*_navigator{nullptr}

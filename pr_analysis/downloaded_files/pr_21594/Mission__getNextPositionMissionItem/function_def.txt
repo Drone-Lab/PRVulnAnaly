@@ -1,0 +1,18 @@
+bool Mission::getNextPositionMissionItem(const mission_s &mission, int start_index, mission_item_s &mission_item)
+{
+	const dm_item_t dm_current = (dm_item_t)mission.dataman_id;
+
+	while (start_index < mission.count) {
+		// start_index is expected to be after _current_mission_index, and the item should therefore be cached
+		bool success = _dataman_cache.loadWait(dm_current, start_index, reinterpret_cast<uint8_t *>(&mission_item),
+						       sizeof(mission_item), 500_ms);
+
+		if (success && MissionBlock::item_contains_position(mission_item)) {
+			return true;
+		}
+
+		start_index++;
+	}
+
+	return false;
+}

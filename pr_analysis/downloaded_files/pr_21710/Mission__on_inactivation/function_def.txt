@@ -1,0 +1,13 @@
+Mission::on_inactivation()
+{
+	_navigator->disable_camera_trigger();
+	_navigator->stop_capturing_images();
+	_navigator->release_gimbal_control();
+
+	if (_navigator->get_precland()->is_activated()) {
+		_navigator->get_precland()->on_inactivation();
+	}
+
+	/* reset so current mission item gets restarted if mission was paused */
+	_work_item_type = WORK_ITEM_TYPE_DEFAULT;
+}

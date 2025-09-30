@@ -1,0 +1,23 @@
+bool Geofence::isInsidePolygonOrCircle(double lat, double lon, float altitude)
+{
+	if (isEmpty()) {
+		/* Empty fence -> accept all points */
+		return true;
+	}
+
+	/* Vertical check */
+	if (_altitude_max > _altitude_min) { // only enable vertical check if configured properly
+		if (altitude > _altitude_max || altitude < _altitude_min) {
+			return false;
+		}
+	}
+
+	/* Horizontal check: iterate all polygons & circles */
+	bool checksPass = true;
+
+	for (int polygon_index = 0; polygon_index < _num_polygons; ++polygon_index) {
+		checksPass &= checkPointAgainstPolygonCircle(_polygons[polygon_index], lat, lon, altitude);
+	}
+
+	return checksPass;
+}

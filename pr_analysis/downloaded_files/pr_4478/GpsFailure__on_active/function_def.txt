@@ -1,0 +1,34 @@
+GpsFailure::on_active()
+{
+
+	switch (_gpsf_state) {
+	case GPSF_STATE_LOITER: {
+		/* Position controller does not run in this mode:
+		 * navigator has to publish an attitude setpoint */
+		matrix::Quaternion<float> q_sp(&_navigator->get_att_sp()->q_d[0]);
+		matrix::Euler<float> euler_sp(q_sp);
+		euler_sp(0) = M_DEG_TO_RAD_F * _param_openlooploiter_roll.get();
+		euler_sp(1) = M_DEG_TO_RAD_F * _param_openlooploiter_pitch.get();
+		_navigator->get_att_sp()->thrust = _param_openlooploiter_thrust.get();
+		_navigator->publish_att_sp();
+
+		/* Measure time */
+		hrt_abstime elapsed = hrt_elapsed_time(&_timestamp_activation);
+
+		//warnx("open loop loiter, posctl enabled %u, elapsed %.1fs, thrust %.2f",
+				//_navigator->get_control_mode()->flag_control_position_enabled, elapsed * 1e-6, (double)_param_openlooploiter_thrust.get());
+		if (elapsed > _param_loitertime.get() * 1e6f) {
+			/* no recovery, adavance the state machine */
+			warnx("gps not recovered, switch to next state");
+			advance_gpsf();
+		}
+		break;
+	}
+	case GPSF_STATE_TERMINATE:
+		set_gpsf_item();
+		advance_gpsf();
+		break;
+	default:
+		break;
+	}
+}

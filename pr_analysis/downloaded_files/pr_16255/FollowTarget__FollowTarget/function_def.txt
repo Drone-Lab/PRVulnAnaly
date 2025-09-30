@@ -1,0 +1,11 @@
+FollowTarget::FollowTarget(Navigator *navigator) :
+	MissionBlock(navigator),
+	ModuleParams(navigator)
+{
+	_current_vel.zero();
+	_acceleration.zero();
+	_est_target_vel.zero();
+	_target_distance.zero();
+	_target_position_offset.zero();
+	_target_position_delta.zero();
+}

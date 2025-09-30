@@ -1,0 +1,9 @@
+float GeofenceBreachAvoidance::generateLoiterAltitudeForFixedWing(geofence_violation_type_u violation_type)
+{
+	if (violation_type.flags.max_altitude_exceeded) {
+		return _current_alt_amsl - 2.0f * _vertical_test_point_distance;
+
+	} else {
+		return _current_alt_amsl;
+	}
+}

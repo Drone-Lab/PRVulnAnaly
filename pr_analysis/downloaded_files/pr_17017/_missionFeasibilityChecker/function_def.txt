@@ -1,0 +1,69 @@
+if ((!_home_inited && _navigator->home_position_valid()) || force) {
+
+		MissionFeasibilityChecker _missionFeasibilityChecker(_navigator);
+
+		_navigator->get_mission_result()->valid =
+			_missionFeasibilityChecker.checkMissionFeasible(_mission,
+					_param_mis_dist_1wp.get(),
+					_param_mis_dist_wps.get(),
+					_navigator->mission_landing_required());
+
+		_navigator->get_mission_result()->seq_total = _mission.count;
+		_navigator->increment_mission_instance_count();
+		_navigator->set_mission_result_updated();
+		_home_inited = _navigator->home_position_valid();
+
+		// find and store landing start marker (if available)
+		find_mission_land_start();
+	}
+}
+
+void
+Mission::reset_mission(struct mission_s &mission)
+{
+	dm_lock(DM_KEY_MISSION_STATE);
+
+	if (dm_read(DM_KEY_MISSION_STATE, 0, &mission, sizeof(mission_s)) == sizeof(mission_s)) {
+		if (mission.dataman_id == DM_KEY_WAYPOINTS_OFFBOARD_0 || mission.dataman_id == DM_KEY_WAYPOINTS_OFFBOARD_1) {
+			/* set current item to 0 */
+			mission.current_seq = 0;
+
+			/* reset jump counters */
+			if (mission.count > 0) {
+				const dm_item_t dm_current = (dm_item_t)mission.dataman_id;
+
+				for (unsigned index = 0; index < mission.count; index++) {
+					struct mission_item_s item;
+					const ssize_t len = sizeof(struct mission_item_s);
+
+					if (dm_read(dm_current, index, &item, len) != len) {
+						PX4_WARN("could not read mission item during reset");
+						break;
+					}
+
+					if (item.nav_cmd == NAV_CMD_DO_JUMP) {
+						item.do_jump_current_count = 0;
+
+						if (dm_write(dm_current, index, DM_PERSIST_POWER_ON_RESET, &item, len) != len) {
+							PX4_WARN("could not save mission item during reset");
+							break;
+						}
+					}
+				}
+			}
+
+		} else {
+			mavlink_log_critical(_navigator->get_mavlink_log_pub(), "Could not read mission.");
+
+			/* initialize mission state in dataman */
+			mission.timestamp = hrt_absolute_time();
+			mission.dataman_id = DM_KEY_WAYPOINTS_OFFBOARD_0;
+			mission.count = 0;
+			mission.current_seq = 0;
+		}
+
+		dm_write(DM_KEY_MISSION_STATE, 0, DM_PERSIST_POWER_ON_RESET, &mission, sizeof(mission_s));
+	}
+
+	dm_unlock(DM_KEY_MISSION_STATE);
+}

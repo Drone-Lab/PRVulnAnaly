@@ -1,0 +1,10 @@
+Navigator::get_cruising_throttle()
+{
+	/* Return the mission-requested cruise speed, or default FW_THR_CRUISE value */
+	if (_mission_throttle > FLT_EPSILON) {
+		return _mission_throttle;
+
+	} else {
+		return NAN;
+	}
+}

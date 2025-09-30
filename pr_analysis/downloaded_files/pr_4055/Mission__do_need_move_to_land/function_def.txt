@@ -1,0 +1,12 @@
+Mission::do_need_move_to_land()
+{
+	if (_navigator->get_vstatus()->is_rotary_wing && (_mission_item.nav_cmd == NAV_CMD_LAND || _mission_item.nav_cmd == NAV_CMD_VTOL_LAND)) {
+
+		float d_current = get_distance_to_next_waypoint(_mission_item.lat, _mission_item.lon,
+			_navigator->get_global_position()->lat, _navigator->get_global_position()->lon);
+
+		return d_current > _navigator->get_acceptance_radius();
+	}
+
+	return false;
+}

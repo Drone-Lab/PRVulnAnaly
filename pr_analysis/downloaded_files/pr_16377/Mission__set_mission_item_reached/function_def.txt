@@ -1,0 +1,12 @@
+Mission::set_mission_item_reached()
+{
+	_navigator->get_mission_result()->seq_reached = _current_mission_index;
+	_navigator->set_mission_result_updated();
+
+	// let the navigator know that we are currently executing the mission landing.
+	// Using the method landing() itself is not accurate as it only give information about the mission index
+	// but the vehicle could still be very far from the actual landing items
+	_navigator->setMissionLandingInProgress(landing());
+
+	reset_mission_item_reached();
+}

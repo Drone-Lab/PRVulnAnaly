@@ -1,0 +1,50 @@
+Mission::on_active()
+{
+	check_mission_valid();
+
+	/* check if anything has changed */
+	bool onboard_updated = false;
+	orb_check(_navigator->get_onboard_mission_sub(), &onboard_updated);
+	if (onboard_updated) {
+		update_onboard_mission();
+	}
+
+	bool offboard_updated = false;
+	orb_check(_navigator->get_offboard_mission_sub(), &offboard_updated);
+	if (offboard_updated) {
+		update_offboard_mission();
+	}
+
+	/* reset mission items if needed */
+	if (onboard_updated || offboard_updated) {
+		set_mission_items();
+	}
+
+	/* lets check if we reached the current mission item */
+	if (_mission_type != MISSION_TYPE_NONE && is_mission_item_reached()) {
+		set_mission_item_reached();
+		if (_mission_item.autocontinue) {
+			/* switch to next waypoint if 'autocontinue' flag set */
+			advance_mission();
+			set_mission_items();
+		}
+
+	} else if (_mission_type != MISSION_TYPE_NONE && _param_altmode.get() == MISSION_ALTMODE_FOH) {
+		altitude_sp_foh_update();
+
+	} else {
+		/* if waypoint position reached allow loiter on the setpoint */
+		if (_waypoint_position_reached && _mission_item.nav_cmd != NAV_CMD_IDLE) {
+			_navigator->set_can_loiter_at_sp(true);
+		}
+	}
+
+	/* see if we need to update the current yaw heading */
+	if ((_param_yawmode.get() != MISSION_YAWMODE_NONE
+			&& _param_yawmode.get() < MISSION_YAWMODE_MAX
+			&& _mission_type != MISSION_TYPE_NONE)
+			|| _navigator->get_vstatus()->is_vtol) {
+		heading_sp_update();
+	}
+
+}

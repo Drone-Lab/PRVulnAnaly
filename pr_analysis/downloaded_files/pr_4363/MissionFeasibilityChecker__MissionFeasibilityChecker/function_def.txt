@@ -1,0 +1,8 @@
+MissionFeasibilityChecker::MissionFeasibilityChecker() :
+	_mavlink_log_pub(nullptr),
+	_capabilities_sub(-1),
+	_initDone(false),
+	_dist_1wp_ok(false)
+{
+	_nav_caps = {0};
+}

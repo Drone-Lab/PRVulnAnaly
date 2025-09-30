@@ -1,0 +1,4 @@
+Navigator::get_default_acceptance_radius()
+{
+	return _param_nav_acc_rad.get();
+}

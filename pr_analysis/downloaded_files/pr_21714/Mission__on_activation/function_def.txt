@@ -1,0 +1,41 @@
+Mission::on_activation()
+{
+	if (_mission_waypoints_changed) {
+		// do not set the closest mission item in the normal mission mode
+		if (_mission_execution_mode != mission_result_s::MISSION_EXECUTION_MODE_NORMAL) {
+			_current_mission_index = index_closest_mission_item();
+		}
+
+		_mission_waypoints_changed = false;
+	}
+
+	// we already reset the mission items
+	_execution_mode_changed = false;
+
+	// reset the cache and fill it with the items up to the previous item. The cache contains
+	// commands that are valid for the whole mission, not just a sinlge waypoint.
+	if (_current_mission_index > 0) {
+		resetItemCache();
+		updateCachedItemsUpToIndex(_current_mission_index - 1);
+	}
+
+	unsigned resume_index;
+
+	if (_inactivation_index > 0 && cameraWasTriggering()
+	    && getPreviousPositionItemIndex(_mission, _inactivation_index - 1, resume_index)) {
+		// The mission we are resuming had camera triggering enabled. In order to not lose any images
+		// we restart the mission at the previous position item.
+		// We will replay the cached commands once we reach the previous position item and have yaw aligned.
+		set_current_mission_index(resume_index);
+
+		_align_heading_necessary = true;
+
+	} else {
+		set_mission_items();
+	}
+
+	_inactivation_index = -1; // reset
+
+	// reset cruise speed
+	_navigator->reset_cruising_speed();
+}

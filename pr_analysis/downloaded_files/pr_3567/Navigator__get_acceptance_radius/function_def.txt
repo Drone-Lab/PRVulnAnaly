@@ -1,0 +1,4 @@
+Navigator::get_acceptance_radius()
+{
+	return get_acceptance_radius(_param_acceptance_radius.get());
+}

@@ -1,0 +1,2 @@
+*/
+	void set_cruising_speed(float desired_speed) { _cruising_speed_current_mode = desired_speed; }

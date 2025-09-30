@@ -1,0 +1,8 @@
+Mission::Mission(Navigator *navigator, const char *name) :
+	MissionBlock(navigator, name),
+	_param_onboard_enabled(this, "MIS_ONBOARD_EN", false),
+	_param_takeoff_alt(this, "MIS_TAKEOFF_ALT", false),
+	_param_dist_1wp(this, "MIS_DIST_1WP", false),
+	_param_altmode(this, "MIS_ALTMODE", false),
+	_param_yawmode(this, "MIS_YAWMODE", false),
+	_onboard_mission{}

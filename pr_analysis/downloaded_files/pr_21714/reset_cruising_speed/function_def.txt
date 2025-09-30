@@ -1,0 +1,2 @@
+*/
+	void reset_cruising_speed() { _cruising_speed_current_mode = -1.f; }

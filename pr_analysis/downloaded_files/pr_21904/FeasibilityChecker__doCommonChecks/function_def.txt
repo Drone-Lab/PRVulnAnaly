@@ -1,0 +1,23 @@
+void FeasibilityChecker::doCommonChecks(mission_item_s &mission_item, const int current_index)
+{
+
+	if (!_distance_between_waypoints_failed) {
+		_distance_between_waypoints_failed = !checkDistancesBetweenWaypoints(mission_item);
+	}
+
+	if (!_distance_first_waypoint_failed) {
+		_distance_first_waypoint_failed = !checkHorizontalDistanceToFirstWaypoint(mission_item);
+	}
+
+	if (!_below_home_alt_failed) {
+		_below_home_alt_failed = !checkIfBelowHomeAltitude(mission_item, current_index);
+	}
+
+	if (!_takeoff_failed) {
+		_takeoff_failed = !checkTakeoff(mission_item);
+	}
+
+	if (!_items_fit_to_vehicle_type_failed) {
+		_items_fit_to_vehicle_type_failed = !checkItemsFitToVehicleType(mission_item);
+	}
+}

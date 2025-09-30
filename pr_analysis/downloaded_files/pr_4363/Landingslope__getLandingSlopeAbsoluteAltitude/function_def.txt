@@ -1,0 +1,29 @@
+float slope_alt_req = Landingslope::getLandingSlopeAbsoluteAltitude(wp_distance, missionitem.altitude, _nav_caps.landing_horizontal_slope_displacement, _nav_caps.landing_slope_angle_rad);
+				float wp_distance_req = Landingslope::getLandingSlopeWPDistance(missionitem_previous.altitude, missionitem.altitude, _nav_caps.landing_horizontal_slope_displacement, _nav_caps.landing_slope_angle_rad);
+				float delta_altitude = missionitem.altitude - missionitem_previous.altitude;
+//				warnx("wp_distance %.2f, delta_altitude %.2f, missionitem_previous.altitude %.2f, missionitem.altitude %.2f, slope_alt_req %.2f, wp_distance_req %.2f",
+//						wp_distance, delta_altitude, missionitem_previous.altitude, missionitem.altitude, slope_alt_req, wp_distance_req);
+//				warnx("_nav_caps.landing_horizontal_slope_displacement %.4f, _nav_caps.landing_slope_angle_rad %.4f, _nav_caps.landing_flare_length %.4f",
+//						_nav_caps.landing_horizontal_slope_displacement, _nav_caps.landing_slope_angle_rad, _nav_caps.landing_flare_length);
+
+				if (wp_distance > _nav_caps.landing_flare_length) {
+					/* Last wp is before flare region */
+
+					if (delta_altitude < 0) {
+						if (missionitem_previous.altitude <= slope_alt_req) {
+							/* Landing waypoint is at or below altitude of slope at the given waypoint distance: this is ok, aircraft will intersect the slope */
+							return true;
+						} else {
+							/* Landing waypoint is above altitude of slope at the given waypoint distance */
+							mavlink_log_critical(_mavlink_log_pub, "Landing: last waypoint too high/too close");
+							mavlink_log_critical(_mavlink_log_pub, "Move down to %.1fm or move further away by %.1fm",
+									(double)(slope_alt_req),
+									(double)(wp_distance_req - wp_distance));
+							return false;
+						}
+					} else {
+						/* Landing waypoint is above last waypoint */
+						mavlink_log_critical(_mavlink_log_pub, "Landing waypoint above last nav waypoint");
+						return false;
+					}
+				}
